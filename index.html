@@ -854,7 +854,38 @@ function renderZukan(){
    const tx=document.createElement("span");tx.className="zktext";tx.textContent=`${found?"✓発見済み":"未発見"} ｜ ${c.n}（${c.m.join("＋")}）：${c.d}`;
    d.appendChild(faces);d.appendChild(tx);list.appendChild(d);});});
 }
-bindPress($("againBtn"),()=>{fadeTo(1,260,()=>location.reload());});
+// ラン終了後のタイトル復帰。以前は location.reload() で初期画面に戻していたが、
+// 再読み込みが成立しない閲覧環境（添付ファイル表示・アプリ内ブラウザ等）では
+// 「タイトルへ」を押した瞬間に画面が消え、記録も読み直されず実績が消えたように見えた。
+// ページ内遷移に変え、保存済みの記録をその場でタイトルへ反映する。
+function backToTitle(){
+ stopBGM();
+ // 進行中の演出・会話・提示キューを、コールバックを発火させずに畳む
+ if(dialogOpen){clearInterval(dialogTimer);dialogOpen=false;dialogTyping=false;dialogDone=null;}
+ dialogQ=[];dialogLines=[];
+ presQ=[];cineQ=[];cineOn=false;clearTimeout(cineTimer);
+ clearTimeout(sigCutinTimer);
+ ["cineTop","cineBottom","cineTitle","stageSplash"].forEach(id=>{const e=$(id);if(e)e.classList.remove("on");});
+ const sc=$("sigCutin");if(sc)sc.classList.remove("on");
+ const bb=$("barkBox");if(bb)bb.classList.remove("on");
+ hideDuelCmds();
+ // 画面の出し分けを初期表示（タイトル）に戻す
+ ["resultScreen","zukanScreen","bioScreen","anecScreen"].forEach(id=>{const e=$(id);if(e)e.classList.add("hidden");});
+ ["modal","detailModal","dialogBox"].forEach(id=>{const e=$(id);if(e)e.classList.add("hidden");});
+ ["skillBtn","pauseBtn","joy","detailBtn","rangeBtn","formBtn","gimmickBtn","duelBtn"].forEach(id=>{const e=$(id);if(e)e.style.display="none";});
+ {const gw=$("gaugeWrap");if(gw)gw.style.display="none";}
+ {const pb=$("pauseBtn");if(pb)pb.textContent="⏸ 一時停止";}
+ cv.classList.remove("pausedFx");
+ ctx.clearRect(0,0,W,H);
+ joyVec={x:0,y:0};mouseVec={x:0,y:0};
+ // ラン状態を破棄し、タイトル表示を最新の記録で再構築する
+ G=null;dailyCfg=null;
+ try{localStorage.removeItem("sgk_run_save");}catch(e){}
+ {const rb=$("resumeBtn");if(rb)rb.style.display="none";}
+ buildTitle();refreshMetaUI();refreshDailyUI();refreshCondBtns();
+ $("titleScreen").classList.remove("hidden");
+}
+bindPress($("againBtn"),()=>{fadeTo(1,260,()=>{backToTitle();fadeTo(0,260);});});
 bindPress($("retryBtn"),()=>{$("resultScreen").classList.add("hidden");newGame();});
 bindPress($("endlessBtn"),()=>{if(!G||!G.over)return;$("resultScreen").classList.add("hidden");G.over=false;G.endless=true;G.endlessT=0;G.paused=false;$("skillBtn").style.display="block";{const gw=$("gaugeWrap");if(gw)gw.style.display="block";}$("pauseBtn").style.display="block";$("joy").style.display="block";$("detailBtn").style.display="block";$("rangeBtn").style.display="block";G.banners.push({txt:"エンドレス戦 突入！",sub:"敵は際限なく強くなる。倒れるまで戦い続けよ",t:3.4,col:"#ff9a7a"});lastTs=performance.now();requestAnimationFrame(loop);});
 
