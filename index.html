@@ -46,16 +46,19 @@ h1.title{font-size:min(5.2vw,44px);letter-spacing:.12em;color:#ffd964;text-shado
 @keyframes epicPulse{0%,100%{box-shadow:0 0 0 1px rgba(255,217,100,.5),0 4px 16px rgba(0,0,0,.55)}50%{box-shadow:0 0 0 2px rgba(255,217,100,.85),0 4px 22px rgba(255,190,60,.35)}}
 .newBadge{position:absolute;top:6px;left:6px;background:linear-gradient(180deg,#ff6a54,#c22e1f);color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:2px 8px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:2}
 .tagchip.next{background:#23402a;color:#a5f2a5;border-color:#3f7a4d}
-.rerollBtn{flex:0 0 100%;box-sizing:border-box;background:linear-gradient(180deg,#3a2c14,#241b0f);border:2px dashed #8a6d2f;border-radius:10px;padding:9px 14px;text-align:center;cursor:pointer;color:#ffe9a8;font-size:16px;font-weight:800;letter-spacing:.08em;animation:cardIn .38s cubic-bezier(.2,.85,.3,1.15) backwards}
-.rerollBtn:hover{border-color:#ffd964;filter:brightness(1.25)}
-.rerollBtn .rbSub{display:block;font-size:11px;font-weight:400;color:#cbbd93;margin-top:2px;letter-spacing:0}
+.rerollBtn{flex:0 0 auto;box-sizing:border-box;background:rgba(28,22,12,.88);border:1px solid #5a4a28;border-radius:8px;padding:7px 12px;min-height:36px;display:flex;align-items:center;gap:7px;text-align:center;cursor:pointer;color:#c9b992;font-size:13px;font-weight:700;letter-spacing:.03em;animation:cardIn .38s cubic-bezier(.2,.85,.3,1.15) backwards}
+.rerollBtn:hover{border-color:#8a6d2f;filter:brightness(1.18)}
+.rerollBtn .rbSub{display:inline;font-size:10.5px;font-weight:400;color:#97865f;letter-spacing:0}
+.lvSubRow{flex:0 0 100%;display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 .rerollBtn.locked{border-style:solid}
-.rerollBtn.locked:hover{border-color:#8a6d2f;filter:none}
+.rerollBtn.locked{opacity:.55}
+.rerollBtn.locked:hover{border-color:#5a4a28;filter:none}
 .good{background:#2c5c2e;color:#c8f5c8}.bad{background:#6d2430;color:#ffd2d2}.info{background:#4a3d1c;color:#ffe9a8}
 #skillBtn{position:absolute;right:16px;bottom:16px;width:72px;height:72px;border-radius:50%;border:3px solid #8a6d2f;background:radial-gradient(circle at 35% 30%,#4d3d1a,#241a0c);color:#cdbd97;font-weight:900;font-size:14px;z-index:15;cursor:pointer;display:none}
 #skillBtn.ready{border-color:#ffd964;color:#ffd964;box-shadow:0 0 22px rgba(255,217,100,.8);animation:pulse 1s infinite}
 #skillBtn.cd{filter:grayscale(.55) brightness(.75)}
 #skillBtn,#duelBtn{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button,.btn,.card,.mcard,.bchip,.bcard,.dtab,.rerollBtn,.banishBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 #gaugeWrap{position:absolute;right:16px;bottom:100px;width:196px;z-index:15;font-family:inherit}
 #gaugeLabel{font-size:12.5px;font-weight:bold;color:#ffe9a8;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.8);margin-bottom:3px;white-space:nowrap;overflow:visible}
 #gaugeBar{height:17px;background:rgba(10,8,4,.85);border:2px solid #8a6d2f;border-radius:9px;position:relative;overflow:hidden}
@@ -559,7 +562,24 @@ const COMPAT=[
  {m:["徐庶","龐統"],t:"good",n:"水鏡門下",d:"計略の範囲+20%"},
  {m:["夏侯惇","夏侯淵"],t:"good",n:"夏侯兄弟",d:"会心率+12%"},
  {m:["曹操","曹仁"],t:"good",n:"宗族の結束",d:"パーティ防御+10%"},
- {m:["徐晃","張郃"],t:"good",n:"五子良将",d:"2人の防御+10%・攻撃+8%"},
+ {m:["徐晃","張郃"],t:"good",n:"五子良将",d:"2人の防御+10%・攻撃+8%。張遼・于禁も加わるほど全員の攻防がさらに上がる（3人+5%／4人+8%）"},
+ {m:["張遼","関羽"],t:"good",n:"屯土山の友",d:"2人の攻撃+12%。敵味方を越えた友誼"},
+ {m:["丁奉","陸遜"],t:"good",n:"都督の懐刀",d:"2人の攻撃+12%"},
+ {m:["黄忠","魏延"],t:"good",n:"長沙の旧知",d:"2人の攻撃+12%"},
+ {m:["魏延","劉備"],t:"good",n:"破格の抜擢",d:"魏延の攻撃+15%・防御+10%"},
+ {m:["馬雲騄","趙雲"],t:"good",n:"伝承の夫婦",d:"2人の攻撃+10%・防御+10%"},
+ {m:["夏侯惇","曹操"],t:"good",n:"盲夏侯の忠",d:"夏侯惇の防御+15%・攻撃+10%"},
+ {m:["程普","周瑜"],t:"good",n:"老将の敬意",d:"2人の防御+12%"},
+ {m:["大喬","孫尚香"],t:"good",n:"江東の姉妹",d:"2人の防御+10%・計略クール-5%"},
+ {m:["郭嘉","曹操"],t:"good",n:"十勝十敗",d:"計略威力+15%"},
+ {m:["姜維","趙雲"],t:"good",n:"蜀漢の双璧",d:"2人の攻撃+10%"},
+ {m:["関平","張飛"],t:"good",n:"誓いの次代",d:"関平の攻撃+15%・張飛の攻撃+5%"},
+ {m:["夏侯淵","張郃"],t:"good",n:"漢中の楔",d:"2人の攻撃+12%"},
+ {m:["程昱","郭嘉"],t:"good",n:"魏の知恵袋",d:"計略威力+10%・経験値+5%"},
+ {m:["太史慈","周泰"],t:"good",n:"江東の双璧",d:"2人の攻撃+10%・防御+10%"},
+ {m:["祝融","諸葛亮"],t:"good",n:"南蛮の敬意",d:"祝融の攻撃+10%・防御+10%"},
+ {m:["蔡文姫","貂蝉"],t:"good",n:"胡笳と舞",d:"計略クール-10%"},
+ {m:["曹仁","徐晃"],t:"good",n:"樊城の救援",d:"2人の防御+12%"},
  {m:["周瑜","黄蓋"],t:"good",n:"苦肉の計",d:"火計の範囲と威力+50%"},
  {m:["関羽","華佗"],t:"good",n:"刮骨療毒",d:"関羽が自動で回復し続ける"},
  {m:["諸葛亮","姜維"],t:"good",n:"師弟の采配",d:"姜維の全能力+20%"},
@@ -591,6 +611,7 @@ const COMPAT=[
  {m:["曹操","典韋","許褚"],t:"trio",n:"主君と虎衛",d:"曹操の防御+20%"},
  {m:["周瑜","魯粛","呂蒙"],t:"trio",n:"四代都督",d:"計略クール-20%・水辺で全能力+10%（都督のうち3人で成立）"},
  {m:["徐庶","諸葛亮","龐統"],t:"trio",n:"水鏡門下の集結",d:"計略クール-30%"},
+ {m:["貂蝉","孫尚香","祝融"],t:"trio",n:"戦場の華",d:"3人の攻撃+12%"},
  // ×悪相性
  {m:["諸葛亮","魏延"],t:"bad",n:"反骨",d:"魏延-10%。ただしボス戦で勝手に突進し大ダメージ"},
  {m:["周瑜","諸葛亮"],t:"bad",n:"既生瑜何生亮",d:"計略クール+10%。ただし火計の威力+40%"},
@@ -610,7 +631,13 @@ const COMPAT=[
  {m:["孟獲","諸葛亮"],t:"bad",n:"七縱七擒",d:"孟獲の攻撃-5%。撤退して復帰するたび攻撃+10%が積み上がる"},
  {m:["凌統","周泰"],t:"good",n:"江東の盾と矛",d:"凌統の攻撃+10%・周泰の防御+15%"},
  {m:["凌統","甘寧"],t:"good",n:"死生の交わり",d:"恨みを越えた絆。凌統と甘寧の攻撃+12%・防御+10%（悪相性「父の仇」が、甘寧の救援による凌統の復帰を機に変化した姿）"},
- {m:["凌統","甘寧"],t:"bad",n:"父の仇",d:"凌統の攻撃+25%・防御-10%。父の仇への執念が力になるが守りが疎かになる。甘寧の救援で凌統が復帰すると「死生の交わり」に変化する"}
+ {m:["凌統","甘寧"],t:"bad",n:"父の仇",d:"凌統の攻撃+25%・防御-10%。父の仇への執念が力になるが守りが疎かになる。甘寧の救援で凌統が復帰すると「死生の交わり」に変化する"},
+ {m:["張遼","凌統"],t:"bad",n:"合肥の因縁",d:"張遼の攻撃+15%。凌統の防御-10%（逍遙津の悪夢）"},
+ {m:["貂蝉","関羽"],t:"bad",n:"月下の断罪",d:"関羽の攻撃+10%。貂蝉の防御-10%"},
+ {m:["華佗","曹操"],t:"bad",n:"頭痛の因縁",d:"計略威力+10%。華佗の防御-10%（処刑の影）"},
+ {m:["司馬懿","張郃"],t:"bad",n:"木門道の追撃",d:"張郃の攻撃+15%。防御-10%（無理な追撃命令への意地）"},
+ {m:["孫尚香","趙雲"],t:"bad",n:"截江の対峙",d:"趙雲の防御+10%。孫尚香の攻撃-10%"},
+ {m:["于禁","曹操"],t:"bad",n:"晩節の汚れ",d:"于禁の攻撃-10%。防御+15%（屈辱を胸に守りを固める）"}
 ];
 const TACTICS=[
  {id:"fire",name:"火計",icon:"🔥",desc:"敵の密集地に火炎。燃焼エリアが残り、中の敵に毎秒14（Lv5で34）の継続ダメージ【照準】敵の群れの中心／約7秒ごと",base:26,cd:7,lore:"赤壁にて、周瑜と黄蓋の火船が曹軍を焼いた"},
@@ -706,10 +733,10 @@ function openShop(){
   const afford=!maxed&&gunkou>=price;
   const d=document.createElement("div");d.className="mcard"+(maxed?"":afford?"":" cant");d.style.width="200px";
   d.innerHTML=`<div class="kk" style="color:#c9a227">強化</div><h3>${u.name}</h3><p>${u.desc}</p><div class="upgSteps"><span class="upgPips"><span class="pipOn">${"●".repeat(lv)}</span><span class="pipOff">${"○".repeat(u.max-lv)}</span></span><span class="upgStepTxt">現在 <b>${lv}段</b> / 最大 ${u.max}段</span></div><p class="upgNow">いまの効果：<b>${u.now(lv)}</b></p>${maxed?`<span class="tag good">最大まで強化済み</span>`:afford?`<span class="tag info">タップで購入：${price} 軍功</span>`:`<span class="tag bad">軍功が不足：${price} 軍功（あと ${price-gunkou}）</span>`}`;
-  if(!maxed)d.onclick=()=>{if(gunkou<price){$("modalNote").textContent="軍功が足りない…（所持 "+gunkou+"／必要 "+price+"）";return;}gunkou-=price;saveGunkou();up[u.id]=lv+1;saveUpgrades(up);openShop();refreshMetaUI();};
+  if(!maxed)bindPress(d,()=>{if(gunkou<price){$("modalNote").textContent="軍功が足りない…（所持 "+gunkou+"／必要 "+price+"）";return;}gunkou-=price;saveGunkou();up[u.id]=lv+1;saveUpgrades(up);openShop();refreshMetaUI();});
   wrap.appendChild(d);
  });
- const back=document.createElement("div");back.className="mcard";back.style.width="200px";back.innerHTML=`<div class="kk">戻る</div><h3>閉じる</h3><p>タイトルに戻る</p>`;back.onclick=()=>{closeModal();};wrap.appendChild(back);
+ const back=document.createElement("div");back.className="mcard";back.style.width="200px";back.innerHTML=`<div class="kk">戻る</div><h3>閉じる</h3><p>タイトルに戻る</p>`;bindPress(back,()=>{closeModal();});wrap.appendChild(back);
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function seedStageFires(){if(!G)return;if(STAGES[G.stage].id==="rakuyo"){for(let i=0;i<5;i++)G.fires.push({x:80+Math.random()*(W-160),y:80+Math.random()*(H-160),t:99999,r:34+Math.random()*20});}}
@@ -735,14 +762,14 @@ function renderLordDetail(L,locked){
 }
 function buildTitle(){
  const lc=$("lordCards");lc.innerHTML="";
- LORDS.forEach((L,i)=>{if(L.hidden&&!lordUnlocked(L)){const lk=document.createElement("div");lk.className="card locked";lk.innerHTML=`<div class="kk">隠し君主</div><div class="lockBody">🔒</div><h3>？？？</h3>`;lk.onclick=()=>{renderLordDetail(L,true);};lc.appendChild(lk);return;}const d=document.createElement("div");d.className="card"+(i===selLord?" sel":"");d.innerHTML=`<div class="kk">${L.faction} ・ ${L.trait}</div>${SPRITES_SRC[L.id]?`<img src="${SPRITES_SRC[L.id]}" style="height:52px;display:block;margin:2px auto">`:""}<h3>${L.name}</h3>`;d.onclick=()=>{selLord=i;buildTitle();};lc.appendChild(d);});
+ LORDS.forEach((L,i)=>{if(L.hidden&&!lordUnlocked(L)){const lk=document.createElement("div");lk.className="card locked";lk.innerHTML=`<div class="kk">隠し君主</div><div class="lockBody">🔒</div><h3>？？？</h3>`;bindTap(lk,()=>{renderLordDetail(L,true);});lc.appendChild(lk);return;}const d=document.createElement("div");d.className="card"+(i===selLord?" sel":"");d.innerHTML=`<div class="kk">${L.faction} ・ ${L.trait}</div>${SPRITES_SRC[L.id]?`<img src="${SPRITES_SRC[L.id]}" style="height:52px;display:block;margin:2px auto">`:""}<h3>${L.name}</h3>`;bindTap(d,()=>{selLord=i;buildTitle();});lc.appendChild(d);});
  renderLordDetail(LORDS[selLord],false);
  const sc=$("stageCards");if(sc){sc.innerHTML="";sc.style.display="none";} // 戦場選択は廃止（開始は潁川固定、戦場は進軍で選ぶ）
 }
 refreshMetaUI();
 refreshDailyUI();
-$("zukanBtn").onclick=()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderZukan();$("zukanScreen").classList.remove("hidden");},150);};
-$("zukanBack").onclick=()=>{fadeThrough(()=>{$("zukanScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);};
+bindTap($("zukanBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderZukan();$("zukanScreen").classList.remove("hidden");},150);});
+bindTap($("zukanBack"),()=>{fadeThrough(()=>{$("zukanScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
 // ===== 武将紹介ギャラリー =====
 const ENEMY_ONLY=[["呂布","呂","群雄"],["董卓","董","群雄"],["張角","角","黄巾"],["華雄","華","群雄"],["張宝","宝","黄巾"],["張梁","梁","黄巾"]];
 const BIO_FILTERS=["すべて","君主","仲間","敵専用","蜀","魏","呉","袁","他","群雄","黄巾"];
@@ -788,18 +815,18 @@ function renderBio(){
  det.classList.add("hidden");grid.classList.remove("hidden");filters.classList.remove("hidden");
  cnt.textContent=`全${bioRoster().length}人を紹介中 ― 顔をタップすると人物紹介が読める`;
  filters.innerHTML="";
- BIO_FILTERS.forEach(f=>{const b=document.createElement("button");b.className="bchip"+(f===bioFilter?" sel":"");b.textContent=f;b.onclick=()=>{bioFilter=f;renderBio();};filters.appendChild(b);});
+ BIO_FILTERS.forEach(f=>{const b=document.createElement("button");b.className="bchip"+(f===bioFilter?" sel":"");b.textContent=f;bindTap(b,()=>{bioFilter=f;renderBio();});filters.appendChild(b);});
  grid.innerHTML="";
  bioRoster().filter(m=>bioFilter==="すべて"||m.cat===bioFilter||m.faction===bioFilter).forEach(m=>{
   const bio=BIO[m.name]||["",""];
   const d=document.createElement("div");d.className="bcard";
   d.innerHTML=`${(typeof FACE_SRC!=="undefined"&&FACE_SRC[m.name])?`<img src="${FACE_SRC[m.name]}" alt="${m.name}">`:""}<div class="bname">${m.name}</div><span class="bcat" style="background:${BIO_CATCOLOR[m.cat]}">${m.cat}・${m.faction}</span><div class="bcatch">${bio[0]}</div>`;
-  d.onclick=()=>{bioSel=m;renderBio();$("bioScreen").scrollTop=0;};
+  bindTap(d,()=>{bioSel=m;renderBio();$("bioScreen").scrollTop=0;});
   grid.appendChild(d);
  });
 }
-$("bioBtn").onclick=()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");bioFilter="すべて";bioSel=null;renderBio();$("bioScreen").classList.remove("hidden");},150);};
-$("bioBack").onclick=()=>{if(bioSel){bioSel=null;renderBio();$("bioScreen").scrollTop=0;return;}fadeThrough(()=>{$("bioScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);};
+bindTap($("bioBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");bioFilter="すべて";bioSel=null;renderBio();$("bioScreen").classList.remove("hidden");},150);});
+bindTap($("bioBack"),()=>{if(bioSel){bioSel=null;renderBio();$("bioScreen").scrollTop=0;return;}fadeThrough(()=>{$("bioScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
 
 function zkFaceHTML(name){
  const pu=portraitURL(speakerObj(name));
@@ -816,9 +843,9 @@ function renderZukan(){
    const tx=document.createElement("span");tx.className="zktext";tx.textContent=`${found?"✓発見済み":"未発見"} ｜ ${c.n}（${c.m.join("＋")}）：${c.d}`;
    d.appendChild(faces);d.appendChild(tx);list.appendChild(d);});});
 }
-$("againBtn").onclick=()=>{fadeTo(1,260,()=>location.reload());};
-$("retryBtn").onclick=()=>{$("resultScreen").classList.add("hidden");newGame();};
-$("endlessBtn").onclick=()=>{if(!G||!G.over)return;$("resultScreen").classList.add("hidden");G.over=false;G.endless=true;G.endlessT=0;G.paused=false;$("skillBtn").style.display="block";{const gw=$("gaugeWrap");if(gw)gw.style.display="block";}$("pauseBtn").style.display="block";$("joy").style.display="block";$("detailBtn").style.display="block";$("rangeBtn").style.display="block";G.banners.push({txt:"エンドレス戦 突入！",sub:"敵は際限なく強くなる。倒れるまで戦い続けよ",t:3.4,col:"#ff9a7a"});lastTs=performance.now();requestAnimationFrame(loop);};
+bindPress($("againBtn"),()=>{fadeTo(1,260,()=>location.reload());});
+bindPress($("retryBtn"),()=>{$("resultScreen").classList.add("hidden");newGame();});
+bindPress($("endlessBtn"),()=>{if(!G||!G.over)return;$("resultScreen").classList.add("hidden");G.over=false;G.endless=true;G.endlessT=0;G.paused=false;$("skillBtn").style.display="block";{const gw=$("gaugeWrap");if(gw)gw.style.display="block";}$("pauseBtn").style.display="block";$("joy").style.display="block";$("detailBtn").style.display="block";$("rangeBtn").style.display="block";G.banners.push({txt:"エンドレス戦 突入！",sub:"敵は際限なく強くなる。倒れるまで戦い続けよ",t:3.4,col:"#ff9a7a"});lastTs=performance.now();requestAnimationFrame(loop);});
 
 // ===== 画面遷移演出 =====
 function fadeTo(op,dur,cb){const f=$("fadeLayer");dur=dur||280;if(!f){if(cb)cb();return;}f.style.transitionDuration=dur+"ms";f.style.opacity=op;if(cb)setTimeout(cb,dur+40);}
@@ -848,10 +875,10 @@ let startBusy=false,titleHideDefer=false;
 function dailyConfig(){const d=new Date();const ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");let h=(d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate())>>>0;const rnd=()=>{h=(Math.imul(h,1103515245)+12345)&0x7fffffff;return h/0x7fffffff;};const unl=LORDS.map((L,i)=>i).filter(i=>lordUnlocked(LORDS[i]));const li=unl[Math.floor(rnd()*unl.length)];const cond={z:rnd()<0.4,k:rnd()<0.4,m:rnd()<0.35};if(!cond.z&&!cond.k&&!cond.m)cond.z=true;return{date:ds,lordIdx:li,cond};}
 function dailyRecord(){try{return JSON.parse(localStorage.getItem("sgk_daily")||"null");}catch(e){return null;}}
 function refreshDailyUI(){const b=$("dailyBtn"),inf=$("dailyInfo");if(!b)return;const c=dailyConfig();const L=LORDS[c.lordIdx];const cl=[c.cond.z?"増援":null,c.cond.k?"寡兵":null,c.cond.m?"猛将":null].filter(Boolean).join("・");const rec=dailyRecord();if(inf)inf.textContent="本日のデイリー：君主 "+L.name+"／戦況 "+cl+(rec&&rec.date===c.date?("｜本日の記録："+rec.kills+"撃破"+(rec.win?"・勝利":"")):"｜本日は未挑戦");}
-$("dailyBtn").onclick=()=>{const c=dailyConfig();dailyCfg=c;selLord=c.lordIdx;startSequence();};
+bindTap($("dailyBtn"),()=>{const c=dailyConfig();dailyCfg=c;selLord=c.lordIdx;startSequence();});
 const GUNRYAKU=[["kousei","攻勢","全軍攻撃+5%／君主の最大体力-5%"],["kenshu","堅守","被ダメージ軽減+5%／君主の速度-3%"],["keiryakuG","計略","計略威力+10%／通常攻撃-5%"],["kidou","機動","君主の速度+6%／防御-5%"]];
 function refreshGunryakuBtn(){const b=$("grBtn");if(!b)return;const g=GUNRYAKU.find(x=>x[0]===selGunryaku);if(g){b.innerHTML=`<span class="cbMain">軍略：${g[1]}</span><span class="cbSub">${g[2]}</span>`;}else{b.textContent="軍略：なし";}b.classList.toggle("on",!!g);}
-$("grBtn").onclick=()=>{const order=[null,"kousei","kenshu","keiryakuG","kidou"];selGunryaku=order[(order.indexOf(selGunryaku)+1)%order.length];refreshGunryakuBtn();};
+bindTap($("grBtn"),()=>{const order=[null,"kousei","kenshu","keiryakuG","kidou"];selGunryaku=order[(order.indexOf(selGunryaku)+1)%order.length];refreshGunryakuBtn();});
 function startSequence(){
  if(startBusy)return;startBusy=true;
  tryFullscreenLandscape();
@@ -899,16 +926,16 @@ function newGame(){
  pushTelop(STAGE_OPENING[S.id]||"");
  requestAnimationFrame(loop);
 }
-$("startBtn").onclick=()=>{dailyCfg=null;startSequence();};
-$("shopBtn").onclick=()=>{openShop();};
-$("shuraBtn").onclick=()=>{if(!shuraUnlocked())return;localStorage.setItem("sgk_shura",shuraOn()?"0":"1");refreshMetaUI();};
+bindTap($("startBtn"),()=>{dailyCfg=null;startSequence();});
+bindTap($("shopBtn"),()=>{openShop();});
+bindTap($("shuraBtn"),()=>{if(!shuraUnlocked())return;localStorage.setItem("sgk_shura",shuraOn()?"0":"1");refreshMetaUI();});
 function refreshCondBtns(){const c=loadCond();const set=(id,on,lb,bonus)=>{const b=$(id);if(!b)return;b.innerHTML=`<span class="cbMain">${lb}</span><span class="cbSub">軍功${bonus} ・ ${on?"ON":"OFF"}</span>`;b.classList.toggle("on",!!on);};set("condZBtn",c.z,"戦況：増援","+30%");set("condKBtn",c.k,"戦況：寡兵","+30%");set("condMBtn",c.m,"戦況：猛将","+40%");}
-["condZBtn","condKBtn","condMBtn"].forEach((id,ix)=>{const b=$(id);if(!b)return;const key=["z","k","m"][ix];b.onclick=()=>{const c=loadCond();c[key]=!c[key];try{localStorage.setItem("sgk_cond",JSON.stringify(c));}catch(e){}refreshCondBtns();};});
+["condZBtn","condKBtn","condMBtn"].forEach((id,ix)=>{const b=$(id);if(!b)return;const key=["z","k","m"][ix];bindTap(b,()=>{const c=loadCond();c[key]=!c[key];try{localStorage.setItem("sgk_cond",JSON.stringify(c));}catch(e){}refreshCondBtns();});});
 refreshCondBtns();
-$("pauseBtn").onclick=()=>{if(G&&!G.modal){G.paused=!G.paused;$("pauseBtn").textContent=G.paused?"▶ 再開":"⏸ 一時停止";cv.classList.toggle("pausedFx",G.paused);}};
+bindPress($("pauseBtn"),()=>{if(G&&!G.modal){G.paused=!G.paused;$("pauseBtn").textContent=G.paused?"▶ 再開":"⏸ 一時停止";cv.classList.toggle("pausedFx",G.paused);}});
 function rangeOn(){return localStorage.getItem("sgk_range")!=="0";}
 function refreshRangeBtn(){const b=$("rangeBtn");if(b)b.textContent=rangeOn()?"🎯 範囲ON":"🎯 範囲OFF";}
-$("rangeBtn").onclick=()=>{localStorage.setItem("sgk_range",rangeOn()?"0":"1");refreshRangeBtn();};
+bindPress($("rangeBtn"),()=>{localStorage.setItem("sgk_range",rangeOn()?"0":"1");refreshRangeBtn();});
 refreshRangeBtn();
 
 // 入力
@@ -926,7 +953,17 @@ addEventListener("pointerup",()=>{mouseDown=false;mouseVec={x:0,y:0};});
 cv.addEventListener("pointermove",e=>{if(mouseDown&&G){const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const dx=x-G.lord.x,dy=y-G.lord.y;const len=Math.hypot(dx,dy);mouseVec=len>12?{x:dx/len,y:dy/len}:{x:0,y:0};}});
 // ボタン入力の共通化：実機(iOS)で click が長押しコールアウトやジェスチャ判定に奪われて発火しない事象への対策。
 // pointerdown/touchstart/click の3経路で受け、同一ジェスチャの重複発火（250ms以内）は1回に丸める（押した瞬間に反応する）。
-function bindPress(el,fn){let last=0;const h=e=>{const n=performance.now();if(n-last<250)return;last=n;if(e&&e.preventDefault){try{e.preventDefault();}catch(_){}}fn();};el.addEventListener("pointerdown",h);el.addEventListener("touchstart",h,{passive:false});el.addEventListener("click",h);}
+function bindPress(el,fn){let lastPtr=-1000,lastPtrType="";
+ const hPtr=e=>{if(e&&e.stopPropagation){try{e.stopPropagation();}catch(_){}}const n=performance.now();if(e.type!==lastPtrType&&n-lastPtr<120)return;lastPtr=n;lastPtrType=e.type||"";if(e&&e.preventDefault){try{e.preventDefault();}catch(_){}}fn(e);};
+ const hClick=e=>{if(e&&e.stopPropagation){try{e.stopPropagation();}catch(_){}}if(performance.now()-lastPtr<350)return;fn(e);};
+ el.addEventListener("pointerdown",hPtr);el.addEventListener("touchstart",hPtr,{passive:false});el.addEventListener("click",hClick);}
+// スクロールする画面（タイトル・人物録・図鑑など）用タップ判定：押して離すまでの指の移動が小さい場合だけ反応する。
+// iOS Safari では、スクロールの勢いが残っている間や指が微妙に動いたタップで click がキャンセルされ「ボタンが効かない」ことがあるため、pointerup の移動量で判定する。click は予備経路（ポインタで発火済みの同一ジェスチャの click は捨てる）。
+function bindTap(el,fn){let st=null,lastPtr=-1000;
+ el.addEventListener("pointerdown",e=>{st={x:e.clientX||0,y:e.clientY||0,t:performance.now()};});
+ el.addEventListener("pointerup",e=>{if(!st)return;const dx=(e.clientX||0)-st.x,dy=(e.clientY||0)-st.y;const ok=Math.hypot(dx,dy)<14&&performance.now()-st.t<700;st=null;if(ok){if(e.stopPropagation){try{e.stopPropagation();}catch(_){}}lastPtr=performance.now();fn(e);}});
+ el.addEventListener("pointercancel",()=>{st=null;});
+ el.addEventListener("click",e=>{if(e.stopPropagation){try{e.stopPropagation();}catch(_){}}if(performance.now()-lastPtr<350)return;fn(e);});}
 bindPress($("skillBtn"),()=>{if(!G)return;if(G.cutin){finishCutin();return;}if(G.gauge>=100&&!G.modal&&!G.paused)castCombo();});
 function cycleFormation(){if(!G||G.over||G.modal||G.duel)return;if((G.formCdT||0)>0)return;const order=["kakuyoku","gyorin","houen"];const nx=order[(order.indexOf(G.formation||"kakuyoku")+1)%3];G.formation=nx;G.formCdT=5;G.mods=computeMods();refreshAllCompStats();const b=$("formBtn");if(b)b.textContent="陣形："+FORM_NAME[nx];G.banners.push({txt:"陣形変更："+FORM_NAME[nx],sub:FORM_DESC[nx],t:2,col:"#aee2ff"});}
 bindPress($("formBtn"),()=>{cycleFormation();});
@@ -954,8 +991,8 @@ function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run
  G.banners.push({txt:"戦場間から再開",sub:"進軍先を選んで続きを戦おう",t:3,col:"#ffd964"});
  openMoveSelect();}
 try{const fs=$("favSel");if(fs){const cur=localStorage.getItem("sgk_fav")||"";fs.innerHTML='<option value="">（なし）</option>'+COMP_DEFS.filter(c=>c[4]!=="ex").map(c=>`<option value="${c[0]}"${c[0]===cur?" selected":""}>${c[0]}</option>`).join("");fs.onchange=()=>{try{localStorage.setItem("sgk_fav",fs.value);}catch(e){}};}
- const rb=$("resumeBtn");if(rb&&localStorage.getItem("sgk_run_save")){rb.style.display="";rb.onclick=()=>resumeRun();}
- const sb=$("swapBtn");const applySwap=()=>{const on=localStorage.getItem("sgk_swap")==="1";document.body.classList.toggle("swap",on);if(sb)sb.textContent="⇄ ボタン左右入替："+(on?"ON":"OFF");};if(sb)sb.onclick=()=>{try{localStorage.setItem("sgk_swap",localStorage.getItem("sgk_swap")==="1"?"0":"1");}catch(e){}applySwap();};applySwap();}catch(e){}
+ const rb=$("resumeBtn");if(rb&&localStorage.getItem("sgk_run_save")){rb.style.display="";bindTap(rb,()=>resumeRun());}
+ const sb=$("swapBtn");const applySwap=()=>{const on=localStorage.getItem("sgk_swap")==="1";document.body.classList.toggle("swap",on);if(sb)sb.textContent="⇄ ボタン左右入替："+(on?"ON":"OFF");};if(sb)bindTap(sb,()=>{try{localStorage.setItem("sgk_swap",localStorage.getItem("sgk_swap")==="1"?"0":"1");}catch(e){}applySwap();});applySwap();}catch(e){}
 const DEEP_SPECIAL=["刮骨療毒","南蛮夫婦","河北双璧","赤壁の火攻め","五虎将軍","虎衛双璧","江東の夫婦","河北の柱","神亭の邂逅"];
 const KAKUGO_FALLBACK=["聞き入れぬ進言","届かぬ献策","政略結婚","空の食盒","軽率への怒り"];
 function computeMods(){
@@ -968,7 +1005,26 @@ function computeMods(){
  if(has("夏侯惇")&&has("夏侯淵"))M.crit+=12*DF("夏侯兄弟");
  if(has("曹操")&&has("曹仁"))M.partyDef*=SC("宗族の結束",1.1);
  if(has("徐晃")&&has("張郃")){A("徐晃","def",SC("五子良将",1.1));A("張郃","def",SC("五子良将",1.1));A("徐晃","atk",SC("五子良将",1.08));A("張郃","atk",SC("五子良将",1.08));}
+ {const goshi=["張遼","張郃","徐晃","于禁"].filter(n=>has(n));if(goshi.length>=3){const gm=goshi.length>=4?1.08:1.05;goshi.forEach(n=>{A(n,"atk",SC("五子良将",gm));A(n,"def",SC("五子良将",gm));});}}
  if(has("周瑜")&&has("黄蓋"))M.fireMul*=SC("苦肉の計",1.5);
+ if(has("張遼")&&has("関羽")){A("張遼","atk",SC("屯土山の友",1.12));A("関羽","atk",SC("屯土山の友",1.12));}
+ if(has("丁奉")&&has("陸遜")){A("丁奉","atk",SC("都督の懐刀",1.12));A("陸遜","atk",SC("都督の懐刀",1.12));}
+ if(has("貂蝉")&&has("孫尚香")&&has("祝融")){A("貂蝉","atk",SC("戦場の華",1.12));A("孫尚香","atk",SC("戦場の華",1.12));A("祝融","atk",SC("戦場の華",1.12));}
+ if(has("黄忠")&&has("魏延")){A("黄忠","atk",SC("長沙の旧知",1.12));A("魏延","atk",SC("長沙の旧知",1.12));}
+ if(has("劉備")&&has("魏延")){A("魏延","atk",SC("破格の抜擢",1.15));A("魏延","def",SC("破格の抜擢",1.1));}
+ if(has("馬雲騄")&&has("趙雲")){A("馬雲騄","atk",SC("伝承の夫婦",1.1));A("馬雲騄","def",SC("伝承の夫婦",1.1));A("趙雲","atk",SC("伝承の夫婦",1.1));A("趙雲","def",SC("伝承の夫婦",1.1));}
+ if(has("夏侯惇")&&has("曹操")){A("夏侯惇","def",SC("盲夏侯の忠",1.15));A("夏侯惇","atk",SC("盲夏侯の忠",1.1));}
+ if(has("程普")&&has("周瑜")){A("程普","def",SC("老将の敬意",1.12));A("周瑜","def",SC("老将の敬意",1.12));}
+ if(has("大喬")&&has("孫尚香")){A("大喬","def",SC("江東の姉妹",1.1));A("孫尚香","def",SC("江東の姉妹",1.1));M.tacCd*=SC("江東の姉妹",0.95);}
+ if(has("郭嘉")&&has("曹操"))M.tacPower*=SC("十勝十敗",1.15);
+ if(has("姜維")&&has("趙雲")){A("姜維","atk",SC("蜀漢の双璧",1.1));A("趙雲","atk",SC("蜀漢の双璧",1.1));}
+ if(has("関平")&&has("張飛")){A("関平","atk",SC("誓いの次代",1.15));A("張飛","atk",SC("誓いの次代",1.05));}
+ if(has("夏侯淵")&&has("張郃")){A("夏侯淵","atk",SC("漢中の楔",1.12));A("張郃","atk",SC("漢中の楔",1.12));}
+ if(has("程昱")&&has("郭嘉")){M.tacPower*=SC("魏の知恵袋",1.1);M.xp*=SC("魏の知恵袋",1.05);}
+ if(has("太史慈")&&has("周泰")){A("太史慈","atk",SC("江東の双璧",1.1));A("太史慈","def",SC("江東の双璧",1.1));A("周泰","atk",SC("江東の双璧",1.1));A("周泰","def",SC("江東の双璧",1.1));}
+ if(has("祝融")&&has("諸葛亮")){A("祝融","atk",SC("南蛮の敬意",1.1));A("祝融","def",SC("南蛮の敬意",1.1));}
+ if(has("蔡文姫")&&has("貂蝉"))M.tacCd*=SC("胡笳と舞",0.9);
+ if(has("曹仁")&&has("徐晃")){A("曹仁","def",SC("樊城の救援",1.12));A("徐晃","def",SC("樊城の救援",1.12));}
  if(has("諸葛亮")&&has("姜維")){A("姜維","atk",SC("師弟の采配",1.2));A("姜維","def",SC("師弟の采配",1.2));}
  if(has("荀彧")&&has("郭嘉")){M.xp*=SC("魏の頭脳",1.1);M.tacCd*=SC("魏の頭脳",0.9);}
  if(has("関羽")&&has("関平"))A("関羽","range",SC("父子鷹",1.2));
@@ -1000,6 +1056,12 @@ function computeMods(){
  if(has("周瑜")&&has("諸葛亮")){M.tacCd*=KSC("既生瑜何生亮",1.1);M.fireMul*=KSC("既生瑜何生亮",1.4);badCount++;}
  if(has("関羽")&&has("呂蒙")){A("関羽","def",KSC("荊州の恨み",0.9));A("呂蒙","atk",KSC("荊州の恨み",1.1));badCount++;}
  if(has("関羽")&&has("于禁")){A("于禁","atk",KSC("樊城の屈辱",0.9));A("于禁","def",KSC("樊城の屈辱",0.9));badCount++;}
+ if(has("張遼")&&has("凌統")){A("張遼","atk",KSC("合肥の因縁",1.15));A("凌統","def",KSC("合肥の因縁",0.9));badCount++;}
+ if(has("関羽")&&has("貂蝉")){A("関羽","atk",KSC("月下の断罪",1.1));A("貂蝉","def",KSC("月下の断罪",0.9));badCount++;}
+ if(has("華佗")&&has("曹操")){M.tacPower*=KSC("頭痛の因縁",1.1);A("華佗","def",KSC("頭痛の因縁",0.9));badCount++;}
+ if(has("司馬懿")&&has("張郃")){A("張郃","atk",KSC("木門道の追撃",1.15));A("張郃","def",KSC("木門道の追撃",0.9));badCount++;}
+ if(has("孫尚香")&&has("趙雲")){A("趙雲","def",KSC("截江の対峙",1.1));A("孫尚香","atk",KSC("截江の対峙",0.9));badCount++;}
+ if(has("于禁")&&has("曹操")){A("于禁","atk",KSC("晩節の汚れ",0.9));A("于禁","def",KSC("晩節の汚れ",1.15));badCount++;}
  if(has("諸葛亮")&&has("馬謖")){M.tacPower*=KSC("街亭の独断",1.2);badCount++;}
  if(has("司馬懿")&&has("諸葛亮")){M.tacPower*=KSC("宿敵軍師",0.9);badCount++;}
  if(has("典韋")&&has("賈詡")){A("典韋","atk",KSC("宛城の因縁",0.85));M.tacPower*=KSC("宛城の因縁",1.25);badCount++;}
@@ -1571,6 +1633,26 @@ const PAIR_LINES={
  "太史慈×孫策":{"太史慈":"孫策殿、神亭嶺の勝負は預けたままですが…今は同じ旗の下。背中はお任せください。","孫策":"太史慈！あの勝負の続きは、敵を討ち果たしてからだ。頼りにしているぞ。"},
  "張飛×張郃":{"張飛":"張郃！宕渠じゃ逃げられたが、今度は同じ側か。まあ、腕っぷしは認めてやるよ。","張郃":"張飛殿、力押しだけでは俺は止められん。…だが味方でいる分には、これほど心強い男もいないな。"},
  "徐晃×張郃":{"徐晃":"儁乂、また肩を並べることになったな。五子の名、戦場でも揃えてみせよう。","張郃":"徐晃殿、その堅実な斧さばきにはいつも助けられている。巧変の方は、任せられよ。"},
+ "張遼×凌統":{"張遼":"凌統殿、合肥では死闘を演じたが…今は同じ陣だ。背中は任せた。","凌統":"逍遙津の悪夢は忘れん。…だが戦場では、あんたの腕を頼りにする。"},
+ "丁奉×陸遜":{"丁奉":"都督のご命令とあらば、この老骨、どこへでも参ります。","陸遜":"丁奉、歴任の老将ほど頼れる者はいない。頼むぞ。"},
+ "貂蝉×関羽":{"貂蝉":"関羽さま、そんなに睨まないでくださいまし…妾が何かしました？","関羽":"…惑わされはせぬ。だが戦場では、後ろに下がっていろ。"},
+ "黄忠×魏延":{"黄忠":"文長、長沙以来だな。老兵の弓、まだまだ錆びついておらんぞ。","魏延":"黄将軍！あの頃の借りは、この戦で返しますよ。"},
+ "魏延×劉備":{"魏延":"殿に拾われたこの命、戦場で倍にして返します！","劉備":"文長、そなたの才は私が見込んだ。存分に暴れてみせよ。"},
+ "馬雲騄×趙雲":{"馬雲騄":"子龍殿、西涼の槍と白馬の槍、どちらが速いか競いましょう？","趙雲":"雲騄殿、競うまでもない。共に駆ければ、それで十分だ。"},
+ "程普×周瑜":{"程普":"公瑾、若い都督と侮ったこともあったが…今は背中を預けるに足る男だ。","周瑜":"程老将軍、その言葉、しかと受け取りました。江東の礎は老将あってこそ。"},
+ "大喬×孫尚香":{"大喬":"尚香、戦場でもその元気、少しは姉さんに分けてちょうだい。","孫尚香":"姉さまは後ろで見てて。敵はあたしが全部片付けるから！"},
+ "姜維×趙雲":{"姜維":"趙将軍、丞相の志は私が継ぎます。どうか見ていてください。","趙雲":"伯約、そなたの槍には迷いがない。それでよい。"},
+ "関平×張飛":{"関平":"張飛叔父上、父上とは違う厳しさ、今日もご指導を！","張飛":"おう、関平！兄者の息子は俺の息子も同然だ。ついてこい！"},
+ "夏侯淵×張郃":{"夏侯淵":"儁乂、漢中の守りは俺たちで盤石にするぞ。三日五百里、遅れるなよ。","張郃":"妙才殿の速さには舌を巻きます。巧変の策でお支えしましょう。"},
+ "程昱×郭嘉":{"程昱":"奉孝、若さゆえの冴えは見事だが、無茶は控えられよ。","郭嘉":"程昱殿のご心配、ありがたく。ですが策は大胆なほど刺さるものです。"},
+ "太史慈×周泰":{"太史慈":"周泰、その体に刻まれた傷が戦場の証しだ。頼りにしている。","周泰":"太史慈、あんたの弓があれば背後は安泰だ。前は俺に任せな。"},
+ "祝融×諸葛亮":{"祝融":"諸葛丞相、あんたの策には南蛮も降参だ。…今はあたしの炎、頼りにしな。","諸葛亮":"祝融殿、敬意には敬意で応えましょう。共に行きましょう。"},
+ "蔡文姫×貂蝉":{"蔡文姫":"貂蝉さま、戦の音ばかりの日々に、あなたの舞は心の慰めです。","貂蝉":"文姫さまの胡笳の音色こそ、妾の舞に魂を入れてくださいます。"},
+ "曹仁×徐晃":{"曹仁":"公明、樊城ではよくぞ来てくれた。あの恩、今度は私が返す番だ。","徐晃":"子孝殿、樊城の堅守あってこその救援でした。今度も共に。"},
+ "華佗×曹操":{"華佗":"丞相、その頭痛…開頭すれば治せるやもしれませぬが。","曹操":"元化、その話は二度とするな。…まあ、腕だけは買っておる。"},
+ "司馬懿×張郃":{"司馬懿":"儁乂、追撃の手は緩めるな。…木門道？何のことかな。","張郃":"仲達殿、あの命令のことは忘れておりませぬ。ですが、今は戦に集中を。"},
+ "孫尚香×趙雲":{"孫尚香":"子龍！あの時、阿斗を抱えて逃げたこと、まだ根に持ってるからね。","趙雲":"尚香殿、阿斗様をお守りするのが私の務め。今も変わりませぬ。"},
+ "于禁×曹操":{"于禁":"丞相…この于禁、晩節を汚した身。せめて、この戦で。","曹操":"文則、過ぎたことは言うな。そなたの堅実さは、今も買っておる。"},
  "関羽×曹操":{"関羽":"孟徳殿、かつての厚遇は忘れておらん。だが義は兄のもの、今は力を尽くすのみ。","曹操":"雲長、そなたが味方とは頼もしい。義の刃、存分に振るうがよい。"},
  "郭嘉×荀彧":{"郭嘉":"文若殿の推挙がなければ、今の私はありませんでした。恩は策で返します。","荀彧":"奉孝、推挙したのは才を見込んだからだ。どうか体だけは大切に。"},
  "典韋×許褚":{"典韋":"許褚、殿の左右は俺たちが死守する。指一本触れさせるな！","許褚":"おう、典韋！虎と悪来が揃えば、誰も殿には近づけねえ！"},
@@ -1916,10 +1998,10 @@ function onDuelBtn(){
  cands.forEach(c=>{
   const d=document.createElement("div");d.className="mcard";const pw=duelPower(c.name);
   d.innerHTML=`<div class="kk" style="color:#ff9a7a">武勇 ${pw}</div>${spriteURL(c.name)?`<img src="${spriteURL(c.name)}" style="height:84px;display:block;margin:2px auto">`:""}<h3>${c.name}</h3><p>${pw>=duelPower(e.name)?"互角以上の勝負になりそうだ":"格上相手…リングは速くなる"}</p>`;
-  d.onclick=()=>{closeModal();clearDuelOffer();startDuel(c,e);};
+  bindPress(d,()=>{closeModal();clearDuelOffer();startDuel(c,e);});
   wrap.appendChild(d);
  });
- const back=document.createElement("div");back.className="mcard";back.innerHTML=`<div class="kk">見送る</div><h3>やめておく</h3><p>通常戦闘で戦う</p>`;back.onclick=()=>{closeModal();clearDuelOffer();};wrap.appendChild(back);
+ const back=document.createElement("div");back.className="mcard";back.innerHTML=`<div class="kk">見送る</div><h3>やめておく</h3><p>通常戦闘で戦う</p>`;bindPress(back,()=>{closeModal();clearDuelOffer();});wrap.appendChild(back);
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function startDuel(cand,e){
@@ -2018,7 +2100,7 @@ function showDuelCmds(){
   const b=document.createElement("button");const s=st[id];
   b.innerHTML=`<span class="dcName">${nm}</span><span class="dcDesc">${s.ok?desc:desc+"（"+s.reason+"）"}</span>`;
   if(!s.ok)b.disabled=true;
-  b.onclick=()=>{duelChoose(id);};
+  bindPress(b,()=>{duelChoose(id);});
   wrap.appendChild(b);
  });
  wrap.style.display="flex";
@@ -2147,8 +2229,8 @@ function startJoinDialog(def){
  }
  startDialog(lines,null);
 }
-$("dialogBox").addEventListener("click",()=>{advanceDialog();});
-$("dlgSkip").addEventListener("click",e=>{e.stopPropagation();endDialog();});
+bindPress($("dialogBox"),()=>{advanceDialog();});
+bindPress($("dlgSkip"),()=>{endDialog();});
 // 一騎討ちはタップで開始（長押しは廃止：実機で長押し判定が効かなかったため）。
 // 誤爆防止は従来どおり「接近時のみボタン表示＋対象固定（duelProximity/duelOffer）」で担保する。
 bindPress($("duelBtn"),()=>{onDuelBtn();});
@@ -2219,7 +2301,7 @@ function openRecruit(forceName){
   const d=document.createElement("div");d.className="mcard";d.style.animationDelay=(ci*80)+"ms";
   d.innerHTML=`<div class="kk" style="color:${FACTION_COLOR[fac]}">${fac} ・ ${ROLE_NAME[role]}</div>${portraitURL({name})?`<img src="${portraitURL({name})}" style="height:84px;display:block;margin:2px auto">`:""}<h3>${name}、推して参る！</h3><p>体力${st.hp}／攻撃${st.atk}／射程${st.range}${role==="strat"?"／軍師：戦場の流れを変える計略持ち":""}${role==="support"?"／支援：回復と補助":""}</p><p style="min-height:0">性格：${(PERS_LABEL[persOf({name,role})]||PERS_LABEL.follow)[0]}</p><p style="min-height:0">固有技「${SIGNATURES[name]?SIGNATURES[name].n:(GENERIC_SIG[role]||GENERIC_SIG.melee)[0]}」：${SIGNATURES[name]?(SIG_DESC[name]||""):((GENERIC_SIG[role]||GENERIC_SIG.melee)[1])}（約${SIGNATURES[name]?SIGNATURES[name].cd:14}秒ごとに自動発動）</p>`+
    marks.map(c=>`<span class="tag ${c.t==="bad"?"bad":"good"}">${c.t==="bad"?"×":"◎"} ${c.n}</span>`).join("");
-  d.onclick=()=>{if(full){renderSwapChoices(def);}else{if(!addCompanion(def)){closeModal();return;}suppressMoveCheck=true;closeModal();suppressMoveCheck=false;showCutinFx({pri:2,key:"join:"+def[0],title:def[0]+"、加入！",sub:"新たな力が加わった",faces:[def[0]],dur:0.85,col:"#ffd964",onDone:()=>startJoinDialog(def)});}};
+  bindPress(d,()=>{if(full){renderSwapChoices(def);}else{if(!addCompanion(def)){closeModal();return;}suppressMoveCheck=true;closeModal();suppressMoveCheck=false;showCutinFx({pri:2,key:"join:"+def[0],title:def[0]+"、加入！",sub:"新たな力が加わった",faces:[def[0]],dur:0.85,col:"#ffd964",onDone:()=>startJoinDialog(def)});}});
   wrap.appendChild(d);
  });
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
@@ -2231,12 +2313,12 @@ function renderSwapChoices(def){
  G.party.filter(p=>!p.phantom).forEach(p=>{
   const d=document.createElement("div");d.className="mcard";
   d.innerHTML=`<div class="kk" style="color:${FACTION_COLOR[p.faction]||"#fff"}">${p.faction} ・ ${ROLE_NAME[p.role]||""}</div>${portraitURL(p)?`<img src="${portraitURL(p)}" style="height:84px;display:block;margin:2px auto">`:""}<h3>${p.name} と入れ替える</h3><p>歴戦：撃破${p.kills||0}（Lv${vetTier(p)}）／体力${Math.max(0,Math.round(p.hp))}/${p.maxhp}</p>`;
-  d.onclick=()=>{G.party=G.party.filter(x=>x!==p);addCompanion(def);suppressMoveCheck=true;closeModal();suppressMoveCheck=false;showCutinFx({pri:2,key:"join:"+def[0],title:def[0]+"、加入！",sub:"新たな力が加わった",faces:[def[0]],dur:0.85,col:"#ffd964",onDone:()=>startJoinDialog(def)});};
+  bindPress(d,()=>{G.party=G.party.filter(x=>x!==p);addCompanion(def);suppressMoveCheck=true;closeModal();suppressMoveCheck=false;showCutinFx({pri:2,key:"join:"+def[0],title:def[0]+"、加入！",sub:"新たな力が加わった",faces:[def[0]],dur:0.85,col:"#ffd964",onDone:()=>startJoinDialog(def)});});
   wrap.appendChild(d);
  });
  const keep=document.createElement("div");keep.className="mcard";
  keep.innerHTML=`<div class="cicon">🙅</div><h3>入れ替えない</h3><p>今のパーティのまま戦う（この登用チャンスは消費される）</p>`;
- keep.onclick=()=>{closeModal();};
+ bindPress(keep,()=>{closeModal();});
  wrap.appendChild(keep);
 }
 function compatStateOk(c){if(!G)return true;if(c.n==="死生の交わり")return !!G.lingEvolved;if(c.n==="父の仇")return !G.lingEvolved;return true;}
@@ -2309,7 +2391,7 @@ function offerContract(){
  $("modalTitle").textContent="📜 戦場契約 ― 任意のサブ目標";
  $("modalNote").textContent="受けるかどうか選ぶ間、戦闘は一時停止する。失敗すると代償がある本気の賭け ― 断れば安全だが何も得られない（15秒で自動見送り）";
  const wrap=$("modalCards");wrap.innerHTML="";
- const mk=(t,sub,fn)=>{const d=document.createElement("div");d.className="mcard";d.innerHTML=`<h3>${t}</h3><p>${sub}</p>`;d.onclick=()=>{closeContractOffer();fn();};wrap.appendChild(d);};
+ const mk=(t,sub,fn)=>{const d=document.createElement("div");d.className="mcard";d.innerHTML=`<h3>${t}</h3><p>${sub}</p>`;bindPress(d,()=>{closeContractOffer();fn();});wrap.appendChild(d);};
  mk("受ける：" + c[1],c[2]+" ― 報酬："+c[3]+"／失敗："+c[4],()=>{G.contract={kind:c[0],t0:G.t,k0:G.kills,elite0:G.eliteKills||0,dl:G.t+100};G.banners.push({txt:"契約開始："+c[1],sub:c[2],t:2.6,col:"#ffd964"});});
  mk("断る","この戦場は契約なしで進む",()=>{});
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
@@ -2326,7 +2408,7 @@ function offerStoryEvent(){
  G.storyEvDone=(G.storyEvDone||0)+1;G.modal=true;G.paused=true;sfxFanfare();
  $("modalTitle").textContent="📖 物語 ― "+ev.t;$("modalNote").textContent=ev.d;
  const wrap=$("modalCards");wrap.innerHTML="";
- [[ev.a,ev.fa],[ev.b,ev.fb]].forEach(([ab,fn])=>{const d=document.createElement("div");d.className="mcard";d.innerHTML=`<h3>${ab[0]}</h3><p>${ab[1]}</p>`;d.onclick=()=>{fn();G.mods=computeMods();closeModal();openMoveSelect();};wrap.appendChild(d);});
+ [[ev.a,ev.fa],[ev.b,ev.fb]].forEach(([ab,fn])=>{const d=document.createElement("div");d.className="mcard";d.innerHTML=`<h3>${ab[0]}</h3><p>${ab[1]}</p>`;bindPress(d,()=>{fn();G.mods=computeMods();closeModal();openMoveSelect();});wrap.appendChild(d);});
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
  return true;
 }
@@ -2352,7 +2434,7 @@ function openMoveSelect(){
   const bh=(typeof BOSS_HINT!=="undefined")?S.bosses.map(b=>BOSS_HINT[b]).find(Boolean):null;
   const wx=weatherFor(S.id,(G.moveCount||0)+1);
   d.innerHTML=`${STAGE_BG[S.id]?`<img class="moveThumb" src="${STAGE_BG[S.id]}">`:""}<div class="kk" style="color:#c9a227">進軍先</div><h3>${S.name} へ</h3><p>${S.feat}</p><span class="tag info">${S.trend}</span><span class="tag good">${STAGE_TRAIT[S.id]||""}</span>${G.visited.includes(i)?`<span class="tag bad">再訪</span>`:`<span class="tag good">未踏の戦場</span>`}<span class="tag info">危険度 ${"★".repeat(danger)}${"☆".repeat(3-danger)}</span><span class="tag info">報酬傾向：${reward}</span><span class="tag info">天候：${wx.name}${wx.id==="rain"?"（火↓水↑）":wx.id==="wind"?"（火が広がる）":wx.id==="fog"?"（敵鈍足・吸引↓）":""}</span>${recTag?`<span class="tag info">推奨：${recTag}</span>`:""}${bh?`<span class="tag good">備え：${bh}</span>`:""}${(typeof STAGE_FACT!=="undefined"&&STAGE_FACT[S.id])?`<span class="tag info" style="white-space:normal">📜 史実：${STAGE_FACT[S.id]}</span>`:""}${fm?`<span class="tag bad">⚠ 強行軍：敵が一段強い代わりに、到着時に仲間宝箱＋登用保証</span>`:""}`;
-  d.onclick=()=>{if(fm)G.forceMarch=true;doMove(i);};
+  bindPress(d,()=>{if(fm)G.forceMarch=true;doMove(i);});
   wrap.appendChild(d);
  });
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
@@ -2404,7 +2486,7 @@ function openShrine(){const sh=G.shrine;if(!sh||sh.used||G.modal)return;sh.used=
  $("modalTitle").textContent="⛩️ 戦場の祠";
  $("modalNote").textContent="供え物をすると、この戦場の間だけ加護が得られる（1戦場に1回）";
  const wrap=$("modalCards");wrap.innerHTML="";
- const mk=(t,d,ok,fn)=>{const el=document.createElement("div");el.className="mcard";el.innerHTML=`<h3>${t}</h3><p>${d}</p>`;if(ok)el.onclick=()=>{fn();closeModal();};else{el.style.opacity=0.45;el.innerHTML+=`<p>供え物が足りない</p>`;}wrap.appendChild(el);};
+ const mk=(t,d,ok,fn)=>{const el=document.createElement("div");el.className="mcard";el.innerHTML=`<h3>${t}</h3><p>${d}</p>`;if(ok)bindPress(el,()=>{fn();closeModal();});else{el.style.opacity=0.45;el.innerHTML+=`<p>供え物が足りない</p>`;}wrap.appendChild(el);};
  mk("軍功の祠","軍功100を供える ― 全軍の攻撃+10%（この戦場の間）",gunkou>=100,()=>{gunkou-=100;saveGunkou();if(!(G.storyAtkMul&&G.storyAtkStage===G.moveCount&&G.storyAtkMul>=1.10)){G.storyAtkMul=1.10;G.storyAtkStage=G.moveCount;}G.mods=computeMods();G.banners.push({txt:"軍功の祠の加護",sub:"全軍の攻撃+10%（この戦場）",t:2.6,col:"#ffd964"});});
  mk("命の祠","君主の体力25%を供える ― 計略威力+25%（この戦場の間）",G.lord.hp>G.lord.maxhp*0.3,()=>{G.lord.hp-=G.lord.maxhp*0.25;if(!(G.storyTacMul&&G.storyTacStage===G.moveCount&&G.storyTacMul>=1.25)){G.storyTacMul=1.25;G.storyTacStage=G.moveCount;}G.mods=computeMods();G.banners.push({txt:"命の祠の加護",sub:"計略威力+25%（この戦場）",t:2.6,col:"#e8d8ff"});});
  mk("戦神の祠","運試し ― 加護（20秒間加速）か、守り手の襲撃か",true,()=>{if(Math.random()<0.5){G.lordFastT=20;G.partySpdBuffT=20;G.banners.push({txt:"戦神の加護！",sub:"20秒間、全軍が加速する",t:2.6,col:"#ffd964"});}else{for(let i=0;i<3;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e){e.x=sh.x+(Math.random()*120-60);e.y=sh.y+(Math.random()*120-60);}}G.banners.push({txt:"戦神の試練！",sub:"祠の守り手が襲いかかる",t:2.6,col:"#ff9a7a"});}});
@@ -2437,7 +2519,7 @@ function openCompChest(){
  $("modalTitle").textContent="🎁 宝箱 ― 仲間の強化";
  $("modalNote").textContent="宝箱は仲間強化の主軸。いまの編成に効く強化が並ぶ";
  const wrap=$("modalCards");wrap.innerHTML="";
- picks.forEach((o,ci)=>{const d=document.createElement("div");d.className="mcard";d.style.animationDelay=(ci*80)+"ms";const cp0=G.party.find(p=>o.t.startsWith(p.name));const pu0=cp0?portraitURL(cp0):null;d.innerHTML=(pu0?`<img class="cface" src="${pu0}" alt="${cp0.name}">`:`<div class="cicon">${o.icon||"✨"}</div>`)+`<h3>${o.t}</h3><p>${o.d}</p>`;d.onclick=()=>{o.f();const cp=G.party.find(p=>o.t.startsWith(p.name));if(cp){cp.upgCount=(cp.upgCount||0)+1;if(cp.upgCount>=2&&!cp.awakened){cp.awakened=true;addText(cp.x,cp.y-58,`${cp.name} 覚醒！`,"#ffd964",16);G.rings.push({x:cp.x,y:cp.y,r:10,t:0.5,col:"#ffd964"});}}G.mods=computeMods();closeModal();if(cp)showUpgCutin(cp,o.t);};wrap.appendChild(d);});
+ picks.forEach((o,ci)=>{const d=document.createElement("div");d.className="mcard";d.style.animationDelay=(ci*80)+"ms";const cp0=G.party.find(p=>o.t.startsWith(p.name));const pu0=cp0?portraitURL(cp0):null;d.innerHTML=(pu0?`<img class="cface" src="${pu0}" alt="${cp0.name}">`:`<div class="cicon">${o.icon||"✨"}</div>`)+`<h3>${o.t}</h3><p>${o.d}</p>`;bindPress(d,()=>{o.f();const cp=G.party.find(p=>o.t.startsWith(p.name));if(cp){cp.upgCount=(cp.upgCount||0)+1;if(cp.upgCount>=2&&!cp.awakened){cp.awakened=true;addText(cp.x,cp.y-58,`${cp.name} 覚醒！`,"#ffd964",16);G.rings.push({x:cp.x,y:cp.y,r:10,t:0.5,col:"#ffd964"});}}G.mods=computeMods();closeModal();if(cp)showUpgCutin(cp,o.t);});wrap.appendChild(d);});
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function openChestModal(){
@@ -2452,7 +2534,7 @@ function openChestModal(){
  $("modalTitle").textContent="🎁 宝箱 ― 宝物か計略を選べ";
  $("modalNote").textContent="精鋭・強敵を倒した褒美。1つ選べる";
  const wrap=$("modalCards");wrap.innerHTML="";
- picks.forEach((o,ci)=>{const d=document.createElement("div");d.className="mcard";d.style.animationDelay=(ci*80)+"ms";d.innerHTML=`<div class="cicon">${o.icon||"✨"}</div><h3>${o.t}</h3><p>${o.d}</p>`;d.onclick=()=>{o.f();G.mods=computeMods();closeModal();};wrap.appendChild(d);});
+ picks.forEach((o,ci)=>{const d=document.createElement("div");d.className="mcard";d.style.animationDelay=(ci*80)+"ms";d.innerHTML=`<div class="cicon">${o.icon||"✨"}</div><h3>${o.t}</h3><p>${o.d}</p>`;bindPress(d,()=>{o.f();G.mods=computeMods();closeModal();});wrap.appendChild(d);});
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function tagSummary(){if(!G||!G.tagPicks)return "―";const es=Object.entries(G.tagPicks).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);return es.length?es.map(([k,v])=>`${k}×${v}`).join("／"):"―";}
@@ -2544,11 +2626,11 @@ function openLevelUp(keepPicks){
   let nextHint="";if(o.id&&o.id.startsWith("tac:")){const tid=o.id.slice(4),clv=G.tactics[tid]||0;const F=FUSIONS.find(f=>f.a===tid||f.b===tid);const pid=F?(F.a===tid?F.b:F.a):null;if(F&&(G.tactics[pid]||0)>=5&&clv>=3)nextHint=`<p class="tagchip next">相方Lv5済 ― 揃えば奥義「${F.name}」解放</p>`;else if(clv===4)nextHint=`<p class="tagchip next">Lv5で計略マスタリー解放</p>`;}
   d.innerHTML=`${isNew?'<div class="newBadge">NEW</div>':""}<div class="cicon">${choiceIcon(o)}</div>${rl}<h3>${o.t}</h3>${faces}<p>${o.d}</p>${o.dem?`<p class="tagchip dem">欠点：${o.dem}</p>`:""}${pips}${nextHint}${chips?`<div>${chips}</div>`:""}`;
   if(ci===G._kenRec){const kd=document.createElement("div");kd.className="kenChip";kd.textContent="🎓 "+(G._kenLine||"軍師の献策");d.appendChild(kd);}
-  d.onclick=()=>{G._lvPicks=null;if(o.tags)o.tags.forEach(t=>{G.tagPicks[t]=(G.tagPicks[t]||0)+1;});o.f();G.mods=computeMods();closeModal();};
-  if((G.banishLeft||0)>0){const bb=document.createElement("button");bb.className="banishBtn";bb.textContent="封印";bb.title="この選択肢を今ランから除外する";bb.onclick=(ev)=>{ev.stopPropagation();if((G.banishLeft||0)<=0)return;G.banished[o.id]=1;G.banishLeft--;const pool=buildOpts().filter(x=>!picks.includes(x));G._lvPicks=picks.filter(x=>x!==o);if(pool.length)G._lvPicks.push(pool[Math.floor(Math.random()*pool.length)]);openLevelUp(true);};d.appendChild(bb);}
+  bindPress(d,()=>{G._lvPicks=null;if(o.tags)o.tags.forEach(t=>{G.tagPicks[t]=(G.tagPicks[t]||0)+1;});o.f();G.mods=computeMods();closeModal();});
+  if((G.banishLeft||0)>0){const bb=document.createElement("button");bb.className="banishBtn";bb.textContent="封印";bb.title="この選択肢を今ランから除外する";bindPress(bb,(ev)=>{ev.stopPropagation();if((G.banishLeft||0)<=0)return;G.banished[o.id]=1;G.banishLeft--;const pool=buildOpts().filter(x=>!picks.includes(x));G._lvPicks=picks.filter(x=>x!==o);if(pool.length)G._lvPicks.push(pool[Math.floor(Math.random()*pool.length)]);openLevelUp(true);});d.appendChild(bb);}
   wrap.appendChild(d);});
- const rb=document.createElement("div");rb.className="rerollBtn"+(G.reroll>0?"":" locked");rb.style.animationDelay=(picks.length*80)+"ms";rb.innerHTML=`🎲 リロール（残り${G.reroll}回）<span class="rbSub">3択を引き直せます</span>`;if(G.reroll>0)rb.onclick=()=>{G.reroll--;G._lvPicks=null;openLevelUp();};wrap.appendChild(rb);
- const sk=document.createElement("div");sk.className="rerollBtn skipBtn";sk.style.animationDelay=((picks.length+1)*80)+"ms";sk.innerHTML=`見送る<span class="rbSub">今は決めず、軍功+30を得る</span>`;sk.onclick=()=>{G._lvPicks=null;G.chestGk=(G.chestGk||0)+30;closeModal();};wrap.appendChild(sk);
+ const rb=document.createElement("div");rb.className="rerollBtn"+(G.reroll>0?"":" locked");rb.style.animationDelay=(picks.length*80)+"ms";rb.innerHTML=`🎲 リロール（残り${G.reroll}回）<span class="rbSub">3択を引き直せます</span>`;if(G.reroll>0)bindPress(rb,()=>{G.reroll--;G._lvPicks=null;openLevelUp();});const subRow=document.createElement("div");subRow.className="lvSubRow";subRow.appendChild(rb);
+ const sk=document.createElement("div");sk.className="rerollBtn skipBtn";sk.style.animationDelay=((picks.length+1)*80)+"ms";sk.innerHTML=`見送る<span class="rbSub">今は決めず、軍功+30を得る</span>`;bindPress(sk,()=>{G._lvPicks=null;G.chestGk=(G.chestGk||0)+30;closeModal();});subRow.appendChild(sk);wrap.appendChild(subRow);
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function treSetNote(id){const s=TRE_SETS.find(x=>x[0]===id||x[1]===id);if(!s||!G)return "";const other=id===s[0]?s[1]:s[0];const on=TREASURES.find(t=>t.id===other);if(G.treasures[other])return " 【セット完成：" + s[2] + "】";return " 【あと「" + (on?on.name:other) + "」でセット「" + s[2] + "」完成】";}
@@ -2580,7 +2662,7 @@ function closeDetail(){
 function renderDetail(){
  const ms=detailMembers();if(detailSel>=ms.length)detailSel=0;
  const tabs=$("detailTabs");tabs.innerHTML="";
- ms.forEach((m,i)=>{const d=document.createElement("button");d.className="dtab"+(i===detailSel?" sel":"");const pu=portraitURL(m.obj);d.innerHTML=(pu?`<img src="${pu}">`:"")+`<span>${m.name}</span>`;d.onclick=()=>{detailSel=i;renderDetail();};tabs.appendChild(d);});
+ ms.forEach((m,i)=>{const d=document.createElement("button");d.className="dtab"+(i===detailSel?" sel":"");const pu=portraitURL(m.obj);d.innerHTML=(pu?`<img src="${pu}">`:"")+`<span>${m.name}</span>`;bindTap(d,()=>{detailSel=i;renderDetail();});tabs.appendChild(d);});
  const m=ms[detailSel],o=m.obj,isLord=m.role==="lord";
  const pu=spriteURL(o.name)||portraitURL(o);
  const statusTxt=o.phantom?"助太刀（期間限定・正式な仲間ではない）":o.away?"一時離脱中":(o.downT>0?`撤退中（復帰まで約${Math.ceil(o.downT)}秒）`:"戦闘中");
@@ -2632,9 +2714,10 @@ function renderDetail(){
   `<div class="dsec"><h4>能力詳細</h4>${abilityHtml||"<p>―</p>"}</div>`+
   `<div class="dsec"><h4>相性能力（${rel.length}件）</h4>${compatHtml}</div>`;
 }
-$("detailBtn").onclick=()=>{openDetail();};
-$("detailClose").onclick=()=>{closeDetail();};
+bindPress($("detailBtn"),()=>{openDetail();});
+bindTap($("detailClose"),()=>{closeDetail();});
 $("detailModal").addEventListener("click",e=>{if(e.target===$("detailModal"))closeDetail();});
+$("detailModal").addEventListener("pointerup",e=>{if(e.target===$("detailModal"))closeDetail();});
 
 // 合体計略（3段階制）
 
@@ -3653,8 +3736,8 @@ function renderAnecdotes(){
   tx.innerHTML=un?`📖 <b>${a.title}</b> ― ${a.text}`:`🔒 <b>${a.title}</b> ― 解放条件：${a.hint}`;
   d.appendChild(tx);list.appendChild(d);});
 }
-$("anecBtn").onclick=()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderAnecdotes();$("anecScreen").classList.remove("hidden");},150);};
-$("anecBack").onclick=()=>{fadeThrough(()=>{$("anecScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);};
+bindTap($("anecBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderAnecdotes();$("anecScreen").classList.remove("hidden");},150);});
+bindTap($("anecBack"),()=>{fadeThrough(()=>{$("anecScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
 
 
 // ===== L-4 史実改変録（if展開の記録と称賛） =====
@@ -3715,7 +3798,7 @@ function openCouncilChoices(hasStrat){
  $("modalTitle").textContent="🏕 幕間の軍議 ― 次の戦場への備え";
  $("modalNote").textContent="戦いの合間のひととき。備えを選ぶと、進軍先の選択へ進む";
  const wrap=$("modalCards");wrap.innerHTML="";
- const mk=(t,d,fn)=>{const el=document.createElement("div");el.className="mcard";el.innerHTML=`<h3>${t}</h3><p>${d}</p>`;el.onclick=()=>{fn();closeModal();openMoveSelect();};wrap.appendChild(el);};
+ const mk=(t,d,fn)=>{const el=document.createElement("div");el.className="mcard";el.innerHTML=`<h3>${t}</h3><p>${d}</p>`;bindPress(el,()=>{fn();closeModal();openMoveSelect();});wrap.appendChild(el);};
  if(hasStrat)mk("策を授かる","軍師の策 ― 次の戦場は計略ゲージ満タンで始まる",()=>{G.councilBuff={kind:"gauge",stage:G.moveCount+1};});
  mk("夜襲に備える","次の戦場の序盤60秒、全軍の攻撃+8%",()=>{G.councilBuff={kind:"atk",stage:G.moveCount+1};});
  mk("兵站を固める","兵站を整える ― 軍功+100",()=>{G.chestGk=(G.chestGk||0)+100;});
@@ -3989,7 +4072,7 @@ function fit(){const s=$("stage");const scale=Math.min(innerWidth/960,innerHeigh
  const portrait=innerHeight>innerWidth;
  $("rotateNotice").style.display=(portrait&&!rotateDismissed)?"flex":"none";}
 addEventListener("resize",fit);addEventListener("orientationchange",()=>setTimeout(fit,60));fit();
-$("rotateOk").onclick=()=>{rotateDismissed=true;fit();};
+bindPress($("rotateOk"),()=>{rotateDismissed=true;fit();});
 function tryFullscreenLandscape(){try{const el=document.documentElement;if(el.requestFullscreen){const p=el.requestFullscreen();if(p&&p.then)p.then(()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock("landscape").catch(()=>{});}catch(e){}}).catch(()=>{});}}catch(e){}}
 const deco=[];for(let i=0;i<130;i++)deco.push({x:Math.random()*W,y:Math.random()*H,k:Math.random()});
 
@@ -4703,7 +4786,7 @@ function bgmSchedule(){
 }
 function startBGM(){audioInit();if(!AC)return;if(AC.state==="suspended")AC.resume();if(bgmTimer)return;bgmStep=0;nextNoteTime=AC.currentTime+0.06;bgmTimer=setInterval(()=>{if(!muted)bgmSchedule();},40);}
 function stopBGM(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null;}}
-$("muteBtn").onclick=()=>{muted=!muted;$("muteBtn").textContent=muted?"🔇 音OFF":"🔊 音ON";if(!muted){audioInit();startBGM();}};
+bindPress($("muteBtn"),()=>{muted=!muted;$("muteBtn").textContent=muted?"🔇 音OFF":"🔊 音ON";if(!muted){audioInit();startBGM();}});
 </script>
 </body>
 </html>
