@@ -67,7 +67,7 @@ h1.title{font-size:min(5.2vw,44px);letter-spacing:.12em;color:#ffd964;text-shado
 #skillBtn.cd{filter:grayscale(.55) brightness(.75)}
 #skillBtn,#duelBtn{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 button,.btn,.card,.mcard,.bchip,.bcard,.dtab,.rerollBtn,.banishBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-#gaugeWrap{position:absolute;right:16px;bottom:100px;width:196px;z-index:15;font-family:inherit}
+#gaugeWrap{position:absolute;right:16px;bottom:100px;width:244px;z-index:15;font-family:inherit}
 #gaugeLabel{font-size:12.5px;font-weight:bold;color:#ffe9a8;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.8);margin-bottom:3px;white-space:nowrap;overflow:visible}
 #gaugeBar{height:17px;background:rgba(10,8,4,.85);border:2px solid #8a6d2f;border-radius:9px;position:relative;overflow:hidden}
 #gaugeWrap.ready #gaugeBar{border-color:#ffd964;box-shadow:0 0 14px rgba(255,217,100,.75);animation:pulse 1s infinite}
@@ -79,6 +79,9 @@ button,.btn,.card,.mcard,.bchip,.bcard,.dtab,.rerollBtn,.banishBtn{-webkit-touch
 #joyBase{position:absolute;width:110px;height:110px;border-radius:50%;border:2px solid rgba(255,233,168,.5);background:rgba(0,0,0,.25);display:none}
 #joyKnob{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(255,233,168,.55);display:none}
 #zukanList{overflow-y:auto;max-height:62%;width:min(92%,760px);text-align:left;background:rgba(24,18,10,.9);border:1px solid #6d5626;border-radius:10px;padding:12px 16px}
+#anecList{overflow-y:auto;max-height:56%;width:min(92%,760px);text-align:left;background:rgba(24,18,10,.9);border:1px solid #6d5626;border-radius:10px;padding:12px 16px}
+#anecList .zkrow{display:flex;gap:10px;align-items:flex-start}
+#anecList .zktext{flex:1;min-width:0}
 #zukanList h4{color:#ffd964;margin:10px 0 4px}
 #zukanList div{font-size:12.5px;line-height:1.65;color:#e6d9b8;border-bottom:1px dashed #4a3a1c;padding:3px 0}
 #zukanList .und{color:#6f6248}
@@ -432,7 +435,7 @@ h1.title{letter-spacing:.16em}
 <div id="duelCmds"></div>
 <div id="sigCutin"><img id="sigFace" alt=""><div><div id="sigName"></div><div id="sigSkill"></div></div></div>
 <button id="muteBtn" style="position:absolute;right:12px;top:206px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 10px;cursor:pointer">🔊 音ON</button>
-<button id="rangeBtn" style="position:absolute;right:12px;top:240px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 10px;cursor:pointer;display:none">🎯 範囲ON</button>
+<button id="rangeBtn" style="position:absolute;right:12px;top:308px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 10px;cursor:pointer;display:none">🎯 範囲ON</button>
 <div id="joy"><div id="joyBase"></div><div id="joyKnob"></div></div>
 </div></div>
 <div id="fadeLayer"></div>
@@ -2013,6 +2016,7 @@ function onDuelBtn(){
  clearTimeout(modalCloseTimer);$("modal").classList.remove("hidden","closing");
 }
 function startDuel(cand,e){
+ {const db=$("duelBtn");if(db)db.style.display="none";}
  const trio=e.name==="呂布"&&G.lord.name==="劉備"&&has("関羽")&&has("張飛");
  const allyObj=cand.lord?G.lord:G.party.find(p=>p.name===cand.name);
  const pw=trio?Math.round((duelPower("関羽")+duelPower("張飛")+duelPower("劉備"))/3)+8:duelPower(cand.name);
@@ -2759,7 +2763,7 @@ function refreshComboBtn(force){
  b.style.background=`conic-gradient(rgba(255,190,60,0.55) ${pct*3.6}deg, rgba(36,26,12,0.96) 0deg)`;
  b.classList.toggle("cd",cd>0);
  const gl=$("gaugeLabel"),gf=$("gaugeFill"),gp=$("gaugePct"),gw=$("gaugeWrap");
- if(gl)gl.textContent=cd?`再充填中… あと${cd}秒`:(pct>=100?`発動可能！ ${kind}：${plan.label}`:`次の計略：${kind}「${plan.label}」`);
+ if(gl){const pTxt=plan.tier===2?plan.label:`${kind}「${plan.label}」`;const pTxtR=plan.tier===2?plan.label:`${kind}：${plan.label}`;gl.textContent=cd?`再充填中… あと${cd}秒`:(pct>=100?`発動可能！ ${pTxtR}`:`次の計略：${pTxt}`);}
  if(gf)gf.style.width=pct+"%";
  if(gp)gp.textContent=pct+"%";
  if(gw)gw.classList.toggle("ready",pct>=100);
@@ -3088,7 +3092,7 @@ function update(dt){
  for(const nm in G.duelCdChar)if(G.duelCdChar[nm]>0)G.duelCdChar[nm]-=dt;
  duelProximity(dt);
  loreTick(dt);
- {const b=$("duelBtn");if(b){if(G.over)b.style.display="none";else if(!G.duelOffer){b.style.display="block";b.classList.add("idle");const t=(G.duelCdGlobal||0)>0?("⏳ あと"+Math.ceil(G.duelCdGlobal)+"秒"):"⚔ 一騎討ち";if(b.textContent!==t)b.textContent=t;}else b.classList.remove("idle");}}
+ {const b=$("duelBtn");if(b){if(G.over||G.duel)b.style.display="none";else if(!G.duelOffer){b.style.display="block";b.classList.add("idle");const t=(G.duelCdGlobal||0)>0?("⏳ あと"+Math.ceil(G.duelCdGlobal)+"秒"):"⚔ 一騎討ち";if(b.textContent!==t)b.textContent=t;}else b.classList.remove("idle");}}
  {const gb=$("gimmickBtn");if(gb){if(!G.over&&G.gimmick&&!G.gimmickUsed){gb.style.display="block";const gt=G.gimmick.icon+" "+G.gimmick.name;if(gb.textContent!==gt)gb.textContent=gt;}else gb.style.display="none";}}
  G.t+=dt;const L=G.lord;const t=G.t;
  // 移動
