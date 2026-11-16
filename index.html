@@ -145,13 +145,24 @@ canvas.pausedFx{filter:blur(2.5px) brightness(.7) saturate(.85)}
 @keyframes rsLine{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 #resultScreen .btn{animation:rsLine .5s .55s ease backwards}
 /* リザルト画面：情報量が増えても枠内に収める（統計だけがスクロールする） */
-#resultScreen{justify-content:flex-start;padding:14px 12px 12px;overflow:hidden}
-#resultScreen .big{flex:none}
-#resultStats{flex:1 1 auto;min-height:0;width:100%;overflow-y:auto;overflow-x:hidden;padding:2px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#6d5626 transparent;box-shadow:inset 0 14px 12px -14px rgba(0,0,0,.85),inset 0 -14px 12px -14px rgba(0,0,0,.85)}
+#resultScreen{justify-content:flex-start;padding:10px 12px 12px;overflow:hidden;background:radial-gradient(130% 95% at 50% 0%,#251b0e 0%,#171106 54%,#0a0703 100%);z-index:45}
+#resultScreen .big{flex:none;font-size:min(3.4vw,26px);letter-spacing:.1em;text-shadow:0 2px 0 #5c3d00,0 0 26px rgba(255,190,60,.35)}
+#resultStats{flex:1 1 auto;min-height:0;width:min(100%,730px);margin:6px auto 0;overflow-y:auto;overflow-x:hidden;padding:8px 18px 10px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#6d5626 transparent;background:rgba(0,0,0,.3);border:1px solid rgba(201,162,39,.38);border-radius:12px;box-shadow:inset 0 0 26px rgba(0,0,0,.5);text-align:left}
 #resultStats::-webkit-scrollbar{width:5px}
 #resultStats::-webkit-scrollbar-thumb{background:#6d5626;border-radius:3px}
-#resultParty{flex:none}
-#resultScreen .btn{flex:none}
+#resultParty{flex:none;margin-top:8px;padding-top:7px;border-top:1px solid rgba(201,162,39,.25);width:min(100%,730px)}
+#resultScreen .btn{flex:none;padding:8px 22px;font-size:16px;margin-top:8px}
+#resultStats .rs-line{text-align:left;line-height:1.65;padding:1px 0}
+.rs-sec{display:flex;align-items:center;gap:12px;color:#ffd964;font-size:13px;font-weight:900;letter-spacing:.3em;margin:10px 0 6px}
+.rs-sec::before,.rs-sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,#8a6d2f,transparent)}
+.rs-sec:first-child{margin-top:0}
+.rs-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 26px}
+.rs-kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px dotted rgba(201,162,39,.22);padding:1px 0;font-size:14.5px;line-height:1.45}
+.rs-kv .k{color:#9c8a63;flex:none}
+.rs-kv .v{color:#f3e9d2;font-weight:700;text-align:right}
+.rs-kv .v b{color:#ffd964;font-size:17px}
+.rs-hint{margin-top:8px;border-top:1px solid rgba(201,162,39,.22);padding-top:7px}
+#resultParty .rp img{height:56px;border-radius:9px;border:1px solid #6d5626;box-shadow:0 3px 10px rgba(0,0,0,.5)}
 /* ===== 武将詳細 ===== */
 #detailBtn{position:absolute;right:12px;top:172px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 12px;cursor:pointer;display:none}
 #formBtn{position:absolute;right:12px;top:240px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 12px;cursor:pointer}
@@ -4210,7 +4221,7 @@ function nextRunHint(){
  if(locked)return locked.unlockText;
  return "";
 }
-function resultStoryLines(win){
+function resultHighlightLines(win){
  if(!G)return "";
  let out="";const sc=G.sigCounts||{};let mvp=null,ms=-1;
  G.party.forEach(p=>{const s=(p.kills||0)+(sc[p.name]||0)*6;if(s>ms){ms=s;mvp=p;}});
@@ -4220,17 +4231,41 @@ function resultStoryLines(win){
  else out+=`<span class="rs-line">転機：大きな窮地なく、終始こちらの流れで押し切った</span>`;
  const act=activeCompatList();
  if(act.length)out+=`<span class="rs-line">相性の回収：${act.map(c=>c.n).join("、")}</span>`;
- const hint=nextRunHint();
- if(hint)out+=`<span class="rs-line" style="color:#aee2ff">次のランへの布石：${hint}</span>`;
+ {let le=null;if(win&&(G.duelCount||0)>=2)le="武勇の君";else if(win&&(G.partyDowns||0)===0)le="無傷の名君";else if(G.kills>=800)le="鬼神の如き君";else if((G.tacBonusKills||0)>=150)le="策士の君";if(le)out+=`<span class="rs-line">👑 この戦いで君主は「${le}」と呼ばれた</span>`;}
  if(G._anecNew&&G._anecNew.length)out+=G._anecNew.map(t=>`<span class="rs-line" style="color:#ffd964">📖 逸話解放：「${t}」</span>`).join("");
  if(G._epiNew&&G._epiNew.length)out+=G._epiNew.map(t=>`<span class="rs-line" style="color:#ffd964">✦ 異名獲得：${t}</span>`).join("");
  if(win&&G._ifLines&&G._ifLines.length)out+=G._ifLines.map(t=>`<span class="rs-line" style="color:#e8b8ff">⚡ 史実改変：${t}</span>`).join("");
- if(G.chronicle&&G.chronicle.length)out+=`<span class="rs-line" style="color:#cbbd93">📜 ${G.lord.name}の年代記</span>`+G.chronicle.slice(0,6).map(c=>`<span class="rs-line" style="color:#cbbd93">　― ${c}</span>`).join("");
- {let le=null;if(win&&(G.duelCount||0)>=2)le="武勇の君";else if(win&&(G.partyDowns||0)===0)le="無傷の名君";else if(G.kills>=800)le="鬼神の如き君";else if((G.tacBonusKills||0)>=150)le="策士の君";if(le)out+=`<span class="rs-line">👑 この戦いで君主は「${le}」と呼ばれた</span>`;}
+ return out;
+}
+function resultChronicleLines(){
+ if(!G||!G.chronicle||!G.chronicle.length)return "";
+ return G.chronicle.slice(0,6).map(c=>`<span class="rs-line" style="color:#cbbd93">― ${c}</span>`).join("");
+}
+function resultHintLine(){
+ if(!G)return "";
+ const hint=nextRunHint();
+ return hint?`<span class="rs-line" style="color:#aee2ff">次のランへの布石：${hint}</span>`:"";
+}
+function resultStoryLines(win){
+ // 互換ラッパー：年代記見出し込みの連結文字列（検証等が参照する）。画面表示は endGame が節ごとに組み立てる
+ let out=resultHighlightLines(win);
+ if(G&&G.chronicle&&G.chronicle.length)out+=`<span class="rs-line" style="color:#cbbd93">📜 ${G.lord.name}の年代記</span>`+resultChronicleLines();
+ out+=resultHintLine();
  return out;
 }
 function endGame(win,survived){
  if(G.over)return;G.over=true;stopBGM();
+ // リザルトの邪魔になる戦闘中の演出（バーク／カットイン／演出タイトル／会話／提示キュー）を畳む（backToTitle と同じ作法：コールバックは発火させない）
+ try{
+  if(typeof dialogOpen!=="undefined"&&dialogOpen){clearInterval(dialogTimer);dialogOpen=false;dialogTyping=false;dialogDone=null;}
+  dialogQ=[];dialogLines=[];presQ=[];cineQ=[];cineOn=false;clearTimeout(cineTimer);clearTimeout(sigCutinTimer);
+  ["cineTop","cineBottom","cineTitle","stageSplash"].forEach(id=>{const e=$(id);if(e)e.classList.remove("on");});
+  const scx=$("sigCutin");if(scx)scx.classList.remove("on");
+  if(typeof barkHide==="function"){barkHide();barkSt.queue.length=0;}
+  if(typeof hideDuelCmds==="function")hideDuelCmds();
+  const dbx=$("dialogBox");if(dbx)dbx.classList.add("hidden");
+  const db2=$("duelBtn");if(db2)db2.style.display="none";
+ }catch(e){}
  if(win&&typeof anecdoteWinChecks==="function")anecdoteWinChecks();
  if(win)G._ifLines=detectIfs();
  G.chronicle=G.chronicle||[];G.chronicle.push(win?("最終決戦に勝利 ― "+G.lord.name+"の名は天下に轟いた"):(STAGES[G.stage].name+"にて力尽きた ― "+G.lord.name+"の戦いはここに終わった"));
@@ -4258,7 +4293,20 @@ function endGame(win,survived){
    if(win&&G.shura)grant("shura");
    if(mGain){try{localStorage.setItem("sgk_missions",JSON.stringify(ms));}catch(e){}gunkou+=mGain;saveGunkou();unlockLines+=`<span class="rs-line">📜 名将録ミッション達成！ 軍功 +${mGain}</span>`;}}
   if(win){const cands=[G.lord,...G.party].filter(m=>WIN_LINES[m.name]);if(cands.length){const m=cands[Math.floor(Math.random()*cands.length)];winLine=`💬 ${m.name}：「${WIN_LINES[m.name]}」`;}}}
- $("resultStats").innerHTML=`<span class="rs-line">君主：${G.lord.name}／最終戦場：${STAGES[G.stage].name}（${G.moveCount+1}戦場目）</span><span class="rs-line">撃破数 <b id="rsKills">0</b> ・ 到達Lv ${G.level} ・ 評価 ${win?grade:"-" }</span><span class="rs-line">仲間：${G.party.map(p=>p.name).join("・")||"なし"}</span><span class="rs-line">合体計略：${G.comboName}／発見した相性 ${discovered.size}組</span><span class="rs-line">最大連斬 ${G.maxStreak||0} ／ 一騎討ち ${G.duelCount||0}戦 ${G.duelWins||0}勝 ／ 発動した相性 ${Object.keys(G.compatFired||{}).length}種</span><span class="rs-line">軍功 +${gkGain}（所持 ${gunkou}）</span>${winLine?`<span class="rs-line">${winLine}</span>`:""}${unlockLines}${resultStoryLines(win)}${(!win&&G.deathCause)?`<span class="rs-line" style="color:#ff9a7a">敗因：${G.deathCause}</span>`:""}`;
+ {const kv=(k,v)=>`<div class="rs-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  const hlBody=`${winLine?`<span class="rs-line">${winLine}</span>`:""}${unlockLines}${resultHighlightLines(win)}${(!win&&G.deathCause)?`<span class="rs-line" style="color:#ff9a7a">敗因：${G.deathCause}</span>`:""}`;
+  const chrBody=resultChronicleLines(),hintBody=resultHintLine();
+  $("resultStats").innerHTML=`<div class="rs-sec">戦績</div><div class="rs-grid">`
+  +kv("君主",G.lord.name)+kv("最終戦場",`${STAGES[G.stage].name}（${G.moveCount+1}戦場目）`)
+  +kv("撃破数",`<b id="rsKills">0</b>`)+kv("評価",win?grade:"-")
+  +kv("到達Lv",G.level)+kv("軍功",`+${gkGain}（所持 ${gunkou}）`)
+  +kv("仲間",G.party.map(p=>p.name).join("・")||"なし")+kv("合体計略",G.comboName)
+  +kv("最大連斬",G.maxStreak||0)+kv("一騎討ち",`${G.duelCount||0}戦 ${G.duelWins||0}勝`)
+  +kv("発見した相性",`${discovered.size}組`)+kv("発動した相性",`${Object.keys(G.compatFired||{}).length}種`)
+  +`</div>`
+  +(hlBody?`<div class="rs-sec">ハイライト</div>${hlBody}`:"")
+  +(chrBody?`<div class="rs-sec">📜 ${G.lord.name}の年代記</div>${chrBody}`:"")
+  +(hintBody?`<div class="rs-hint">${hintBody}</div>`:"");}
  $("skillBtn").style.display="none";{const gw3=$("gaugeWrap");if(gw3)gw3.style.display="none";}$("pauseBtn").style.display="none";$("joy").style.display="none";$("detailBtn").style.display="none";$("rangeBtn").style.display="none";{const fb2=$("formBtn");if(fb2)fb2.style.display="none";const gb2=$("gimmickBtn");if(gb2)gb2.style.display="none";}
  {const eb=$("endlessBtn");if(eb)eb.style.display=win?"":"none";}
  {const rp=$("resultParty");if(rp){rp.innerHTML="";[G.lord,...G.party].forEach(m=>{const d=document.createElement("div");d.className="rp";const pu=portraitURL(m);d.innerHTML=(pu?`<img src="${pu}">`:"")+`<span class="rpnm">${m.name}</span>`;rp.appendChild(d);});}}
