@@ -1577,7 +1577,8 @@ function onBossDown(e){
  G.banners.push({txt:`${e.name} 撃破！`,sub:"",t:2.4,col:"#ffd964"});
  if(e.isFinal){const otherFinal=G.enemies.some(x=>x.isFinal&&!x.dead&&x!==e);if(otherFinal){G.recruitCount++;openRecruit();return;}endGame(true,false);return;}
  G.stageBossDown=true;
- G.recruitCount++;openRecruit();
+ // 1戦場目は救援加入済みのため、ボス撃破後の登用は行わない（ユーザー決定 2026-11-16）。2戦場目以降は従来どおり登用あり
+ if(G.moveCount!==0){G.recruitCount++;openRecruit();}
  if(G.moveCount<2)G.pendingMove=1;else G.pendingFinal=true;
  checkPendingMove();
 }
@@ -1621,6 +1622,26 @@ function bossSkillTick(e,dt){
  else{fbPushHazard(L.x,L.y,76,1.1,atk);const a2=Math.random()*Math.PI*2;fbPushHazard(L.x+Math.cos(a2)*72,L.y+Math.sin(a2)*72,60,1.25,atk);let adds=G.enemies.filter(x=>!x.boss&&!x.isFinal&&!x.elite&&!x.namedMob&&!x.dead).length;for(let i=0;i<2&&adds<6;i++){spawnEnemy();const m=G.enemies[G.enemies.length-1];if(m){m.x=e.x+(Math.random()*70-35);m.y=e.y+(Math.random()*70-35);adds++;}}addText(e.x,enemyTopY(e)-24,"号令！","#ffb27a",13);}
 }
 function stageBossName(S){if(!S||!S.bossRule)return null;const R=S.bossRule;if(R.fixed)return R.fixed;const f=(typeof G!=="undefined"&&G&&G.lord)?G.lord.faction:null;if(f&&R.swap&&R.swap[f])return R.swap[f];return R.base||null;}
+// ===== 1戦場目の救援加入（ユーザー決定 2026-11-16）=====
+ // ボス（張角）登場のタイミングで、君主と同じ勢力の仲間が1人ランダムに駆けつけて加入する（プレイヤーは選べない）。
+ // プールは登用可能な同勢力の仲間全員（袁紹専用枠は袁紹のときだけ含む）。君主本人・加入済み・直近ボス・戦場に敵として出ている同名は除く。
+function rescuePool(){
+ if(!G||!G.lord)return [];
+ const lf=G.lord.faction;
+ const owned=new Set(allMemberNames());
+ return COMP_DEFS.filter(c=>c[2]===lf&&!owned.has(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")&&c[0]!==G.lastBossName&&namedEnemyFree(c[0]));
+}
+function rescueJoin(){
+ if(!G||G.over||G.rescueDone)return;
+ G.rescueDone=true;
+ if(realPartyCount()>=3)return;
+ const pool=rescuePool();
+ if(!pool.length)return;
+ const def=pool[Math.floor(Math.random()*pool.length)];
+ const p=addCompanion(def);if(!p)return;
+ G.banners.push({txt:"援軍 到着！",sub:def[0]+" が救援に駆けつけた！",t:3.2,col:"#ffd964"});
+ showCutinFx({pri:2,key:"rescue:"+def[0],title:def[0]+"、救援に参上！",sub:"同じ"+G.lord.faction+"の旗のもとへ",faces:[def[0]],dur:0.95,col:"#ffd964",onDone:()=>startJoinDialog(def)});
+}
 function trySpawnStageBoss(){
  if(!G||G.over||G.stageBossSpawned||G.finalSpawned)return;
  const q=stageQuota();
@@ -1637,6 +1658,7 @@ function trySpawnStageBoss(){
   G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<260&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*265));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*265));}}});G.spawnCalmT=Math.max(G.spawnCalmT||0,3);}
  if(G.moveCount===0){spawnNamedMob("張宝");spawnNamedMob("張梁");}
  bossTalkOrGeneric(bn,false);
+ if(G.moveCount===0)rescueJoin();
  maybeDuelOffer(be);bossAppearFX(bn,false);
 }
 function spawnFinalBoss(){
