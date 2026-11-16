@@ -17,7 +17,7 @@
 html,body{width:100%;height:100%;background:#14100b;overflow:hidden;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;color:#f3e9d2}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#241a10 0%,#0d0a06 75%)}
 #stage{position:relative}
-canvas{display:block;background:#6d7c46;border-radius:6px;box-shadow:0 0 40px rgba(0,0,0,.7)}
+canvas{display:block;background:#6d7c46;border-radius:6px;box-shadow:0 0 40px rgba(0,0,0,.7);touch-action:none}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(16,12,7,.88);border-radius:6px;padding:10px;text-align:center;z-index:20}
 .hidden{display:none!important}
 h1.title{font-size:min(5.2vw,44px);letter-spacing:.12em;color:#ffd964;text-shadow:0 2px 0 #7a4d00,0 0 22px rgba(255,180,0,.35);font-weight:900}
@@ -67,7 +67,7 @@ h1.title{font-size:min(5.2vw,44px);letter-spacing:.12em;color:#ffd964;text-shado
 #skillBtn.cd{filter:grayscale(.55) brightness(.75)}
 #skillBtn,#duelBtn{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 button,.btn,.card,.mcard,.bchip,.bcard,.dtab,.rerollBtn,.banishBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-#gaugeWrap{position:absolute;right:16px;bottom:100px;width:244px;z-index:15;font-family:inherit}
+#gaugeWrap{position:absolute;right:16px;bottom:100px;width:244px;z-index:15;font-family:inherit;pointer-events:none}
 #gaugeLabel{font-size:12.5px;font-weight:bold;color:#ffe9a8;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.8);margin-bottom:3px;white-space:nowrap;overflow:visible}
 #gaugeBar{height:17px;background:rgba(10,8,4,.85);border:2px solid #8a6d2f;border-radius:9px;position:relative;overflow:hidden}
 #gaugeWrap.ready #gaugeBar{border-color:#ffd964;box-shadow:0 0 14px rgba(255,217,100,.75);animation:pulse 1s infinite}
@@ -75,7 +75,7 @@ button,.btn,.card,.mcard,.bchip,.bcard,.dtab,.rerollBtn,.banishBtn{-webkit-touch
 #gaugePct{position:absolute;right:6px;top:0;line-height:15px;font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 2px #000}
 @keyframes pulse{50%{transform:scale(1.07)}}
 #pauseBtn{position:absolute;right:12px;top:138px;z-index:15;background:rgba(20,15,8,.7);color:#ffe9a8;border:1px solid #6d5626;border-radius:8px;padding:4px 12px;cursor:pointer;display:none}
-#joy{position:absolute;left:0;bottom:0;width:45%;height:60%;z-index:14;display:none}
+#joy{position:absolute;inset:0;z-index:14;display:none;touch-action:none}
 #joyBase{position:absolute;width:110px;height:110px;border-radius:50%;border:2px solid rgba(255,233,168,.5);background:rgba(0,0,0,.25);display:none}
 #joyKnob{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(255,233,168,.55);display:none}
 #zukanList{overflow-y:auto;max-height:62%;width:min(92%,760px);text-align:left;background:rgba(24,18,10,.9);border:1px solid #6d5626;border-radius:10px;padding:12px 16px}
@@ -999,14 +999,22 @@ const keys={};let joyVec={x:0,y:0},joyId=null,joyCenter={x:0,y:0};
 addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;});
 addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
 const joy=$("joy"),jBase=$("joyBase"),jKnob=$("joyKnob");
-joy.addEventListener("touchstart",e=>{const t=e.changedTouches[0];joyId=t.identifier;joyCenter={x:t.clientX,y:t.clientY};const r=$("stage").getBoundingClientRect();jBase.style.display=jKnob.style.display="block";jBase.style.left=(t.clientX-r.left-55)+"px";jBase.style.top=(t.clientY-r.top-55)+"px";jBase.style.bottom="auto";jKnob.style.left=(t.clientX-r.left-26)+"px";jKnob.style.top=(t.clientY-r.top-26)+"px";jKnob.style.bottom="auto";e.preventDefault();},{passive:false});
-joy.addEventListener("touchmove",e=>{for(const t of e.changedTouches){if(t.identifier===joyId){let dx=t.clientX-joyCenter.x,dy=t.clientY-joyCenter.y;const len=Math.hypot(dx,dy)||1;const cl=Math.min(len,44);dx=dx/len*cl;dy=dy/len*cl;joyVec={x:dx/44,y:dy/44};const r=$("stage").getBoundingClientRect();jKnob.style.left=(joyCenter.x+dx-r.left-26)+"px";jKnob.style.top=(joyCenter.y+dy-r.top-26)+"px";}}e.preventDefault();},{passive:false});
-const joyEnd=e=>{for(const t of e.changedTouches){if(t.identifier===joyId){joyId=null;joyVec={x:0,y:0};jBase.style.display=jKnob.style.display="none";}}};
+// タッチ座標の変換：#stage は fit() で transform:scale(960x540→実表示) されるため、画面のCSSピクセルと
+// ゲーム内部座標は一致しない。getBoundingClientRect() は変形後の実寸を返すので、それで割って内部座標に戻す。
+// joyBase/joyKnob は #joy(ステージ全面) の子で、style.left/top は内部座標で解釈される。旧実装は画面ピクセルを
+// そのまま style に入れており、さらに旧 #joy の配置オフセット(下部60%)も加算され、スティックの見た目が
+// 指の位置から大きくずれていた（実機で「タップした所と別の所が反応する」主因）。
+function stagePt(cx,cy){const r=$("stage").getBoundingClientRect();return{x:(cx-r.left)/r.width*960,y:(cy-r.top)/r.height*540,s:r.width/960};}
+let joyOrg=null;
+joy.addEventListener("touchstart",e=>{const t=e.changedTouches[0];joyId=t.identifier;joyCenter={x:t.clientX,y:t.clientY};const p=stagePt(t.clientX,t.clientY);joyOrg={sx:t.clientX,sy:t.clientY,lx:p.x,ly:p.y};jBase.style.display=jKnob.style.display="block";jBase.style.left=(p.x-55)+"px";jBase.style.top=(p.y-55)+"px";jBase.style.bottom="auto";jKnob.style.left=(p.x-26)+"px";jKnob.style.top=(p.y-26)+"px";jKnob.style.bottom="auto";e.preventDefault();},{passive:false});
+joy.addEventListener("touchmove",e=>{for(const t of e.changedTouches){if(t.identifier===joyId&&joyOrg){let dxs=t.clientX-joyOrg.sx,dys=t.clientY-joyOrg.sy;const lenS=Math.hypot(dxs,dys)||1;const clS=Math.min(lenS,44);joyVec={x:dxs/lenS*clS/44,y:dys/lenS*clS/44};const sc=stagePt(0,0).s;let dxl=dxs/sc,dyl=dys/sc;const lenL=Math.hypot(dxl,dyl)||1;const clL=Math.min(lenL,44);dxl=dxl/lenL*clL;dyl=dyl/lenL*clL;jKnob.style.left=(joyOrg.lx+dxl-26)+"px";jKnob.style.top=(joyOrg.ly+dyl-26)+"px";}}e.preventDefault();},{passive:false});
+const joyEnd=e=>{for(const t of e.changedTouches){if(t.identifier===joyId){joyId=null;joyOrg=null;joyVec={x:0,y:0};jBase.style.display=jKnob.style.display="none";}}};
 joy.addEventListener("touchend",joyEnd);joy.addEventListener("touchcancel",joyEnd);
 let mouseDown=false,mouseVec={x:0,y:0};
 cv.addEventListener("pointerdown",e=>{mouseDown=true;});
+joy.addEventListener("pointerdown",e=>{mouseDown=true;});
 addEventListener("pointerup",()=>{mouseDown=false;mouseVec={x:0,y:0};});
-cv.addEventListener("pointermove",e=>{if(mouseDown&&G){const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const dx=x-G.lord.x,dy=y-G.lord.y;const len=Math.hypot(dx,dy);mouseVec=len>12?{x:dx/len,y:dy/len}:{x:0,y:0};}});
+addEventListener("pointermove",e=>{if(mouseDown&&G){const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const dx=x-G.lord.x,dy=y-G.lord.y;const len=Math.hypot(dx,dy);mouseVec=len>12?{x:dx/len,y:dy/len}:{x:0,y:0};}});
 // ボタン入力の共通化：実機(iOS)で click が長押しコールアウトやジェスチャ判定に奪われて発火しない事象への対策。
 // pointerdown/touchstart/click の3経路で受け、同一ジェスチャの重複発火（250ms以内）は1回に丸める（押した瞬間に反応する）。
 function bindPress(el,fn){let lastPtr=-1000,lastPtrType="";
@@ -2313,6 +2321,7 @@ bindPress($("dlgSkip"),()=>{endDialog();});
 // 誤爆防止は従来どおり「接近時のみボタン表示＋対象固定（duelProximity/duelOffer）」で担保する。
 bindPress($("duelBtn"),()=>{onDuelBtn();});
 cv.addEventListener("pointerdown",()=>{if(G&&G.cutin){finishCutin();return;}});
+joy.addEventListener("pointerdown",()=>{if(G&&G.cutin){finishCutin();return;}});
 addEventListener("keydown",e=>{if(dialogOpen&&(e.key===" "||e.key==="Enter")){e.preventDefault();advanceDialog();}});
 
 // 登用
@@ -3380,8 +3389,9 @@ function update(dt){
  for(const e of G.enemies)if(e.isFinal&&!e.dead)finalBossTick(e,dt);
  for(const e of G.enemies)if(e.boss&&!e.isFinal&&!e.dead)bossSkillTick(e,dt);
  resolveCollisions();
- // カメラ：君主へ滑らかに追従（向きへ少し先読み、ワールド端でクランプ）
- {const tx=Math.max(0,Math.min(WORLD_W-W,L.x-W/2+(L.face||1)*42)),ty=Math.max(0,Math.min(WORLD_H-H,L.y-H/2));const k=1-Math.exp(-5.5*dt);G.cam.x+=(tx-G.cam.x)*k;G.cam.y+=(ty-G.cam.y)*k;}
+ // カメラ：君主を常に画面中央に固定（ハードフォロー）。向きへの先読み(±42px)と指数平滑は、方向転換のたびに
+ // 目標が84px跳んで画面が滑り続け、画面酔いの主因になるため廃止。クランプはワールド端のみ（端では柵が見える範囲で寄る）。
+ G.cam.x=Math.max(0,Math.min(WORLD_W-W,L.x-W/2));G.cam.y=Math.max(0,Math.min(WORLD_H-H,L.y-H/2));
  // 飛び道具
  for(const pr of G.projs){pr.x+=pr.vx;pr.y+=pr.vy;pr.t-=dt;
   if(pr.wave){if(!pr.hits)pr.hits=[];for(const e of G.enemies){if(e.dead||pr.hits.includes(e))continue;if(Math.hypot(e.x-pr.x,e.y-pr.y)<(pr.big?48:22)){pr.hits.push(e);damageEnemy(e,pr.dmg,false,pr.src);}}continue;}
