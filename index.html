@@ -122,6 +122,28 @@ canvas.pausedFx{filter:blur(2.5px) brightness(.7) saturate(.85)}
 #cineSub{margin-top:9px;font-size:min(2.4vw,15px);color:#e6d9b8;letter-spacing:.12em;text-shadow:0 1px 6px rgba(0,0,0,.9);text-align:center;padding:0 70px}
 #stageSplash{position:absolute;inset:0;background:#060504;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:55;opacity:0;pointer-events:none;transition:opacity .32s ease;border-radius:6px;text-align:center;box-shadow:inset 0 0 0 3px #c9a227,inset 0 0 0 7px rgba(255,217,100,.28)}
 .unlockReveal img{width:54px;height:54px;object-fit:cover;border:2px solid #c9a227;border-radius:8px;vertical-align:middle;animation:unveil 1.8s ease both}
+#unlockScreen{z-index:50;background:radial-gradient(120% 90% at 50% 0%,#2a1e0c 0%,#171106 55%,#070503 100%);justify-content:center}
+#unlockScreen .unl-kicker{color:#c9a227;letter-spacing:.5em;font-size:14px;font-weight:800;margin-bottom:10px}
+#unlockScreen #unlFace{width:190px;height:190px;object-fit:cover;object-position:top center;border:3px solid #c9a227;border-radius:14px;box-shadow:0 0 42px rgba(255,190,60,.45);animation:unveil 1.2s ease both;background:#171208}
+#unlockScreen .unl-name{font-size:34px;font-weight:900;color:#ffe9a8;letter-spacing:.14em;margin-top:12px;text-shadow:0 2px 0 #5c3d00,0 0 24px rgba(255,190,60,.4)}
+#unlockScreen .unl-epi{color:#cbbd93;font-size:13px;margin-top:2px}
+#unlockScreen .unl-quote{color:#fff6da;font-size:19px;font-weight:800;margin-top:14px;line-height:1.6;max-width:640px}
+#unlockScreen .unl-cond{color:#9fd0a8;font-size:13px;margin-top:10px}
+#unlockScreen .unl-count{color:#8a7a52;font-size:12px;margin-top:6px}
+#unlockScreen .unl-btns{margin-top:16px;display:flex;gap:10px}
+#unlListGrid{overflow-y:auto;max-height:64%;width:min(94%,840px);display:flex;flex-wrap:wrap;gap:9px;justify-content:center;padding:4px}
+.ucard{width:158px;background:linear-gradient(180deg,#2e2416,#1d160d);border:2px solid #6d5626;border-radius:10px;padding:8px 7px 7px;text-align:center}
+.ucard.unlocked{border-color:#c9a227}
+.ucard img{width:76px;height:76px;object-fit:cover;object-position:top center;border-radius:8px;border:1px solid #6d5626;background:#171208}
+.ucard.locked img{filter:brightness(0);opacity:.5}
+.ucard .uname{font-size:14px;font-weight:900;color:#ffe9a8;margin-top:4px}
+.ucard.locked .uname{color:#9c8a63}
+.ucard .ucond{font-size:10.5px;line-height:1.5;color:#cbbd93;margin-top:3px}
+.ucard .uprog{font-size:10.5px;line-height:1.5;color:#8fd0ff;margin-top:2px}
+.ucard .udone{display:inline-block;font-size:10px;font-weight:800;color:#14100a;background:#ffd964;border-radius:6px;padding:0 7px;margin-top:3px}
+.bcard.locked img{filter:brightness(0);opacity:.5}
+.bcard.locked .bname{color:#9c8a63}
+
 @keyframes unveil{0%,55%{filter:brightness(0)}100%{filter:brightness(1)}}
 #stageSplash.on{opacity:1}
 #stageSplash .sp-main{font-size:min(7vw,54px);font-weight:900;letter-spacing:.18em;color:#ffd964;text-shadow:0 3px 0 #7a4d00,0 0 30px rgba(255,180,0,.35)}
@@ -360,6 +382,7 @@ h1.title{letter-spacing:.16em}
         <button class="btn sub2 mbtn" id="zukanBtn">相性図鑑</button>
         <button class="btn sub2 mbtn" id="bioBtn">武将紹介</button>
         <button class="btn sub2 mbtn" id="anecBtn">逸話図鑑</button>
+        <button class="btn sub2 mbtn" id="unlListBtn">武将解放</button>
       </div>
     </div>
     <div class="menuRow">
@@ -409,6 +432,24 @@ h1.title{letter-spacing:.16em}
   <div class="sub" id="anecCount"></div>
   <div id="anecList"></div>
   <button class="btn sub2" id="anecBack">戻る</button>
+</div>
+
+<div id="unlockListScreen" class="screen hidden">
+  <div class="big">武将解放</div>
+  <div class="sub" id="unlListCount"></div>
+  <div id="unlListGrid"></div>
+  <button class="btn sub2" id="unlListBack">戻る</button>
+</div>
+
+<div id="unlockScreen" class="screen hidden">
+  <div class="unl-kicker">― 武将解放 ―</div>
+  <img id="unlFace" alt="">
+  <div class="unl-name" id="unlName"></div>
+  <div class="unl-epi" id="unlEpi"></div>
+  <div class="unl-quote" id="unlQuote"></div>
+  <div class="unl-cond" id="unlCond"></div>
+  <div class="unl-count" id="unlCount"></div>
+  <div class="unl-btns"><button class="btn" id="unlNext">次へ</button><button class="btn sub2" id="unlSkip">スキップ</button></div>
 </div>
 
 <div id="resultScreen" class="screen hidden">
@@ -575,7 +616,8 @@ const COMP_DEFS=[
 ["夏侯惇","惇","魏","melee"],["夏侯淵","淵","魏","archer"],["張遼","遼","魏","cav"],["許褚","褚","魏","melee"],["典韋","韋","魏","melee"],["張郃","郃","魏","melee"],["曹仁","仁","魏","melee"],["郭嘉","嘉","魏","strat"],["賈詡","詡","魏","strat"],["荀彧","彧","魏","strat"],["程昱","昱","魏","strat"],["司馬懿","懿","魏","strat"],["于禁","禁","魏","melee"],["徐晃","晃","魏","melee"],
 ["周瑜","瑜","呉","strat"],["陸遜","遜","呉","strat"],["呂蒙","蒙","呉","melee"],["甘寧","寧","呉","cav"],["太史慈","慈","呉","archer"],["黄蓋","蓋","呉","melee"],["程普","普","呉","melee"],["孫尚香","香","呉","archer"],["大喬","喬","呉","support"],["周泰","泰","呉","melee"],["丁奉","奉","呉","melee"],["凌統","統","呉","melee"],["魯粛","粛","呉","strat"],
 ["貂蝉","蝉","他","support"],["華佗","佗","他","support"],["孟獲","獲","他","melee"],["祝融","融","他","archer"],["馬雲騄","騄","他","cav"],["蔡文姫","姫","他","support"],["張繍","繍","他","cav"],
-["顔良","顔","袁","melee","ex"],["文醜","醜","袁","cav","ex"],["田豊","豊","袁","strat","ex"],["沮授","授","袁","strat","ex"]
+["顔良","顔","袁","melee","ex"],["文醜","醜","袁","cav","ex"],["田豊","豊","袁","strat","ex"],["沮授","授","袁","strat","ex"],
+["呂布","呂","他","cav"],["董卓","董","他","melee"],["華雄","華","他","cav"]
 ];
 const ROLE_STAT={melee:{hp:195,atk:14,range:64,cd:0.68},cav:{hp:173,atk:14,range:68,cd:0.8},archer:{hp:128,atk:11,range:190,cd:0.98},strat:{hp:120,atk:11,range:155,cd:1.65},support:{hp:135,atk:7,range:145,cd:1.2}};
 const ROLE_NAME={melee:"近接武将",cav:"騎兵",archer:"弓将",strat:"軍師",support:"支援"};
@@ -748,6 +790,98 @@ function loadCond(){try{return JSON.parse(localStorage.getItem("sgk_cond")||"{}"
 function loadLordStats(){try{return JSON.parse(localStorage.getItem("sgk_lordstats")||"{}");}catch(e){return{};}}
 function loadMissions(){try{return JSON.parse(localStorage.getItem("sgk_missions")||"{}");}catch(e){return{};}}
 function lordUnlocked(L){if(!L.hidden)return true;const c=loadClears();if(L.hidden==="any")return Object.keys(c).length>0;return !!c[L.hidden];}
+// ===== キャラ解放（仲間）2026-11-16 ユーザー決定 =====
+// 初期23人（袁紹軍4人は袁紹の解放と同時）＋条件解放31人。未解放キャラは登用・救援・遭遇・降将の全経路から除外する（ボス・敵としての登場は不変）。
+const CHAR_INITIAL=["関羽","張飛","趙雲","徐庶","関平","馬謖","夏侯惇","夏侯淵","許褚","曹仁","于禁","荀彧","甘寧","周泰","黄蓋","程普","丁奉","魯粛","蔡文姫"];
+const CHAR_YUAN=["顔良","文醜","田豊","沮授"];
+const CHAR_UNLOCK={
+ "魏延":{k:"firstclear",label:"いずれかの君主で初クリア"},"徐晃":{k:"firstclear",label:"いずれかの君主で初クリア"},"周瑜":{k:"firstclear",label:"いずれかの君主で初クリア"},
+ "龐統":{k:"reach",n:2,label:"2戦場目に到達"},"張郃":{k:"reach",n:2,label:"2戦場目に到達"},"呂蒙":{k:"reach",n:2,label:"2戦場目に到達"},
+ "程昱":{k:"reach",n:3,label:"3戦場目に到達"},
+ "法正":{k:"lordclear",lord:"劉備",label:"劉備でクリア"},"郭嘉":{k:"lordclear",lord:"曹操",label:"曹操でクリア"},"孫尚香":{k:"lordclear",lord:"孫権",label:"孫権でクリア"},"大喬":{k:"lordclear",lord:"孫策",label:"孫策でクリア"},
+ "黄忠":{k:"stageclear",stage:"teigunzan",label:"定軍山をクリア"},"張遼":{k:"stageclear",stage:"gappei",label:"合肥をクリア"},"陸遜":{k:"stageclear",stage:"iryou",label:"夷陵をクリア"},"司馬懿":{k:"stageclear",stage:"gojougen",label:"五丈原をクリア"},"孟獲":{k:"stageclear",stage:"nanchuu",label:"南中をクリア"},"張繍":{k:"stageclear",stage:"enjou",label:"宛城をクリア"},"賈詡":{k:"stageclear",stage:"enjou",label:"宛城をクリア"},
+ "祝融":{k:"stagereach",stage:"nanchuu",label:"南中に到達"},"典韋":{k:"stagereach",stage:"enjou",label:"宛城に到達"},
+ "諸葛亮":{k:"partyclear",with:"徐庶",label:"徐庶を連れてクリア"},"姜維":{k:"partyclear",with:"諸葛亮",label:"諸葛亮を連れてクリア"},"馬雲騄":{k:"partyclear",with:"趙雲",label:"趙雲を連れてクリア"},
+ "馬超":{k:"kills",n:3000,label:"累計撃破 3,000"},"凌統":{k:"kills",n:3000,label:"累計撃破 3,000"},
+ "太史慈":{k:"duelwins",n:3,label:"一騎討ち累計3勝"},"貂蝉":{k:"duelwins",n:5,label:"一騎討ち累計5勝"},
+ "華佗":{k:"noretreat",label:"仲間を誰も撤退させずにクリア"},
+ "呂布":{k:"allclear",label:"全6君主でクリア"},"董卓":{k:"kills",n:10000,label:"累計撃破 10,000"},"華雄":{k:"duelvs",foe:"華雄",label:"華雄との一騎討ちに勝利"}
+};
+const UNLOCK_QUOTES={
+ "魏延":"反骨？上等。俺の刀は、殿のために振るう","徐晃":"治軍厳格、徐晃参る。大斧の冴え、見せよう","周瑜":"赤壁の火は、まだ消えてはいない",
+ "龐統":"鳳雛、ようやく羽ばたく時が来たか","張郃":"巧変の張郃、地形はすでに読み切った","呂蒙":"士別れて三日――刮目して見よ",
+ "程昱":"剛直の程昱、押し通らせてもらう","法正":"恩には恩を、仇には倍の仇を。法正、参る","郭嘉":"鬼才郭嘉、策は十。あとは殿の采配で",
+ "孫尚香":"弓腰姫、参る！男勝り？上等よ","大喬":"私も、戦います。江東の名に懸けて","黄忠":"老いぼれと思うな。百歩先の的も外さん",
+ "張遼":"遼来々！合肥の悪夢、ふたたび","陸遜":"夷陵の火、再び灯す時が来ました","司馬懿":"機は、熟した。冢虎、動く",
+ "孟獲":"七度捕まっても七度戦う。だが今回は、味方だ！","張繍":"北地の槍王、張繍。宛城の意地、見せてやる","賈詡":"毒士と呼ばれようが、勝たねば意味がない",
+ "祝融":"火神の末裔の力、見せよう","典韋":"典韋、参る。殿の前は、誰も通さん！","諸葛亮":"伏龍、出廬す",
+ "姜維":"丞相の志、この槍に継ぐ！","馬雲騄":"馬家の槍女、参ります。趙雲様に負けられません","馬超":"錦馬超、推して参る！西涼の槍、受けてみよ",
+ "凌統":"凌統、参る。父上の分まで戦う！","太史慈":"信義に生きる太史慈、ここに参る","貂蝉":"連環の計は終わらない。月下に、舞いましょう",
+ "華佗":"青嚢の医術、戦場でも命を救おう","呂布":"天下無双の呂布だ。俺を従えられるか、見せてみろ","董卓":"我こそ西涼の董卓。天下は、力で掴むものよ",
+ "華雄":"華雄なり！汜水関の門、今度は殿のために開く"
+};
+function loadCharUnlock(){try{return JSON.parse(localStorage.getItem("sgk_charunlock")||"{}");}catch(e){return{};}}
+function saveCharUnlock(u){try{localStorage.setItem("sgk_charunlock",JSON.stringify(u));}catch(e){}}
+function loadStageClears(){try{return JSON.parse(localStorage.getItem("sgk_stageclears")||"{}");}catch(e){return{};}}
+function loadStageVisited(){try{return JSON.parse(localStorage.getItem("sgk_stagevisited")||"{}");}catch(e){return{};}}
+function loadClearParty(){try{return JSON.parse(localStorage.getItem("sgk_clearparty")||"{}");}catch(e){return{};}}
+function loadDuelVs(){try{return JSON.parse(localStorage.getItem("sgk_duel_vs")||"{}");}catch(e){return{};}}
+function killsTotal(){return parseInt(localStorage.getItem("sgk_kills_total")||"0")||0;}
+function duelWinsTotal(){return parseInt(localStorage.getItem("sgk_duelwins_total")||"0")||0;}
+function maxStageReached(){return parseInt(localStorage.getItem("sgk_maxstage")||"1")||1;}
+function yuanUnlocked(){const L=LORDS.find(l=>l.name==="袁紹");return L?lordUnlocked(L):false;}
+function charUnlocked(name){
+ if(CHAR_INITIAL.includes(name))return true;
+ if(CHAR_YUAN.includes(name))return yuanUnlocked()||!!loadCharUnlock()[name];
+ if(CHAR_UNLOCK[name])return !!loadCharUnlock()[name];
+ return true;
+}
+function unlockCondMet(name){
+ const c=CHAR_UNLOCK[name];if(!c)return true;
+ switch(c.k){
+  case "firstclear":return Object.keys(loadClears()).length>0;
+  case "lordclear":{const L=LORDS.find(l=>l.name===c.lord);return L?!!loadClears()[L.id]:false;}
+  case "allclear":return LORDS.every(L=>!!loadClears()[L.id]);
+  case "reach":return maxStageReached()>=c.n;
+  case "stageclear":return !!loadStageClears()[c.stage];
+  case "stagereach":return !!loadStageVisited()[c.stage];
+  case "partyclear":return !!loadClearParty()[c.with];
+  case "kills":return killsTotal()>=c.n;
+  case "duelwins":return duelWinsTotal()>=c.n;
+  case "duelvs":return (loadDuelVs()[c.foe]||0)>=1;
+  case "noretreat":return localStorage.getItem("sgk_noretreat_clear")==="1";
+ }
+ return false;
+}
+// 条件を評価し、新たに解放されたキャラ名の一覧を返す（解放状態は sgk_charunlock に保存）
+function evalCharUnlocks(){
+ const u=loadCharUnlock();const newly=[];
+ for(const name in CHAR_UNLOCK){if(!u[name]&&unlockCondMet(name)){u[name]=1;newly.push(name);}}
+ try{const rt=JSON.parse(localStorage.getItem("sgk_recruit_total")||"{}");for(const n in rt){if(rt[n]>0&&CHAR_UNLOCK[n]&&!u[n]){u[n]=1;if(!newly.includes(n))newly.push(n);}}}catch(e){}
+ if(newly.length)saveCharUnlock(u);
+ return newly;
+}
+function markStageVisit(idx){
+ try{const S=STAGES[idx];if(!S)return;const v=loadStageVisited();if(!v[S.id]){v[S.id]=1;localStorage.setItem("sgk_stagevisited",JSON.stringify(v));}
+ const cur=(typeof G!=="undefined"&&G)?(G.moveCount||0)+1:1;if(cur>maxStageReached())localStorage.setItem("sgk_maxstage",String(cur));}catch(e){}
+}
+function markStageClear(sid){try{const c=loadStageClears();if(!c[sid]){c[sid]=1;localStorage.setItem("sgk_stageclears",JSON.stringify(c));}}catch(e){}}
+// 既存セーブへの遡及：過去の記録から達成済み条件を初回に評価し、既に仲間にしたことのあるキャラは取り上げない
+function migrateCharUnlock(){
+ try{
+  if(localStorage.getItem("sgk_charunlock_v")==="1")return;
+  if(localStorage.getItem("sgk_kills_total")==null){let s=0;const ls=loadLordStats();for(const k in ls)s+=(ls[k].best||0);localStorage.setItem("sgk_kills_total",String(s));}
+  if(Object.keys(loadClears()).length&&maxStageReached()<3)localStorage.setItem("sgk_maxstage","3");
+  const rt=JSON.parse(localStorage.getItem("sgk_recruit_total")||"{}");
+  try{const sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");if(sv&&sv.party)sv.party.forEach(n=>{if(!(rt[n]>0))rt[n]=1;});}catch(e){}
+  try{localStorage.setItem("sgk_recruit_total",JSON.stringify(rt));}catch(e){}
+  if(Object.keys(loadClears()).length){const cp=loadClearParty();let ch=false;for(const n in rt){if(rt[n]>0&&!cp[n]){cp[n]=1;ch=true;}}if(ch)localStorage.setItem("sgk_clearparty",JSON.stringify(cp));}
+  evalCharUnlocks();
+  localStorage.setItem("sgk_charunlock_v","1");
+ }catch(e){}
+}
+migrateCharUnlock();
+
 let gunkou=parseInt(localStorage.getItem("sgk_gunkou")||"0")||0;
 function saveGunkou(){localStorage.setItem("sgk_gunkou",String(gunkou));}
 const UPGRADES=[
@@ -809,7 +943,7 @@ refreshDailyUI();
 bindTap($("zukanBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderZukan();$("zukanScreen").classList.remove("hidden");},150);});
 bindTap($("zukanBack"),()=>{fadeThrough(()=>{$("zukanScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
 // ===== 武将紹介ギャラリー =====
-const ENEMY_ONLY=[["呂布","呂","群雄"],["董卓","董","群雄"],["張角","角","黄巾"],["華雄","華","群雄"],["張宝","宝","黄巾"],["張梁","梁","黄巾"]];
+const ENEMY_ONLY=[["張角","角","黄巾"],["張宝","宝","黄巾"],["張梁","梁","黄巾"]];
 const BIO_FILTERS=["すべて","君主","仲間","敵専用","蜀","魏","呉","袁","他","群雄","黄巾"];
 const BIO_CATCOLOR={"君主":"#e5c15c","仲間":"#8fce62","敵専用":"#e06a55"};
 let bioFilter="すべて",bioSel=null;
@@ -844,9 +978,9 @@ function renderBio(){
   }).join(""):`<p>この武将の相性は登録されていない。</p>`;
   const fu=(typeof FACE_SRC!=="undefined")?FACE_SRC[m.name]:null;
   det.innerHTML=
-   `<div class="dhead">${fu?`<img src="${fu}">`:""}<div><div class="kk" style="color:${FACTION_COLOR[m.faction]||"#c9a227"}">${m.faction} ・ ${m.cat}${m.cat==="仲間"?" ・ "+(ROLE_NAME[m.role]||""):""} ・ 旗「${m.kanji}」</div><h3>${m.name}</h3><p class="biocatch">「${bio[0]}」</p></div></div>`+
+   `<div class="dhead">${fu?`<img src="${fu}"${(m.cat==="仲間"&&!charUnlocked(m.name))?' style="filter:brightness(0);opacity:.55"':""}>`:""}<div><div class="kk" style="color:${FACTION_COLOR[m.faction]||"#c9a227"}">${m.faction} ・ ${m.cat}${m.cat==="仲間"?" ・ "+(ROLE_NAME[m.role]||""):""} ・ 旗「${m.kanji}」</div><h3>${m.name}</h3><p class="biocatch">「${bio[0]}」</p></div></div>`+
    `<div class="dsec"><h4>人物紹介</h4><p>${bio[1]}</p></div>`+
-   `<div class="dsec"><h4>ステータス要約</h4><p>${bioStatusHtml(m)}</p></div>`+
+   `${(m.cat==="仲間"&&!charUnlocked(m.name))?`<div class="dsec"><h4>解放条件</h4><p>🔒 未解放 ― ${unlockCondLabel(m.name)}（${unlockProgressText(m.name)}）</p></div>`:""}<div class="dsec"><h4>ステータス要約</h4><p>${bioStatusHtml(m)}</p></div>`+
    `<div class="dsec"><h4>相性（${rel.length}件）</h4>${compatHtml}</div>`;
   return;
  }
@@ -857,14 +991,78 @@ function renderBio(){
  grid.innerHTML="";
  bioRoster().filter(m=>bioFilter==="すべて"||m.cat===bioFilter||m.faction===bioFilter).forEach(m=>{
   const bio=BIO[m.name]||["",""];
-  const d=document.createElement("div");d.className="bcard";
-  d.innerHTML=`${(typeof FACE_SRC!=="undefined"&&FACE_SRC[m.name])?`<img src="${FACE_SRC[m.name]}" alt="${m.name}">`:""}<div class="bname">${m.name}</div><span class="bcat" style="background:${BIO_CATCOLOR[m.cat]}">${m.cat}・${m.faction}</span><div class="bcatch">${bio[0]}</div>`;
+  const locked=m.cat==="仲間"&&!charUnlocked(m.name);
+  const d=document.createElement("div");d.className="bcard"+(locked?" locked":"");
+  d.innerHTML=`${(typeof FACE_SRC!=="undefined"&&FACE_SRC[m.name])?`<img src="${FACE_SRC[m.name]}" alt="${m.name}">`:""}<div class="bname">${m.name}</div><span class="bcat" style="background:${BIO_CATCOLOR[m.cat]}">${m.cat}・${m.faction}</span><div class="bcatch">${locked?("🔒 "+unlockCondLabel(m.name)):bio[0]}</div>`;
   bindTap(d,()=>{bioSel=m;renderBio();$("bioScreen").scrollTop=0;});
   grid.appendChild(d);
  });
 }
 bindTap($("bioBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");bioFilter="すべて";bioSel=null;renderBio();$("bioScreen").classList.remove("hidden");},150);});
 bindTap($("bioBack"),()=>{if(bioSel){bioSel=null;renderBio();$("bioScreen").scrollTop=0;return;}fadeThrough(()=>{$("bioScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
+// ===== 武将解放：一覧画面と解放演出 =====
+function stageNameOf(sid){const S=STAGES.find(s=>s.id===sid);return S?S.name:sid;}
+function unlockCondLabel(name){
+ if(CHAR_INITIAL.includes(name))return "初期解放";
+ if(CHAR_YUAN.includes(name))return "袁紹の解放と同時";
+ const c=CHAR_UNLOCK[name];return c?c.label:"";
+}
+function unlockProgressText(name){
+ if(CHAR_INITIAL.includes(name))return "最初から登用可能";
+ if(CHAR_YUAN.includes(name))return yuanUnlocked()?"袁紹とともに解放済み":"君主・袁紹の解放と同時に登用可能になる";
+ const c=CHAR_UNLOCK[name];if(!c)return "";
+ switch(c.k){
+  case "kills":return `累計撃破 ${killsTotal().toLocaleString()}／${c.n.toLocaleString()}`;
+  case "duelwins":return `一騎討ち累計勝利 ${duelWinsTotal()}／${c.n}`;
+  case "allclear":return `クリア済み君主 ${LORDS.filter(L=>!!loadClears()[L.id]).length}／6`;
+  case "lordclear":{const L=LORDS.find(l=>l.name===c.lord);return (L&&loadClears()[L.id])?"達成済み":`${c.lord}でクリアすると解放`;}
+  case "reach":return `到達した最大戦場 ${maxStageReached()}／${c.n}戦場目`;
+  case "stageclear":return loadStageClears()[c.stage]?"達成済み":`${stageNameOf(c.stage)}のボスを倒すと解放`;
+  case "stagereach":return loadStageVisited()[c.stage]?"達成済み":`${stageNameOf(c.stage)}に入ると解放`;
+  case "partyclear":return loadClearParty()[c.with]?"達成済み":`${c.with}を連れてクリアすると解放`;
+  case "duelvs":return `華雄への一騎討ち勝利 ${(loadDuelVs()["華雄"]||0)}／1`;
+  case "noretreat":return "仲間の撤退0でクリアすると解放";
+  case "firstclear":return Object.keys(loadClears()).length?"達成済み":"いずれかの君主でクリアすると解放";
+ }
+ return "";
+}
+function renderUnlockList(){
+ const grid=$("unlListGrid");if(!grid)return;
+ const total=COMP_DEFS.length;const un=COMP_DEFS.filter(c=>charUnlocked(c[0])).length;
+ $("unlListCount").textContent=`解放済み ${un} ／ ${total} 人 ― 条件を満たすと登用できる武将が増える`;
+ grid.innerHTML="";
+ COMP_DEFS.forEach(c=>{
+  const name=c[0];const ok=charUnlocked(name);
+  const d=document.createElement("div");d.className="ucard"+(ok?" unlocked":" locked");
+  const fu=(typeof FACE_SRC!=="undefined")?FACE_SRC[name]:null;
+  d.innerHTML=`${fu?`<img src="${fu}" alt="${name}">`:""}<div class="uname">${name}</div>${ok?`<span class="udone">解放済み</span>`:`<div class="ucond">${unlockCondLabel(name)}</div><div class="uprog">${unlockProgressText(name)}</div>`}`;
+  grid.appendChild(d);
+ });
+}
+bindTap($("unlListBtn"),()=>{fadeThrough(()=>{$("titleScreen").classList.add("hidden");renderUnlockList();$("unlockListScreen").classList.remove("hidden");},150);});
+bindTap($("unlListBack"),()=>{fadeThrough(()=>{$("unlockListScreen").classList.add("hidden");$("titleScreen").classList.remove("hidden");},150);});
+// 解放演出：リザルトの後に1人ずつ、肖像画＋一言で紹介する（送り・スキップ可）
+let pendingCharUnlocks=[],unlIdx=0;
+function showUnlockReveal(names){
+ if(!names||!names.length)return;
+ pendingCharUnlocks=names.slice();unlIdx=0;renderUnlockReveal();
+ const s=$("unlockScreen");if(s)s.classList.remove("hidden");
+}
+function renderUnlockReveal(){
+ const name=pendingCharUnlocks[unlIdx];if(!name)return;
+ const fu=(typeof FACE_SRC!=="undefined")?FACE_SRC[name]:null;const img=$("unlFace");
+ if(img){if(fu){img.src=fu;img.style.display="";}else img.style.display="none";}
+ $("unlName").textContent=name;
+ $("unlEpi").textContent=((typeof EPITHETS!=="undefined"&&EPITHETS[name])?("二つ名「"+EPITHETS[name]+"」"):"");
+ $("unlQuote").textContent="「"+(UNLOCK_QUOTES[name]||"")+"」";
+ $("unlCond").textContent="解放条件："+unlockCondLabel(name)+" ― 登用可能になった！";
+ $("unlCount").textContent=(unlIdx+1)+" ／ "+pendingCharUnlocks.length;
+ $("unlNext").textContent=unlIdx>=pendingCharUnlocks.length-1?"閉じる":"次へ ▶";
+}
+function closeUnlockReveal(){const s=$("unlockScreen");if(s)s.classList.add("hidden");pendingCharUnlocks=[];unlIdx=0;}
+bindPress($("unlNext"),()=>{unlIdx++;if(unlIdx>=pendingCharUnlocks.length)closeUnlockReveal();else renderUnlockReveal();});
+bindPress($("unlSkip"),()=>{closeUnlockReveal();});
+
 
 function zkFaceHTML(name){
  const pu=portraitURL(speakerObj(name));
@@ -990,7 +1188,7 @@ function newGame(){
   tactics:{},treasures:{},reroll:1,bossSpawned:{},finalBoss:null,recruitCount:0,eventDone:false,spawnT:0,eliteT:20,comboName:"一斉突撃",windT:0,slowT:0,mengStacks:0,shangEventT:90,
   stage:selStage,moveCount:0,stageTime:0,terrainDone:false,spawnCalmT:0,rampT:0,pendingMove:0,lingEvolved:false,duelDone:false,duelAt:null,machaoVsXuchu:false,sanei:false,talkedBosses:{},zhangjiaoDone:false,fogT:0,hazards:[],visited:[selStage],shura:false,duelBuff:false,duelBuffT:0,duel:null,duelOffer:null,mobT:30,waveQ:[],rangePulse:false,gaugeCdT:0,atkBuffT:0,atkBuffMul:1,partySpdBuffT:0,lordSpdBuffT:0,lordFastT:0,fatigueT:0,dullT:0,barrierT:0,lastArt:null,lastTenun:null,lastLink:null,stageKills:0,stageBossSpawned:false,stageBossDown:false,pendingFinal:false,finalRestT:0,finalSpawned:false,namedMobSpawned:0,cutin:null,gaugeReadyShown:false,cam:{x:800,y:530},world:null,huatuoT:12,banished:{},banishLeft:2,drops:[],vacuumT:0,endless:false,endlessT:0,duelCount:0,duelWins:0,maxStreak:0,compatFired:{},chestGk:0,gemChain:0,gemChainT:0,slowmoT:0,gkGranted:0,idleAcc:0,encounterDone:false,encounterReward:null,lvStacks:{},gunrei:{},hataStk:0,deepened:{},kakugo:null,mastery:{},tagPicks:{},noRareStreak:0,noEpicStreak:0,critDmgMul:1,shieldCap:0.2,cond:(typeof dailyCfg!=="undefined"&&dailyCfg)?{z:!!dailyCfg.cond.z,k:!!dailyCfg.cond.k,m:!!dailyCfg.cond.m}:loadCond(),storyEvDone:0,forceMarch:false,fmActive:false,evoBranch:null,lowHpT:0,partyDowns:0,sigCounts:{},repBonus:0,storyTacMul:0,storyAtkMul:0,storyTacStage:-1,storyAtkStage:-1,fusion:null,fusionTaken:false,fusT:0,formation:"kakuyoku",formCdT:0,weather:(typeof weatherFor==="function"?weatherFor("koukin",0):{id:"clear",name:"晴"}),gunryaku:(typeof selGunryaku!=="undefined"?selGunryaku:null),daily:null,setCritDmgMul:1,setSpdMul:1,_horseUsed:false,shrine:null,gimmick:null,gimmickUsed:false};
  G.daily=(typeof dailyCfg!=="undefined"&&dailyCfg)?{date:dailyCfg.date}:null;G.mods=computeMods();G.escClock=0;try{localStorage.removeItem("sgk_run_save");}catch(e){}
- G.recruitSeen={};G.sceneDone={};G.rivalDone={};G.chronicle=[];G.stageClearInfo={};G.ceremonyDone={};G._anecNew=[];G._epiNew=[];G._ifLines=[];G.councilBuff=null;G.councilActive=null;G._councilFor=-1;G.sceneBossDmgT=0;G.recruitBag=null;G.recruitHist=[];G.duelCdChar={};G.duelCdGlobal=0;G.scorches=[];G.compRangeMul=1;G.compAtkMul=1;G.compSigMul=1;G.compSigRangeMul=1;G.compHpMul=1;G.compCleave=false;G.compChestCount=0;G.tacBonusKills=0;G.chainT=0;G.chainLvl=0;G.chainLockT=0;G.chainActiveT=0;G.chainRangeBonus=0;G.chainSpdBonus=0;G.mobBag=null;G.footAimT=9;G.escCur=null;G._esc=null;
+ markStageVisit(selStage);G.recruitSeen={};G.sceneDone={};G.rivalDone={};G.chronicle=[];G.stageClearInfo={};G.ceremonyDone={};G._anecNew=[];G._epiNew=[];G._ifLines=[];G.councilBuff=null;G.councilActive=null;G._councilFor=-1;G.sceneBossDmgT=0;G.recruitBag=null;G.recruitHist=[];G.duelCdChar={};G.duelCdGlobal=0;G.scorches=[];G.compRangeMul=1;G.compAtkMul=1;G.compSigMul=1;G.compSigRangeMul=1;G.compHpMul=1;G.compCleave=false;G.compChestCount=0;G.tacBonusKills=0;G.chainT=0;G.chainLvl=0;G.chainLockT=0;G.chainActiveT=0;G.chainRangeBonus=0;G.chainSpdBonus=0;G.mobBag=null;G.footAimT=9;G.escCur=null;G._esc=null;
  G.shura=shuraUnlocked()&&shuraOn();
  {const up=loadUpgrades();G.lord.maxhp+=15*(up.hp||0);G.lord.hp=G.lord.maxhp;G.lord.atk+=(up.atk||0);G.lord.spd*=1+0.03*(up.spd||0);G.gauge=Math.min(90,15*(up.gauge||0));G.reroll=1+(up.reroll||0);}{if(G.gunryaku==="kousei"){G.lord.maxhp=Math.round(G.lord.maxhp*0.95);G.lord.hp=G.lord.maxhp;}if(G.gunryaku==="kidou")G.lord.spd*=1.06;if(G.gunryaku==="kenshu")G.lord.spd*=0.97;}
  seedStageFires();
@@ -1081,7 +1279,7 @@ function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run
  genWorld();refreshAllCompStats();G.mods=computeMods();
  G.banners.push({txt:"戦場間から再開",sub:"進軍先を選んで続きを戦おう",t:3,col:"#ffd964"});
  openMoveSelect();}
-try{const fs=$("favSel");if(fs){const cur=localStorage.getItem("sgk_fav")||"";fs.innerHTML='<option value="">（なし）</option>'+COMP_DEFS.filter(c=>c[4]!=="ex").map(c=>`<option value="${c[0]}"${c[0]===cur?" selected":""}>${c[0]}</option>`).join("");fs.onchange=()=>{try{localStorage.setItem("sgk_fav",fs.value);}catch(e){}};}
+try{const fs=$("favSel");if(fs){const cur=localStorage.getItem("sgk_fav")||"";fs.innerHTML='<option value="">（なし）</option>'+COMP_DEFS.filter(c=>c[4]!=="ex"&&charUnlocked(c[0])).map(c=>`<option value="${c[0]}"${c[0]===cur?" selected":""}>${c[0]}</option>`).join("");fs.onchange=()=>{try{localStorage.setItem("sgk_fav",fs.value);}catch(e){}};}
  const rb=$("resumeBtn");if(rb&&localStorage.getItem("sgk_run_save")){rb.style.display="";bindTap(rb,()=>resumeRun());}
  const sb=$("swapBtn");const applySwap=()=>{const on=localStorage.getItem("sgk_swap")==="1";document.body.classList.toggle("swap",on);if(sb)sb.textContent="⇄ ボタン左右入替："+(on?"ON":"OFF");};if(sb)bindTap(sb,()=>{try{localStorage.setItem("sgk_swap",localStorage.getItem("sgk_swap")==="1"?"0":"1");}catch(e){}applySwap();});applySwap();}catch(e){}
 const DEEP_SPECIAL=["刮骨療毒","南蛮夫婦","河北双璧","赤壁の火攻め","五虎将軍","虎衛双璧","江東の夫婦","河北の柱","神亭の邂逅"];
@@ -1572,7 +1770,7 @@ function fbSkill(e,slot){
 }
 function onBossDown(e){
  if(e.encounter)return;
- {const sid=STAGES[G.stage].id;G.stageClearInfo=G.stageClearInfo||{};G.stageClearInfo[sid]={party:partyNames(),boss:e.name,sid};if(typeof stageClearLore==="function")stageClearLore(sid,e.name);if(!e.isFinal){G.chronicle=G.chronicle||[];G.chronicle.push(STAGE_CHRONICLE[sid]+"（"+e.name+" を討ち取った）");}}
+ {const sid=STAGES[G.stage].id;G.stageClearInfo=G.stageClearInfo||{};G.stageClearInfo[sid]={party:partyNames(),boss:e.name,sid};markStageClear(sid);if(typeof stageClearLore==="function")stageClearLore(sid,e.name);if(!e.isFinal){G.chronicle=G.chronicle||[];G.chronicle.push(STAGE_CHRONICLE[sid]+"（"+e.name+" を討ち取った）");}}
  if(!e.isFinal)G.enemies.forEach(x=>{if(!x.boss&&!x.isFinal&&!x.dead)x.retreat=true;});
  G.banners.push({txt:`${e.name} 撃破！`,sub:"",t:2.4,col:"#ffd964"});
  if(e.isFinal){const otherFinal=G.enemies.some(x=>x.isFinal&&!x.dead&&x!==e);if(otherFinal){G.recruitCount++;openRecruit();return;}endGame(true,false);return;}
@@ -1586,7 +1784,7 @@ function onBossDown(e){
 function stageQuota(){return [150,240,330][G.moveCount]||330;}
 function spawnEncounter(){
  const owned=new Set(partyNames());
- const pool=COMP_DEFS.filter(c=>!owned.has(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")&&c[0]!==G.lastBossName&&namedEnemyFree(c[0]));
+ const pool=COMP_DEFS.filter(c=>!owned.has(c[0])&&charUnlocked(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")&&c[0]!==G.lastBossName&&namedEnemyFree(c[0]));
  if(!pool.length)return;
  const def=pool[Math.floor(Math.random()*pool.length)];
  spawnEnemy(def[0]);
@@ -1629,7 +1827,7 @@ function rescuePool(){
  if(!G||!G.lord)return [];
  const lf=G.lord.faction;
  const owned=new Set(allMemberNames());
- return COMP_DEFS.filter(c=>c[2]===lf&&!owned.has(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")&&c[0]!==G.lastBossName&&namedEnemyFree(c[0]));
+ return COMP_DEFS.filter(c=>c[2]===lf&&!owned.has(c[0])&&charUnlocked(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")&&c[0]!==G.lastBossName&&namedEnemyFree(c[0]));
 }
 function rescueJoin(){
  if(!G||G.over||G.rescueDone)return;
@@ -1650,7 +1848,7 @@ function trySpawnStageBoss(){
  G.stageBossSpawned=true;barkBossBlock();
  const S=STAGES[G.stage];let bn;
  if(G.moveCount===0)bn="張角";
- else if(G.moveCount===2&&S.id==="korokan")bn="呂布";
+ else if(G.moveCount===2&&S.id==="korokan"&&namedEnemyFree("呂布"))bn="呂布";
  else{const rb=stageBossName(S);bn=(rb&&namedEnemyFree(rb))?rb:pickMidBoss(S,G.moveCount);}
  G.lastBossName=bn;
  spawnEnemy(bn);const be=G.enemies[G.enemies.length-1];if(be){G.rings.push({x:be.x,y:be.y,r:14,t:0.6,col:"#ff8a7a"});G.shake=Math.max(G.shake,4);
@@ -1678,6 +1876,9 @@ function addText(x,y,txt,col,size){let oy=0;for(const f of G.floats){if(Math.abs
 // ===== 登用時のキャラクター会話 =====
 // 加入台詞（全48人・一人ずつ書き分け）
 const JOIN_LINES={
+"呂布":"ふん、俺を従えられると思うなよ。……だが、面白い。天下無双の画戟、しばし貸してやる",
+"董卓":"ほほう、我を仲間にするとは、肝の据わった御仁よ。西涼の軍勢は、伊達ではないぞ",
+"華雄":"関東の諸侯とは、器が違うようだな。この華雄、殿の門となって戦おう",
  "関羽":"関羽、推して参る。義を貫くこの刃、殿のために振るおうぞ。",
  "張飛":"おう、張飛様の登場だ！酒は後でいい、まず押し寄せる敵をぶっ飛ばすぞ！",
  "趙雲":"趙子龍、ただいま参上。殿の御身は、この槍が必ずやお守りします。",
@@ -1806,7 +2007,7 @@ const PAIR_LINES={
  "馬超×馬雲騄":{"馬超":"雲騄、馬家の槍は俺たち兄妹で繋ぐぞ。","馬雲騄":"兄上、西涼の血は伊達じゃないって、見せてやるわ！"}
 };
 // 撤退時の一言（頭上フロート表示）
-const FALL_LINES={
+const FALL_LINES={"呂布":"ぐっ…天下無双の名が、泣く…ここは退く…！","董卓":"くっ…我が、西涼の董卓が退くとは…！","華雄":"門は…破られたか…だが、まだ終わらん…！",
  "関羽":"関羽、ここまでか…義は、尽くした…","張飛":"お、俺が退くとはな…兄者、すまねえ！","趙雲":"まだ…まだ殿をお守りしなければ…","諸葛亮":"天命…尽きたか。だが策は、まだ残してある…","馬超":"一族の仇も討てずに…無念…","黄忠":"老骨、ここまでか…若い者に、道を譲ろう","郭嘉":"策は…尽きました。殿、どうかお達者で…","司馬懿":"く…焦りは禁物。ここは退く…","周瑜":"赤壁の火は…まだ消えていない…","華佗":"医者が倒れては…誰が皆を治す…",
  "典韋":{def:"典韋、退きます…殿だけは、どうか",caocao:"殿、お逃げください！この典韋、ここで死に場所を得たり…！"},
  "許褚":"ぐお…虎痴が、こんなところで…","夏侯惇":"隻眼にかけても…退かねばならんとは…","徐晃":"ぐっ…この徐晃が、退くとは…","呂蒙":"士別れて三日…まだ見直してほしかった…","甘寧":"ちっ、やられた…鈴の音も、ここまでか","凌統":"父上…すみません。まだ、仇も討てていないのに…","貂蝉":"あら…舞の途中なのに…"};
@@ -1839,6 +2040,9 @@ function fxTick(dt){
 // ===== 状況応答セリフ（バーク）データ：全仲間に状況別専用セリフを用意し、汎用はフォールバック =====
 // pv=挑発/意気込み su=包囲 ha=苦戦 lc=君主気遣い ra=好調 he=回復時 bo=ボス接近 ch=平穏時の雑談
 const BARK={
+"呂布":{pv:["天下無双とは、俺のことだ","赤兎と画戟、敵に回すと怖いぞ"],su:["囲んだか。まとめて薙ぎ払う"],ha:["ぐっ…俺が、押されているだと…！"],lc:["殿、俺が来た。後ろに下がっていろ"],ra:["ははは！この戦、悪くない"],he:["傷など、勲章にもならん"]},
+"董卓":{pv:["我こそ西涼の董卓よ","天下は、力で掴むものだ"],su:["囲むか。西涼兵の怖さ、見せてやろう"],ha:["ぐぬ…この董卓が、退くなど…！"],lc:["殿、危ない！我の後ろへ"],ra:["ほほう、良い戦だ。褒美が弾むな"],he:["酒と肉があれば、それでよい"]},
+"華雄":{pv:["華雄なり！汜水関の門は、固いぞ","関東の諸侯など、我が一太刀の餌食よ"],su:["囲もうが、この門は崩れん"],ha:["くっ…まだ、門は開かん…！"],lc:["殿！華雄が駆けつけた！"],ra:["どうだ、西涼の猛斬だ"],he:["傷は浅い。まだまだ戦える"]},
 "関羽":{pv:["青龍刀の錆にしてくれる！","関羽が相手だ。覚悟せよ"],su:["囲んだつもりか。義の刃は鈍らん"],ha:["まだだ…関羽は、この程度では倒れん"],lc:["兄者！この関羽が盾となろう"],ra:["ふん、雑兵どもが。次は誰だ"],he:["うむ、助かった。礼を言う"],bo:["大物か…この刃の見せ所よ"],ch:["義とは、貫くものだ","髭の手入れも戦のうちよ"]},
 "張飛":{pv:["おう！まとめてかかってこい！","燕人張飛、ここにあり！"],su:["囲まれた？上等だ、全方向に敵だらけだ！"],ha:["ぐぬぬ…まだまだ、やれる…！"],lc:["兄者！怪我はないか！"],ra:["ははは！どうだ、気持ちいいぞ！"],he:["おお、すまねえ！助かった！"],bo:["でかいの来たな！俺に任せろ！"],ch:["戦の後の酒は格別だな！","兄者のためなら何でもやるぞ"]},
 "趙雲":{pv:["趙子龍、一手に引き受けよう","常山の趙子龍、参る！"],su:["包囲か…だが、槍の届かぬ所はない"],ha:["まだ倒れるわけには…参りません"],lc:["殿！趙雲がお側に！"],ra:["槍の冴え、衰えを知りません"],he:["助かりました。恩に着ます"],bo:["あれが将か。槍の穂先で確かめよう"],ch:["一身これ胆なり、と人は言います","殿の夢の先を、見てみたい"]},
@@ -1949,7 +2153,7 @@ function barkTick(dt){
 }
 
 // 勝利時の一言（結果画面にランダム1人分）
-const WIN_LINES={
+const WIN_LINES={"呂布":"はっはっは！天下無双の名、伊達ではないな","董卓":"ほほう、見事なものよ。褒美を取らせよう","華雄":"どうだ！西涼の門は、敵には開かん！",
  "劉備":"皆のおかげだ。天下泰平は、まだ遠いが…一歩ずつ進もう","曹操":"ふん、当然の結果だ。天下はこの手に掴むものよ","孫権":"守り抜いたぞ…江東の皆、よくやってくれた","袁紹":"ははは、名門の力、思い知ったか","劉禅":"や、やった…！皆が頑張ってくれたおかげだよ…","孫策":"どうだ！これが江東の小覇王だ！","関羽":"義をもって戦えば、勝ちは自ずとついてくる","張飛":"がはは！俺様にかかればこんなもんよ！","趙雲":"殿をお守りできて何よりです","諸葛亮":"策、的中しましたね。皆さん、お見事でした","周瑜":"赤壁の火は伊達ではない、ということです","郭嘉":"策は十あげたうちの一つが当たっただけですよ","司馬懿":"焦らず待てば、勝ちは向こうから来るものです","呂蒙":"どうだ、見直したか！","甘寧":"へへ、この鈴の音が勝利の合図だ！","凌統":"父上…見ていてくれましたか","馬超":"一族の無念、少しは晴らせたか…","華佗":"勝ち負けより、皆が無事で何よりです"};
 // ボス出現時の特殊会話
 const BOSS_TALKS=[
@@ -2080,7 +2284,7 @@ function startDuelEvent(){
  ],()=>{G.duelDone=true;G.mods=computeMods();G.banners.push({txt:"一騎打ちの末、互いを認めた！",sub:"許褚×馬超 ― 両者の攻撃+15%",t:3.4,col:"#ffd964"});});
 }
 // ===== 一騎討ちシステム =====
-const DUELISTS=["関羽","張飛","趙雲","馬超","黄忠","魏延","凌統","夏侯惇","張遼","許褚","典韋","徐晃","甘寧","太史慈","周泰","孟獲","顔良","文醜"];
+const DUELISTS=["関羽","張飛","趙雲","馬超","黄忠","魏延","凌統","夏侯惇","張遼","許褚","典韋","徐晃","甘寧","太史慈","周泰","孟獲","顔良","文醜","呂布","董卓","華雄"];
 // 一騎討ちの相手にならない軍師・術者系（確定仕様：一騎討ちは勇猛系のみ）。対象は COMP_DEFS の軍師（strat）全員＋敵専用の張角三兄弟。
 // ボス戦・登場会話・降将などの他システムには影響しない（塞ぐのは一騎討ちの提示経路だけ）
 // 一騎討ちの相手にしない面々：軍師・支援役と、武人として戦うイメージのない者（術者の張三兄弟、文官・名士の袁術・劉表）。最終ボスかどうかではなく「一騎討ちが成立するか」で決める
@@ -2295,6 +2499,7 @@ function finishDuel(){
 }
 function applyDuelResult(){
  G.duelCount=(G.duelCount||0)+1;if(G.duel&&G.duel.win===true)G.duelWins=(G.duelWins||0)+1;
+ if(G.duel&&G.duel.win===true){try{const dv=loadDuelVs();const en=G.duel.e&&G.duel.e.name;if(en){dv[en]=(dv[en]||0)+1;localStorage.setItem("sgk_duel_vs",JSON.stringify(dv));}}catch(e){}}
  if(G.duel&&G.duel.win===true){try{const dc=JSON.parse(localStorage.getItem("sgk_duel_char")||"{}");dc[G.duel.ally]=(dc[G.duel.ally]||0)+1;localStorage.setItem("sgk_duel_char",JSON.stringify(dc));if((dc["関羽"]||0)>=3&&typeof unlockEpithet==="function")unlockEpithet("関羽");}catch(e){}}
  const d=G.duel;const e=d.e;G.duel=null;hideDuelCmds();
  G.duelCdChar[e.name]=120;G.duelCdGlobal=(typeof curStage==="function"&&curStage().id==="kahoukan")?18:45; // 葭萌関：一騎討ちの間隔が短いG.lord.ifr=Math.max(G.lord.ifr||0,1);G.party.forEach(p=>{p.ifr=Math.max(p.ifr||0,1);});G.enemies.forEach(x=>{if(!x.dead){x.windT=0;x.cdT=Math.max(x.cdT||0,0.5);}});
@@ -2394,7 +2599,7 @@ addEventListener("keydown",e=>{if(dialogOpen&&(e.key===" "||e.key==="Enter")){e.
 // 登用
 function recruitBagBuild(){
  const owned=new Set(allMemberNames());
- const names=COMP_DEFS.filter(c=>!owned.has(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")).map(c=>c[0]);
+ const names=COMP_DEFS.filter(c=>!owned.has(c[0])&&charUnlocked(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹")).map(c=>c[0]);
  let miss={};try{miss=JSON.parse(localStorage.getItem("sgk_recruit_miss")||"{}");}catch(e){}
  const pn=partyNames();
  const synNames=new Set(COMPAT.filter(cp=>cp.t!=="bad"&&cp.m.some(n=>pn.includes(n))).flatMap(cp=>cp.m));
@@ -2409,7 +2614,7 @@ function buildRecruitPicks(forceName){
  if(!G.recruitBag)G.recruitBag=recruitBagBuild();
  const picks=[];const lf=G.lord.faction;
  const defOf=n=>COMP_DEFS.find(c=>c[0]===n);
- const takeDef=c=>{if(c&&!owned.has(c[0])&&!picks.includes(c)){picks.push(c);const i=G.recruitBag.indexOf(c[0]);if(i>=0)G.recruitBag.splice(i,1);return true;}return false;};
+ const takeDef=c=>{if(c&&charUnlocked(c[0])&&!owned.has(c[0])&&!picks.includes(c)){picks.push(c);const i=G.recruitBag.indexOf(c[0]);if(i>=0)G.recruitBag.splice(i,1);return true;}return false;};
  // 徐庶の薦才と倒したボスの確定枠は袋に優先する
  if(has("徐庶")&&!owned.has("諸葛亮"))takeDef(defOf("諸葛亮"));
  const gName=forceName||G.lastBossName;
@@ -2441,7 +2646,7 @@ function buildRecruitPicks(forceName){
 }
 function openRecruit(forceName){
  sfxFanfare();G.modal=true;G.paused=true;
- const picks=buildRecruitPicks(forceName);if(G.repBonus){G.repBonus=0;const ex=COMP_DEFS.find(c=>!picks.includes(c)&&!partyNames().includes(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹"));if(ex)picks.push(ex);}
+ const picks=buildRecruitPicks(forceName);if(G.repBonus){G.repBonus=0;const ex=COMP_DEFS.find(c=>!picks.includes(c)&&!partyNames().includes(c[0])&&charUnlocked(c[0])&&(c[4]!=="ex"||G.lord.name==="袁紹"));if(ex)picks.push(ex);}
  picks.forEach(c=>{G.recruitSeen[c[0]]=1;});G.recruitHist.push(picks.map(c=>c[2]));if(G.recruitHist.length>6)G.recruitHist.shift();G._lastPicks=picks.map(c=>c[0]);try{if(G._lastPicks.includes(localStorage.getItem("sgk_fav")))G.favDone=true;}catch(e){}
  const full=realPartyCount()>=3;
  $("modalTitle").textContent=full?"入れ替え ― 誰を仲間に迎える？":"登用 ― 誰を仲間に迎える？";
@@ -2584,7 +2789,7 @@ function doMove(idx){
   G.enemies=G.enemies.filter(e=>!e.dead);
   G.fires=[];G.supply=null;G.chest=null;G.cart=null;G.surgeT=0;G._provokeBark=true;
   G.stageTime=0;G.terrainDone=false;G.spawnCalmT=6;G.rampT=10;G._horseUsed=false;G.weather=weatherFor(STAGES[idx].id,G.moveCount);if(G.weather&&G.weather.id!=="clear")G.banners.push({txt:"天候："+G.weather.name,sub:WX_DESC[G.weather.id]||"",t:2.6,col:"#aee2ff"});
-  G.visited.push(idx);seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[idx].id]||null;G.gimmickUsed=false;
+  G.visited.push(idx);markStageVisit(idx);seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[idx].id]||null;G.gimmickUsed=false;
   terrainCv=null;
   const S=STAGES[idx];
   G.splashWait=true;
@@ -2777,7 +2982,7 @@ function applyTreasure(id){if(id==="gyokuji"||id==="motoku")G.mods.xp*=id==="gyo
 
 // ===== 武将詳細（プレイ中に仲間を確認する） =====
 const PERS_LABEL={guard:["護衛型","君主のすぐ側を離れず、近づいてきた敵を迎え撃つ"],charge:["突撃型","勝手に敵陣へ斬り込んで暴れ回る。孤立したら救援に向かおう"],roam:["遊撃型","弓兵や精鋭を狙って戦場を広く動き回る"],strat:["軍師型","敵から距離を取りながら、計略で戦場の流れを変える"],support:["支援型","距離を取りながら回復と補助でパーティを支える"],follow:["本隊型","君主の周囲で隊列を組み、堅実に戦う"]};
-const SIG_DESC={"凌統":"前方へ突進し、着地点の周囲（半径88）に攻撃力×3.2の範囲ダメージ。自分のHPが減っているほど威力が上がり、最大で約2倍","関羽":"周囲（半径120）の敵すべてに攻撃力×3.2の範囲ダメージ","張飛":"咆哮で周囲（半径130）の敵を吹き飛ばし、1.6秒間怯ませる","趙雲":"周囲（半径200）の敵を最大7体まで、攻撃力×2.6で斬り抜ける","馬超":"前方へ突進し、着地点の周囲（半径80）に攻撃力×2.9の範囲ダメージ","黄忠":"最もHPの高い敵1体に攻撃力×7.0の狙撃","諸葛亮":"足元に八陣図（半径150・5秒間）を展開し、敵全体を3秒間鈍らせる","龐統":"周囲（半径170）の敵に連環を付与（4秒間）。受けたダメージの一部が近くの敵にも伝わる","郭嘉":"所持している全計略の残り待ち時間を半分に短縮する","司馬懿":"敵全体を4秒間鈍らせ、増援の到着も遅らせる","周瑜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","陸遜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","華佗":"最も傷ついた味方1人を最大HPの25%回復する","貂蝉":"周囲（半径150）の敵を魅了し、2秒間足止めする","典韋":"周囲（半径85）の敵すべてに攻撃力×3.5の範囲ダメージ","許褚":"前方へ突進し、着地点の周囲（半径80）に攻撃力×2.9の範囲ダメージ","徐晃":"周囲（半径98）に攻撃力×3.4の範囲ダメージ＋吹き飛ばし","呂蒙":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","甘寧":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲"};
+const SIG_DESC={"呂布":"前方へ突進し、着地点の周囲（半径100）に攻撃力×3.2×1.15の範囲ダメージ。進化で斬撃が増える","董卓":"周囲（半径130）の敵すべてに攻撃力×3.2×1.05の範囲ダメージを与え、1.2秒足止めして吹き飛ばす","華雄":"前方へ突進し、着地点の周囲（半径88）に攻撃力×3.2×1.1の範囲ダメージ","凌統":"前方へ突進し、着地点の周囲（半径88）に攻撃力×3.2の範囲ダメージ。自分のHPが減っているほど威力が上がり、最大で約2倍","関羽":"周囲（半径120）の敵すべてに攻撃力×3.2の範囲ダメージ","張飛":"咆哮で周囲（半径130）の敵を吹き飛ばし、1.6秒間怯ませる","趙雲":"周囲（半径200）の敵を最大7体まで、攻撃力×2.6で斬り抜ける","馬超":"前方へ突進し、着地点の周囲（半径80）に攻撃力×2.9の範囲ダメージ","黄忠":"最もHPの高い敵1体に攻撃力×7.0の狙撃","諸葛亮":"足元に八陣図（半径150・5秒間）を展開し、敵全体を3秒間鈍らせる","龐統":"周囲（半径170）の敵に連環を付与（4秒間）。受けたダメージの一部が近くの敵にも伝わる","郭嘉":"所持している全計略の残り待ち時間を半分に短縮する","司馬懿":"敵全体を4秒間鈍らせ、増援の到着も遅らせる","周瑜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","陸遜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","華佗":"最も傷ついた味方1人を最大HPの25%回復する","貂蝉":"周囲（半径150）の敵を魅了し、2秒間足止めする","典韋":"周囲（半径85）の敵すべてに攻撃力×3.5の範囲ダメージ","許褚":"前方へ突進し、着地点の周囲（半径80）に攻撃力×2.9の範囲ダメージ","徐晃":"周囲（半径98）に攻撃力×3.4の範囲ダメージ＋吹き飛ばし","呂蒙":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","甘寧":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲"};
 const GENERIC_SIG={melee:["猛攻・連撃","周囲（半径95）の敵すべてに攻撃力×3.2の範囲ダメージ"],cav:["猛攻・連撃","周囲（半径95）の敵すべてに攻撃力×3.2の範囲ダメージ"],archer:["狙撃・連射","射程（260）内の敵を最大5体まで、攻撃力×2.2で撃ち抜く"],strat:["計略・連弾","最も近い敵集団の中心（半径80）に攻撃力×2.9の範囲ダメージ"],support:["支援・回復","周囲（半径300）の味方全員を最大HPの12%回復（君主は8%）"]};
 const SPECIAL_DESC={"凌統":"復讐心：体力が減るほど通常攻撃の威力が上がる（最大+50%）。父・凌操を討った甘寧への因縁が力になる","郭嘉":"遺計：撤退した時、一度だけ周囲に大ダメージを与え、全計略の待ち時間をリセットする","徐庶":"薦才：徐庶がいる時、次の登用で諸葛亮が必ず候補に現れる","華佗":"名医：仲間の撤退からの復帰時間が25秒→17秒に短縮。医術：14秒ごとに射程内の最も傷ついた味方1人を最大HPの10%回復する","魯粛":"仲介：パーティ内の悪相性のマイナスを和らげる","孟獲":"七縱七擒：撤退して復帰するたび、攻撃+10%が積み上がる","孫尚香":"政略結婚：戦闘中、たまに実家へ一時離脱する。帰ってくる時は攻撃+15%の強化付き","于禁":"樊城の屈辱：水辺では統制が乱れるが、水辺から離れると持ち直す（悪相性「樊城の屈辱」参照）","馬謖":"街亭：水のない高所（画面上部）では計略が空回りすることがある（張飛がいると失敗しない）","賈詡":"毒士：計略で敵の同士討ちを誘うことがある","司馬懿":"忍耐：定期計略のたびに敵の動きを鈍らせる","関羽":"刮骨療毒：華佗が仲間にいると、自動で回復し続ける","周泰":"忠臣：孫権の近くにいると自動で回復する","劉備":"仁徳オーラ：近くの仲間を少しずつ回復する","曹操":"覇道：会心率が高く、計略の回転が速い","孫権":"守成：防御が高く、近くの周泰を回復させる"};
 const WEAPON_NAME={dual:"双剣",longsword:"大剣",sword:"剣",guandao:"偃月刀",spear:"槍",bow:"弓",fan:"羽扇",hammer:"大槌",halberd:"双戟",staff:"杖"};
@@ -3582,7 +3787,7 @@ const SIGNATURES={
  "関羽":{n:"青龍偃月・薙ぎ払い",cd:14},"張飛":{n:"燕人咆哮",cd:13},"趙雲":{n:"単騎駆け・七進",cd:13},"馬超":{n:"鉄騎突撃",cd:13},
  "黄忠":{n:"老将の狙撃",cd:12},"諸葛亮":{n:"八陣図・展開",cd:16},"龐統":{n:"連環の計",cd:15},"郭嘉":{n:"十勝十敗の読み",cd:18},
  "司馬懿":{n:"冢虎の遅延策",cd:16},"周瑜":{n:"火攻め・赤壁",cd:16},"陸遜":{n:"夷陵の火",cd:16},"華佗":{n:"青嚢の治療",cd:14},
- "貂蝉":{n:"傾国の舞",cd:15},"典韋":{n:"双戟乱舞",cd:13},"許褚":{n:"虎痴の突進",cd:13},"徐晃":{n:"長駆の大斧",cd:13},"呂蒙":{n:"白衣渡江",cd:14},"甘寧":{n:"鈴の音・奇襲",cd:13},"凌統":{n:"復讐の突撃",cd:13}};
+ "貂蝉":{n:"傾国の舞",cd:15},"典韋":{n:"双戟乱舞",cd:13},"許褚":{n:"虎痴の突進",cd:13},"徐晃":{n:"長駆の大斧",cd:13},"呂蒙":{n:"白衣渡江",cd:14},"甘寧":{n:"鈴の音・奇襲",cd:13},"凌統":{n:"復讐の突撃",cd:13},"呂布":{n:"天下無双・画戟旋風",cd:13},"董卓":{n:"暴虐の威圧",cd:14},"華雄":{n:"汜水関の猛斬",cd:13}};
 // 仲間の固有技発動カットイン（小窓）：肖像画（FACE_SRC）の顔アップ＋スキル名を短く表示する。
 // 発動が重なっても煩くならないよう、表示は約1.2秒・最低1.5秒間隔に制限する（頭上の技名テキストは従来どおり併用）。
 let sigCutinTimer=0,lastSigCutin=0;
@@ -3611,8 +3816,8 @@ function showUpgCutin(p,title){
  clearTimeout(sigCutinTimer);sigCutinTimer=setTimeout(()=>{el.classList.remove("on");},1400);
  lastSigCutin=performance.now();
 }
-const SIG_COL={"関羽":"#7ae0a3","張飛":"#ffb27a","趙雲":"#eef2f8","馬超":"#ffe9a8","黄忠":"#ffd964","諸葛亮":"#c8aaff","龐統":"#ffb98a","郭嘉":"#9fd0ff","司馬懿":"#8a97d8","周瑜":"#ff8a5a","陸遜":"#ffab6a","華佗":"#7ae0a3","貂蝉":"#ff9ab0","典韋":"#ff9a5a","許褚":"#ffb27a","徐晃":"#ffd9a0","呂蒙":"#e8ecf2","甘寧":"#ffd964","凌統":"#ff8a7a"};
-const SIG_EVO_DESC={"関羽":"薙ぎ払いの斬撃が+1枚","張飛":"咆哮の衝撃波が+1重","趙雲":"駆け抜ける対象が+2","馬超":"突撃の斬撃が+1枚","黄忠":"狙撃がもう1人も貫く","諸葛亮":"八陣図に内陣が加わる","龐統":"連環の輪が広がる","郭嘉":"読みの波紋が+1重","司馬懿":"遅延の波紋が+1重","周瑜":"火の手が+1箇所","陸遜":"火の線が+1箇所伸びる","華佗":"治療がもう1人にも届く","貂蝉":"舞の花びらと輪が増える","典韋":"双戟の斬撃が+1枚","許褚":"突進の斬撃が+1枚","徐晃":"大斧の斬撃が+1枚","呂蒙":"奇襲の斬撃が+1枚","甘寧":"鈴の音波が+1重","凌統":"突撃の斬撃が+1枚"};
+const SIG_COL={"関羽":"#7ae0a3","張飛":"#ffb27a","趙雲":"#eef2f8","馬超":"#ffe9a8","黄忠":"#ffd964","諸葛亮":"#c8aaff","龐統":"#ffb98a","郭嘉":"#9fd0ff","司馬懿":"#8a97d8","周瑜":"#ff8a5a","陸遜":"#ffab6a","華佗":"#7ae0a3","貂蝉":"#ff9ab0","典韋":"#ff9a5a","許褚":"#ffb27a","徐晃":"#ffd9a0","呂蒙":"#e8ecf2","甘寧":"#ffd964","凌統":"#ff8a7a","呂布":"#ff6a5a","董卓":"#c39aff","華雄":"#ffa94d"};
+const SIG_EVO_DESC={"関羽":"薙ぎ払いの斬撃が+1枚","張飛":"咆哮の衝撃波が+1重","趙雲":"駆け抜ける対象が+2","馬超":"突撃の斬撃が+1枚","黄忠":"狙撃がもう1人も貫く","諸葛亮":"八陣図に内陣が加わる","龐統":"連環の輪が広がる","郭嘉":"読みの波紋が+1重","司馬懿":"遅延の波紋が+1重","周瑜":"火の手が+1箇所","陸遜":"火の線が+1箇所伸びる","華佗":"治療がもう1人にも届く","貂蝉":"舞の花びらと輪が増える","典韋":"双戟の斬撃が+1枚","許褚":"突進の斬撃が+1枚","徐晃":"大斧の斬撃が+1枚","呂蒙":"奇襲の斬撃が+1枚","甘寧":"鈴の音波が+1重","凌統":"突撃の斬撃が+1枚","呂布":"突撃の斬撃が+1枚","董卓":"威圧の衝撃波が+1重","華雄":"猛斬の斬撃が+1枚"};
 function sigBurst(x,y,col,n,pow){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=(0.5+Math.random()*0.7)*(pow||1.7);G.parts.push({x,y:y-6,vx:Math.cos(a)*s,vy:Math.sin(a)*s*0.55-0.7,t:0.4+Math.random()*0.3,col,s:2+Math.random()*1.6});}}
 function sigPetals(x,y,n){const cols=["#ff9ab0","#ffc2d4","#ff7d9c","#ffe3ec"];for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,d=Math.random()*48;G.parts.push({x:x+Math.cos(a)*d,y:y-8-Math.random()*24,vx:(Math.random()-0.5)*0.9,vy:-0.15-Math.random()*0.45,t:0.9+Math.random()*0.5,col:cols[i%4],s:2.6+Math.random()*1.8});}}
 function sigDelay(fn,sec){if(!G.delayed)G.delayed=[];G.delayed.push({t:sec,fn});}
@@ -3626,9 +3831,9 @@ function sigReady(p){
  switch(p.name){
   case "黄忠":case "周瑜":case "陸遜":case "呂蒙":case "甘寧":case "司馬懿":return anyE();
   case "関羽":return near(120*SR);
-  case "張飛":return near(130*SR);
-  case "趙雲":return near(200);
-  case "凌統":case "馬超":case "許褚":return near(170);
+  case "張飛":case "董卓":return near(130*SR);
+  case "趙雲":case "呂布":return near(200);
+  case "凌統":case "馬超":case "許褚":case "華雄":return near(170);
   case "諸葛亮":return near(150);
   case "龐統":return near(170*SR);
   case "貂蝉":return near(150*SR);
@@ -3677,7 +3882,10 @@ function sigSkill(p){
   case "典韋":aoe(p.x,p.y,85,1.1);G.slashes.push({x:p.x,y:p.y,face:1,t:0.22,col:"#ffb27a"});sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:-1,t:0.22,col:"#ffb27a"}),0.07);if(EV>=1)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.24,col:"#ff8a5a",big:1}),0.15);sigBurst(p.x,p.y,"#ff9a5a",7,1.9);break;
    case "徐晃":{aoe(p.x,p.y,98,1.05);G.enemies.forEach(e=>{if(!e.dead&&dist(p,e)<108){const d=dist(p,e)||1;e.kx=(e.kx||0)+(e.x-p.x)/d*6;e.ky=(e.ky||0)+(e.y-p.y)/d*6;}});G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.26,col:"#ffd9a0",big:1});if(EV>=1)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.24,col:"#ffb27a",big:1,r:42,rot:-0.5}),0.09);for(let i2=0;i2<6;i2++)G.parts.push({x:p.x+(Math.random()*44-22),y:p.y+10,vx:(Math.random()-0.5)*1.4,vy:-0.5-Math.random()*0.5,t:0.45,col:"#8a6f4d",s:2.4});G.shake=Math.max(G.shake,3);}break;
   case "呂蒙":case "甘寧":{let best=null,bd=1e9;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,300);if(tgt){p.x=tgt.x-20*p.face;p.y=tgt.y;damageEnemy(tgt,dmg*1.4,true,p.name);if(p.name==="呂蒙"){G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#e8ecf2"});if(EV>=1)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#ffffff",r:24,rot:0.4}),0.08);sigBurst(tgt.x,tgt.y,"#e8ecf2",6,1.6);}else{G.rings.push({x:tgt.x,y:tgt.y,r:6,t:0.3,col:"#ffd964"});G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.48,col:"#ffe9a8"});if(EV>=1)G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.66,col:"#ffd964"});sigBurst(tgt.x,tgt.y,"#ffd964",6,1.6);}addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);}}break;
-  default:{
+    case "呂布":{const dir=p.face||1;const ox0=p.x;p.x+=dir*120;aoe(p.x,p.y,100,1.15);G.slashes.push({x:p.x,y:p.y,face:dir,t:0.28,col:"#ff6a5a",big:1});for(let i2=0;i2<EV;i2++)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.25,col:"#ffb0a0",big:1,r:50,rot:0.5}),0.09*(i2+1));for(let i2=0;i2<6;i2++)G.parts.push({x:ox0+dir*(18+i2*18),y:p.y+6,vx:-dir*0.4,vy:-0.3-Math.random()*0.4,t:0.4,col:"#c9b489",s:2.6});G.rings.push({x:p.x,y:p.y,r:12,t:0.4,col:"#ff6a5a"});}break;
+  case "董卓":{aoe(p.x,p.y,130,1.05);G.enemies.forEach(e=>{if(!e.dead&&dist(p,e)<140*SR){e.stun=Math.max(e.stun||0,1.2);const d=dist(p,e)||1;e.kx=(e.kx||0)+(e.x-p.x)/d*8;e.ky=(e.ky||0)+(e.y-p.y)/d*8;}});G.rings.push({x:p.x,y:p.y,r:14,t:0.45,col:"#c39aff"});if(EV>=1)G.rings.push({x:p.x,y:p.y,r:6,t:0.6,col:"#8a5fd0"});sigBurst(p.x,p.y,"#c39aff",10+EV*4);}break;
+  case "華雄":{const dir=p.face||1;p.x+=dir*90;aoe(p.x,p.y,88,1.1);G.slashes.push({x:p.x,y:p.y,face:dir,t:0.22,col:"#ffa94d",big:1});if(EV>=1)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ffd0a0",big:1,r:42,rot:0.5}),0.09);G.rings.push({x:p.x,y:p.y,r:9,t:0.35,col:"#ffa94d"});}break;
+default:{
    if(p.role==="strat"){let cx=0,cy=0,n=0;G.enemies.filter(e=>!e.dead).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,16).forEach(e=>{cx+=e.x;cy+=e.y;n++;});if(n){cx/=n;cy/=n;aoe(cx,cy,80,0.9);const fc=FACTION_COLOR[p.faction]||"#bfe3ff";G.rings.push({x:cx,y:cy,r:10,t:0.35,col:fc});G.rings.push({x:cx,y:cy,r:4,t:0.5,col:fc});if(EV>=1)G.rings.push({x:cx,y:cy,r:2,t:0.65,col:"#ffffff"});sigBurst(cx,cy,fc,6+EV*2,1.8);}}
    else if(p.role==="support"){const _sh=1+0.15*(((G.gunrei||{}).support)||0);G.party.forEach(a=>{if(!a.away&&a.downT<=0&&Math.hypot(a.x-p.x,a.y-p.y)<=300){const _hr=healUnit(a,a.maxhp*0.12*_sh);healText(a,_hr,p.name);G.rings.push({x:a.x,y:a.y,r:5,t:0.4,col:"#7ae0a3"});}});if(Math.hypot(L.x-p.x,L.y-p.y)<=300){healText(L,healUnit(L,L.maxhp*0.08*_sh),p.name);if(!G.links)G.links=[];G.links.push({x1:p.x,y1:p.y-16,x2:L.x,y2:L.y-16,t:0.35,col:"#7ae0a3"});}G.rings.push({x:L.x,y:L.y,r:10,t:0.5,col:"#7ae0a3"});if(EV>=1)G.rings.push({x:p.x,y:p.y,r:6,t:0.45,col:"#a5f2a5"});}
    else if(p.role==="archer"){let n=0;const cap=5+2*EV;for(const e of G.enemies){if(n>=cap)break;if(!e.dead&&dist(p,e)<260){damageEnemy(e,dmg*0.7,true,p.name);if(!G.links)G.links=[];G.links.push({x1:p.x,y1:p.y-16,x2:e.x,y2:e.y-10,t:0.22,col:"#ffe9a8"});n++;}}}
@@ -4165,6 +4373,7 @@ function trySurrender(e,d){
  const def=COMP_DEFS.find(c=>c[0]===e.name);
  if(!def)return false;
  if(def[4]==="ex"&&G.lord.name!=="袁紹")return false;
+ if(!charUnlocked(def[0]))return false;
  if(G.party.some(p=>p.name===e.name))return false;
  if(realPartyCount()>=3)return false;
  if(Math.random()>=0.25)return false;
@@ -4178,7 +4387,7 @@ function trySurrender(e,d){
  ],()=>{
   if(addCompanion(def))startJoinDialog(def);
   // ステージボスが降った場合は、撃破時と同じ進行（撤退・進軍予約）をここで担う。登用枠は降将本人が埋める
-  if(wasBoss){G.stageBossDown=true;G.enemies.forEach(x=>{if(!x.boss&&!x.isFinal&&!x.dead)x.retreat=true;});if(G.moveCount<2)G.pendingMove=1;else G.pendingFinal=true;checkPendingMove();}
+  if(wasBoss){markStageClear(STAGES[G.stage].id);G.stageBossDown=true;G.enemies.forEach(x=>{if(!x.boss&&!x.isFinal&&!x.dead)x.retreat=true;});if(G.moveCount<2)G.pendingMove=1;else G.pendingFinal=true;checkPendingMove();}
  });
  return true;
 }
@@ -4315,6 +4524,13 @@ function endGame(win,survived){
    if(win&&G.shura)grant("shura");
    if(mGain){try{localStorage.setItem("sgk_missions",JSON.stringify(ms));}catch(e){}gunkou+=mGain;saveGunkou();unlockLines+=`<span class="rs-line">📜 名将録ミッション達成！ 軍功 +${mGain}</span>`;}}
   if(win){const cands=[G.lord,...G.party].filter(m=>WIN_LINES[m.name]);if(cands.length){const m=cands[Math.floor(Math.random()*cands.length)];winLine=`💬 ${m.name}：「${WIN_LINES[m.name]}」`;}}}
+ { // キャラ解放：記録の更新と条件判定（リザルト表示前）
+  try{localStorage.setItem("sgk_kills_total",String(killsTotal()+(G.kills||0)));}catch(e){}
+  try{(G.visited||[]).forEach(ix=>{const S2=STAGES[ix];if(S2){const v=loadStageVisited();if(!v[S2.id]){v[S2.id]=1;localStorage.setItem("sgk_stagevisited",JSON.stringify(v));}}});const ms2=(G.moveCount||0)+1;if(ms2>maxStageReached())localStorage.setItem("sgk_maxstage",String(ms2));}catch(e){}
+  if(win){try{const cp=loadClearParty();let ch=false;G.party.forEach(p=>{if(!cp[p.name]){cp[p.name]=1;ch=true;}});if(ch)localStorage.setItem("sgk_clearparty",JSON.stringify(cp));if((G.partyDowns||0)===0)localStorage.setItem("sgk_noretreat_clear","1");}catch(e){}}
+  const newlyU=evalCharUnlocks();
+  if(newlyU.length){pendingCharUnlocks=newlyU;unlockLines+=newlyU.map(n=>`<span class="rs-line unlockReveal">${(typeof FACE_SRC!=="undefined"&&FACE_SRC[n])?`<img src="${FACE_SRC[n]}" alt="">`:"🔓"} ${n} が登用可能になった！</span>`).join("");}
+ }
  {const kv=(k,v)=>`<div class="rs-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   const hlBody=`${winLine?`<span class="rs-line">${winLine}</span>`:""}${unlockLines}${resultHighlightLines(win)}${(!win&&G.deathCause)?`<span class="rs-line" style="color:#ff9a7a">敗因：${G.deathCause}</span>`:""}`;
   const chrBody=resultChronicleLines(),hintBody=resultHintLine();
@@ -4333,7 +4549,7 @@ function endGame(win,survived){
  {const eb=$("endlessBtn");if(eb)eb.style.display=win?"":"none";}
  {const rp=$("resultParty");if(rp){rp.innerHTML="";[G.lord,...G.party].forEach(m=>{const d=document.createElement("div");d.className="rp";const pu=portraitURL(m);d.innerHTML=(pu?`<img src="${pu}">`:"")+`<span class="rpnm">${m.name}</span>`;rp.appendChild(d);});}}
  cv.classList.remove("pausedFx");
- const showResult=()=>{$("resultScreen").classList.remove("hidden");countUpKills();};
+ const showResult=()=>{$("resultScreen").classList.remove("hidden");countUpKills();if(pendingCharUnlocks&&pendingCharUnlocks.length){const names=pendingCharUnlocks.slice();setTimeout(()=>{if(pendingCharUnlocks.length)showUnlockReveal(names);},700);}};
  const f=$("fadeLayer");
  if(!f){showResult();return;}
  if(win){f.classList.add("gold");fadeTo(1,150,()=>{showResult();fadeTo(0,650,()=>f.classList.remove("gold"));});}
