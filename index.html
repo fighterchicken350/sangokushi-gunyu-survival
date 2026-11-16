@@ -330,7 +330,6 @@ h1.title{letter-spacing:.16em}
   <h1 class="title">三国志群雄サバイバル</h1>
   <div class="sub">15分、生き残れ。君主を選び、武将を登用し、相性で戦場を変えろ</div>
   <div class="sub" id="metaInfo"></div>
-  <div class="sub" id="dailyInfo"></div>
   <div class="tlabel">― 君主を選ぶ ―</div>
   <div class="cards" id="lordCards"></div>
   <div id="lordDetail"></div>
@@ -1011,10 +1010,16 @@ joy.addEventListener("touchmove",e=>{for(const t of e.changedTouches){if(t.ident
 const joyEnd=e=>{for(const t of e.changedTouches){if(t.identifier===joyId){joyId=null;joyOrg=null;joyVec={x:0,y:0};jBase.style.display=jKnob.style.display="none";}}};
 joy.addEventListener("touchend",joyEnd);joy.addEventListener("touchcancel",joyEnd);
 let mouseDown=false,mouseVec={x:0,y:0};
-cv.addEventListener("pointerdown",e=>{mouseDown=true;});
-joy.addEventListener("pointerdown",e=>{mouseDown=true;});
-addEventListener("pointerup",()=>{mouseDown=false;mouseVec={x:0,y:0};});
-addEventListener("pointermove",e=>{if(mouseDown&&G){const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const dx=x-G.lord.x,dy=y-G.lord.y;const len=Math.hypot(dx,dy);mouseVec=len>12?{x:dx/len,y:dy/len}:{x:0,y:0};}});
+// マウス経路はマウス(とペン)専用。タッチは pointer イベントも並行発火するため、touch はここでは扱わない
+// （タッチ移動はスティック joyVec に一本化する。二重に効くと下記の旧バグのように方向が壊れる）。
+cv.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch")mouseDown=true;});
+joy.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch")mouseDown=true;});
+const mouseReset=()=>{mouseDown=false;mouseVec={x:0,y:0};};
+addEventListener("pointerup",mouseReset);addEventListener("pointercancel",mouseReset);
+// 方向は「ポインタのワールド座標 − 君主のワールド座標」で取る。旧実装は画面座標(0..960/0..540)から
+// ワールド座標(2560x1600)の G.lord.x/y を直接引いており、入力方向と無関係な左上ベクトルが常時生成され、
+// 移動処理で joyVec を上書きしていた（実機で「ドラッグした方向と違う方に動く」主因）。
+addEventListener("pointermove",e=>{if(mouseDown&&G&&e.pointerType!=="touch"){const r=cv.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const dx=x+(G.cam?G.cam.x:0)-G.lord.x,dy=y+(G.cam?G.cam.y:0)-G.lord.y;const len=Math.hypot(dx,dy);mouseVec=len>12?{x:dx/len,y:dy/len}:{x:0,y:0};}});
 // ボタン入力の共通化：実機(iOS)で click が長押しコールアウトやジェスチャ判定に奪われて発火しない事象への対策。
 // pointerdown/touchstart/click の3経路で受け、同一ジェスチャの重複発火（250ms以内）は1回に丸める（押した瞬間に反応する）。
 function bindPress(el,fn){let lastPtr=-1000,lastPtrType="";
