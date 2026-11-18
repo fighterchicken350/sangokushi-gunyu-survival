@@ -536,7 +536,7 @@ h1.title{letter-spacing:.16em}
 
 <div id="detailModal" class="hidden"><h2>武将詳細</h2><div id="detailTabs"></div><div id="detailBody"></div><button class="btn sub2" id="detailClose">閉じる</button></div>
 
-<div id="pauseMenu" class="hidden"><div class="pm-title">一時停止中</div><button class="btn pm-btn" id="pmResume">▶ 再開</button><button class="btn pm-btn" id="pmSuspend">💾 中断する（保存してタイトルへ）</button><button class="btn pm-btn" id="pmDetail">📖 武将詳細</button><button class="btn pm-btn" id="pmMute">🔊 音ON</button><button class="btn pm-btn" id="pmRange">🎯 範囲ON</button></div>
+<div id="pauseMenu" class="hidden"><div class="pm-title">一時停止中</div><button class="btn pm-btn" id="pmResume">▶ 再開</button><button class="btn pm-btn" id="pmSuspend">💾 中断する（保存してタイトルへ）</button><button class="btn pm-btn" id="pmDetail">📖 武将詳細</button><button class="btn pm-btn" id="pmMute">🔊 音ON</button><button class="btn pm-btn" id="pmRange">🎯 範囲ON</button><button class="btn pm-btn" id="pmLite">🌿 軽量OFF</button></div>
 
 <div id="dialogBox" class="hidden"><img id="dlgFace" alt=""><div id="dlgMain"><span id="dlgName"></span><div id="dlgText"></div><div id="dlgNext">▼ つぎへ</div></div><button id="dlgSkip">スキップ ▶▶</button></div>
 
@@ -1415,7 +1415,7 @@ function refreshCondBtns(){const c=loadCond();const set=(id,on,lb,bonus)=>{const
 refreshCondBtns();
 // 一時停止メニュー：戦闘中の右側ボタンは一時停止だけに絞り、中断・武将詳細・音・範囲は一時停止メニューへ集約する
 function setPaused(on){if(!G)return;G.paused=!!on;$("pauseBtn").textContent=G.paused?"▶ 再開":"⏸ 一時停止";cv.classList.toggle("pausedFx",G.paused);const pm=$("pauseMenu");if(pm){pm.classList.toggle("hidden",!G.paused);if(G.paused)refreshPauseMenu();}}
-function refreshPauseMenu(){refreshRangeBtn();if(typeof refreshMuteBtn==="function")refreshMuteBtn();}
+function refreshPauseMenu(){refreshRangeBtn();refreshLiteBtn();if(typeof refreshMuteBtn==="function")refreshMuteBtn();}
 bindPress($("pauseBtn"),()=>{if(G&&!G.modal)setPaused(!G.paused);});
 bindPress($("pmResume"),()=>{if(G&&!G.modal&&G.paused)setPaused(false);});
 bindPress($("pmSuspend"),()=>{if(!G||G.over||!G.paused||G.modal)return;fadeTo(1,260,()=>{backToTitle(true);fadeTo(0,260);});});
@@ -1424,6 +1424,13 @@ bindPress($("pmRange"),()=>{localStorage.setItem("sgk_range",rangeOn()?"0":"1");
 function rangeOn(){return localStorage.getItem("sgk_range")!=="0";}
 function refreshRangeBtn(){const b=$("pmRange");if(b)b.textContent=rangeOn()?"🎯 範囲ON":"🎯 範囲OFF";}
 refreshRangeBtn();
+// 軽量モード（熱対策・監査C-12）：粒子生成半減／ダメージ数字の間引き／敵の影オフ／小道具半減／描画を半フレームに間引き。デフォルトOFF、設定は localStorage に保存
+let LITE_MODE=false;try{LITE_MODE=localStorage.getItem("sgk_lite")==="1";}catch(e){}
+let _liteSkip=0;
+function liteOn(){return LITE_MODE;}
+function refreshLiteBtn(){const b=$("pmLite");if(b)b.textContent=LITE_MODE?"🌿 軽量ON":"🌿 軽量OFF";}
+bindPress($("pmLite"),()=>{LITE_MODE=!LITE_MODE;try{localStorage.setItem("sgk_lite",LITE_MODE?"1":"0");}catch(e){}refreshLiteBtn();});
+refreshLiteBtn();
 
 // 入力
 const keys={};let joyVec={x:0,y:0},joyId=null,joyCenter={x:0,y:0};
@@ -1832,7 +1839,7 @@ const BOSS_HINT={"呂布":"一騎討ちと単体火力で押し切れ","張角":
 // ===== 演出専用ユーティリティ（ゲーム本体の乱数列を消費しない／粒子は上限付き）=====
 let _fxSeed=987654321;function fxRand(){_fxSeed|=0;_fxSeed=(_fxSeed+0x6D2B79F5)|0;let t=Math.imul(_fxSeed^(_fxSeed>>>15),1|_fxSeed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;}
 function pushImgFx(key,x,y,w,h,t,opt){if(!G)return;if(!G.imgFx)G.imgFx=[];if(G.imgFx.length>60)return;const o=opt||{};G.imgFx.push({key,x,y,w,h,t,t0:t,rot:o.rot||0,grow:o.grow||0,anchor:o.anchor||"c"});}
-function fxPart(p){if(!G||!G.parts||G.parts.length>380)return;G.parts.push(p);}
+function fxPart(p){if(!G||!G.parts)return;if(LITE_MODE&&Math.random()<0.5)return;if(G.parts.length>(LITE_MODE?190:380))return;G.parts.push(p);} // 軽量モード時は粒子生成を半減＋上限も半分
 function fxBurst(x,y,col,n){for(let i=0;i<(n||10);i++){const a=Math.random()*Math.PI*2,sp=1+Math.random()*2.6;fxPart({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-0.6,t:0.55,col,s:2.6});}}
 // ===== エフェクト素材バッチ3・4：描画ヘルパー（画像が読めなければ従来描画にフォールバック） =====
 function fxImgReady(k){const im=ASSET_IMG[k];return (im&&im.complete&&im.naturalWidth>0)?im:null;}
@@ -1862,7 +1869,7 @@ function damageEnemy(e,dmg,crit,src,opts){
   e.tacMark=true;}if((e.boss||e.isFinal)&&(G.sceneBossDmgT||0)>0)dmg*=1.15;if((e.rivalT||0)>0&&src===e.rivalSrc)dmg*=1.1;if(src==="馬超"&&e.name==="許褚"&&G&&G.machaoVsXuchu)dmg*=1.3;if(e.name==="呂布"&&G&&G.sanei&&(src==="関羽"||src==="張飛"||(src==="君主"&&G.lord.name==="劉備")))dmg*=1.2;if(e.guardT>0)dmg*=(e.guardMul||0.55);if((e.elite||e.boss||e.isFinal)&&lvStk("totori"))dmg*=1+(0.08+0.04*lvStk("senpo:2"))*lvStk("totori");if((e.abT||0)>0&&(e.elite||e.boss||e.isFinal))dmg*=1+0.03*Math.min(5,e.abStk||0);if(lvStk("renkan")&&statusedEnemy(e))dmg*=1+0.10*lvStk("renkan");if(lvStk("haisui")&&G.lord.hp<=G.lord.maxhp*0.4)dmg*=1.2;e.hp-=dmg;e.flash=0.1;sfxHit();if(crit)sfxCrit();if(src)e.lastHit=src;
  const kbMul=e.boss?0.15:e.elite?0.3:e.type==="shield"?0.4:1;let kbF=1+0.3*lvStk("oshimodoshi");if(src&&src!=="君主"){const _cp=G.party.find(p=>p.name===src);if(_cp&&_cp.role==="melee")kbF*=1+0.25*(((G.gunrei||{}).melee)||0);}const kb=Math.min(2.4,0.7+dmg*0.014)*kbMul*kbF;const _ko=kbOriginOf(src);const dx=e.x-_ko.x,dy=e.y-_ko.y;const dl=Math.hypot(dx,dy)||1;if(!e.kbImm){e.kx=(e.kx||0)+dx/dl*kb;e.ky=(e.ky||0)+dy/dl*kb;}if(kb>0.5)e._kbT=0.3;
  for(let i=0;i<3;i++)G.parts.push({x:e.x,y:e.y-6,vx:(Math.random()-0.5)*3,vy:-Math.random()*2.4-0.4,t:0.28,col:crit?"#ffd964":"#fff2cc",s:2.2});if(crit)G.slashes.push({x:e.x,y:e.y,face:1,t:0.18,col:"#ffd964"});
- const isLordSrc=!src||src==="君主";e._tslot=((e._tslot||0)+1)%3;if(!((G.moveCount||0)>=2&&!crit&&Math.random()<0.7))G.texts.push({x:e.x+(Math.random()*12-6),y:e.y-24-e._tslot*11,txt:Math.round(dmg),t:0.7,t0:0.7,pop:crit?2:1,size:crit?17:13,col:(opts&&opts.poison)?"#b8e07a":(crit?"#ff5f4a":(!isLordSrc?"#aee2ff":(dmg>=40?"#ffd964":"#fff")))});
+ const isLordSrc=!src||src==="君主";e._tslot=((e._tslot||0)+1)%3;if(!((G.moveCount||0)>=2&&!crit&&Math.random()<0.7)&&!(LITE_MODE&&!crit&&Math.random()<0.5))G.texts.push({x:e.x+(Math.random()*12-6),y:e.y-24-e._tslot*11,txt:Math.round(dmg),t:0.7,t0:0.7,pop:crit?2:1,size:crit?17:13,col:(opts&&opts.poison)?"#b8e07a":(crit?"#ff5f4a":(!isLordSrc?"#aee2ff":(dmg>=40?"#ffd964":"#fff")))});
  if(e.chainT>0&&!e._ch){e._ch=1;G.enemies.forEach(o=>{if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<46){o.hp-=dmg*0.35;o.flash=0.1;if(o.hp<=0)killEnemy(o);}});e._ch=0;}
  if((e.elite||e.boss||e.isFinal)&&src&&lvStk("hakou"))applyArmorBreak(e);if(e.hp<=0){if(opts&&opts.tac)e.tacKill=true;if(crit)e._critKill=1;killEnemy(e);}}
 function gainGauge(v){if(!G||(G.gaugeCdT||0)>0)return;const _b=G.gauge;G.gauge=Math.min(100,G.gauge+v*(1+0.15*lvStk("renkei"))*(G._deepSpecial?1.15:1));if(_b<100&&G.gauge>=100&&!G.gaugeReadyShown){G.gaugeReadyShown=true;G.banners.push({txt:"計略 発動可能！",sub:"ゲージ満タン ― 右下の「計略」ボタンで放てる",t:2.6,col:"#ffd964"});sfxLevel();}}
@@ -3283,7 +3290,7 @@ function addCompanion(def){
  if(G.party.some(p=>p.name===name))return null;
  if(realPartyCount()>=3)return null;
  const before=new Set(activeCompatList().map(c=>c.n));
- G.party.push({name,kanji,faction:fac,role,x:G.lord.x,y:G.lord.y,maxhp:st.hp,hp:st.hp,atk:st.atk,range:st.range,cd:st.cd,atkT:Math.random()*0.5,downT:0,away:false,phase:Math.random()*6,skillT:3+Math.random()*3,sigT:6+Math.random()*5,guojiaUsed:false,shield:0,baseAtk:st.atk,baseMaxhp:st.hp,kills:0});
+ G.party.push({name,kanji,faction:fac,role,face:1,x:G.lord.x,y:G.lord.y,maxhp:st.hp,hp:st.hp,atk:st.atk,range:st.range,cd:st.cd,atkT:Math.random()*0.5,downT:0,away:false,phase:Math.random()*6,skillT:3+Math.random()*3,sigT:6+Math.random()*5,guojiaUsed:false,shield:0,baseAtk:st.atk,baseMaxhp:st.hp,kills:0});
  {const _np=G.party[G.party.length-1];const _fo=formOffset(G.party.length-1);_np.x=_fo.x;_np.y=_fo.y;_np.sigMax=_np.sigT;}
  refreshCompStats(G.party[G.party.length-1]);
  G.mods=computeMods();checkDiscovery();
@@ -3441,7 +3448,7 @@ function openCompChest(){const _ts4=$("tacSlots");if(_ts4)_ts4.classList.add("hi
   const melee=(p.role==="melee"||p.role==="cav");
   const curR=(p.rangeMul||1)*(G.compRangeMul||1);
   if(curR<(melee?1.6:1.5)&&(p.range||0)<Math.round((p.baseRange!=null?p.baseRange:p.range||0)*(melee?1.72:1.6)))reachOpts.push({t:`${p.name}の間合い拡大`,icon:"📐",d:`${p.name}の${melee?"攻撃半径":"射程"}+15%（半径基準）`,f:()=>{p.rangeMul=(p.rangeMul||1)*1.15;refreshCompStats(p);}});
-  if((p.sigEvo||0)<4)opts.push({bc:1,t:`${p.name}の固有技進化`,icon:"🌟",d:`固有技Lv${(p.sigEvo||0)+1}→${(p.sigEvo||0)+2} ― ${sigNextDesc(p)}（形が進化する。威力の%伸びは固有技研鑽で）`,f:()=>{p.sigEvo=(p.sigEvo||0)+1;}});
+  if((p.sigEvo||0)<4)opts.push({bc:1,t:`${p.name}の固有技Lvアップ`,icon:"🌟",d:`固有技「${sigNameOf(p)}」がレベルアップ！固有技Lv${(p.sigEvo||0)+1}→${(p.sigEvo||0)+2}（全5段階） ― 次の変化：${sigNextDesc(p)} ※威力アップは「固有技研鑽」のカード`,f:()=>{p.sigEvo=(p.sigEvo||0)+1;}});
   if(p.role==="archer"&&(p.pierce||0)<3)opts.push({bc:1,t:`${p.name}の貫通矢`,icon:"➶",d:`${p.name}の通常攻撃の矢が敵を貫通するようになる（貫通+1）`,f:()=>{p.pierce=(p.pierce||0)+1;}});
   else if(p.role==="strat"&&(p.chainJumps||0)<3)opts.push({bc:1,t:`${p.name}の連鎖計`,icon:"⚡",d:`${p.name}の弾が当たった敵から近くの敵へ跳ねて連鎖する（連鎖+1）`,f:()=>{p.chainJumps=(p.chainJumps||0)+1;}});
   else if(melee&&!p.explo)opts.push({bc:1,t:`${p.name}の爆裂撃`,icon:"💥",d:`${p.name}の通常攻撃が当たると小爆発が起き、周囲の敵にも4割のダメージ`,f:()=>{p.explo=true;}});
@@ -3454,7 +3461,7 @@ function openCompChest(){const _ts4=$("tacSlots");if(_ts4)_ts4.classList.add("hi
   }
   else if(!G.compCleave)opts.push({t:"薙ぎ払い訓練",icon:"🌀",d:"近接の仲間の通常攻撃が、近くの別の敵（最大2体）にも6割で当たるようになる",f:()=>{G.compCleave=true;}});
  }
- reachOpts.push({t:"全軍の間合い拡大",icon:"📏",d:"仲間全員の攻撃範囲・射程+10%（半径基準）",f:()=>{G.compRangeMul=(G.compRangeMul||1)*1.1;refreshAllCompStats();}});
+ if(G.party.some(p=>{const melee=(p.role==="melee"||p.role==="cav");const cur=(p.rangeMul||1)*(G.compRangeMul||1)*growthRangeMul(p);return cur<(melee?1.72:1.6)&&(p.range||0)<Math.round((p.baseRange!=null?p.baseRange:p.range||0)*(melee?1.72:1.6));}))reachOpts.push({t:"全軍の間合い拡大",icon:"📏",d:"仲間全員の攻撃範囲・射程+10%（半径基準）",f:()=>{G.compRangeMul=(G.compRangeMul||1)*1.1;refreshAllCompStats();}});
   opts.push({t:"全軍の練磨",icon:"🔥",d:"君主と仲間全員の攻撃+6%（何度でも積める）",f:()=>{G.lord.atk*=1.06;G.party.forEach(q=>{if(q.baseAtk!=null){q.baseAtk*=1.06;refreshCompStats(q);}else q.atk*=1.06;});}});
  const pool=[...reachOpts,...opts];pool.sort(()=>Math.random()-0.5);
  const picks=pool.slice(0,3);
@@ -3621,7 +3628,7 @@ function applyTreasure(id){if(id==="gyokuji"||id==="motoku")G.mods.xp*=id==="gyo
 
 // ===== 武将詳細（プレイ中に仲間を確認する） =====
 const PERS_LABEL={guard:["護衛型","君主のすぐ側を離れず、近づいてきた敵を迎え撃つ"],charge:["突撃型","勝手に敵陣へ斬り込んで暴れ回る。孤立したら救援に向かおう"],roam:["遊撃型","弓兵や精鋭を狙って戦場を広く動き回る"],strat:["軍師型","敵から距離を取りながら、計略で戦場の流れを変える"],support:["支援型","距離を取りながら回復と補助でパーティを支える"],follow:["本隊型","君主の周囲で隊列を組み、堅実に戦う"]};
-const SIG_DESC={"呂布":"前方へ突進し、着地点の周囲（半径100）に攻撃力×3.2×1.15の範囲ダメージ。進化で斬撃が増える","董卓":"周囲（半径130）の敵すべてに攻撃力×3.2×1.05の範囲ダメージを与え、1.2秒足止めして吹き飛ばす","華雄":"前方扇形に特大斬撃（攻撃力×3.5）。進化で扇が広がり地割れ波へ","凌統":"前方へ突進し、着地点の周囲（半径88）に攻撃力×3.2の範囲ダメージ。自分のHPが減っているほど威力が上がり、最大で約2倍","関羽":"偃月刀を大きく薙ぎ、周囲（半径140）の敵すべてに攻撃力×3.2の範囲ダメージ＋押し退け。進化で斬撃追加・青龍の衝撃波・龍の幻影へ","張飛":"咆哮で周囲（半径130）の敵を吹き飛ばし、1.6秒間怯ませる","趙雲":"最も近い敵集団へ単騎で駆け抜け、経路上の敵を攻撃力×2.6で斬る。進化で対象数増・往復ダッシュ「七進七出」へ","馬超":"高く跳躍して最も濃い敵集団の中心へ槍を突き下ろし、着地（半径120）に攻撃力×3.4の爆発ダメージ。進化で二段ダイブへ","黄忠":"最もHPの高い敵1体に攻撃力×7.0の狙撃","諸葛亮":"足元に八陣図（半径150・5秒間）を展開し、敵全体を3秒間鈍らせる","龐統":"周囲（半径170）の敵に連環を付与（4秒間）。受けたダメージの一部が近くの敵にも伝わる","郭嘉":"所持している全計略の残り待ち時間を半分に短縮する","司馬懿":"敵全体を4秒間鈍らせ、増援の到着も遅らせる","周瑜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","陸遜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","華佗":"最も傷ついた味方1人を最大HPの25%回復する","貂蝉":"周囲（半径150）の敵を魅了し、2秒間足止めする","典韋":"双戟を頭上から振り下ろし、前方直線（幅110・長さ160）に攻撃力×3.7の範囲ダメージ＋地面の亀裂。進化で3連振り下ろしへ","許褚":"その場で大刀を振り下ろし、前方直線（幅90・長さ180）を地割れで攻撃力×3.0＋強吹き飛ばし。進化で地割れがT字へ","徐晃":"大斧を2回転させ周囲（半径115）を薙ぐ持続薙ぎ。進化で3回転＋旋風斧へ","呂蒙":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","甘寧":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","楽進":"最も遠い敵集団へ跳躍突入する最長距離ダイブ（半径92）。進化で二段跳躍へ","李典":"周囲（半径120）の敵に攻撃力×3.0の範囲ダメージ＋吹き飛ばしと0.7秒の怯み","小喬":"周囲300以内の味方全員と君主を最大HPの14%回復する","甄姫":"最も傷ついた味方1人を最大HPの22%回復し、君主にバリア（40）を張る","黄月英":"敵の密集地に木牛流馬の陣（半径95・4秒間）を展開し、攻撃力×3.0の範囲ダメージ＋敵全体を2秒間鈍らせる","鄧艾":"最もHPの高い敵の背後へ回り込み、周囲（半径85）に攻撃力×3.5の範囲ダメージ","鍾会":"周囲（半径185）の敵に連環を付与（4秒間）し、周囲（半径120）に攻撃力×1.6の範囲ダメージ","周倉":"周囲（半径118）の敵すべてに攻撃力×3.2の範囲ダメージ＋吹き飛ばし","馬岱":"HP割合の低い精鋭・ボス優先で駆け寄り、残HPが低い敵ほど威力の上がる処刑級の一閃。進化で連斬処刑へ","高順":"陥陣営の兵影と共に前方へ波状突貫する直線範囲攻撃＋0.8秒の怯み。進化で波が重なり止め斬りへ","陳宮":"所持している全計略の残り待ち時間を3割短縮し、敵の密集地（半径75）に攻撃力×2.6の範囲ダメージ","公孫瓚":"白馬で敵集団へ突撃し、経路上の敵を最大6体まで攻撃力×2.7で斬る","関索":"周囲（半径100）の敵すべてに攻撃力×3.2の範囲ダメージ＋追撃の斬撃","関銀屏":"周囲（半径105）の敵すべてに攻撃力×3.0の範囲ダメージ。双剣で両側を薙ぐ","鮑三娘":"周囲（半径110）の敵すべてに攻撃力×3.0の範囲ダメージ。双刀で両側を薙ぐ","花鬘":"周囲（半径280）の敵を最大6体まで、攻撃力×2.4で射抜く","馬良":"6秒間、仲間全員の攻撃力を15%上げる","曹丕":"周囲（半径100）の敵すべてに攻撃力×3.2の範囲ダメージ＋追撃の斬撃","諸葛恪":"敵の密集地へ丹陽精兵の投槍が3度降り注ぎ、各回 攻撃力×1.3（半径80）の範囲ダメージ","魏延":"6秒間、赤いオーラを纏う覚醒。攻撃+40%・攻撃速度+40%で斬撃が赤く大型化。進化で持続延長・終了時に爆発薙ぎ払い","姜維":"槍を回して周囲を3連斬り、最後に前方へ槍の波。進化で波が増え小八陣の残像を残す","関平":"父譲りの偃月刀を前方へ振り下ろし、直線（幅70・長さ150）に攻撃力×3.4。進化で十字範囲・青龍の衝撃波へ","徐庶":"敵集団に縛陣（半径95・4秒）を置き、鈍足＋進化で周期ダメージ。静かに戦場を縛る策","法正":"6秒間、味方全体に反撃オーラ。味方の近くの敵へ自動で計略弾が飛ぶ（恩には恩、仇には倍の仇）","馬謖":"敵集団へ水ゾーン（半径95・4秒）。押し流し＋鈍足。進化で大水と波のフィニッシュ","夏侯惇":"6秒間の覚醒（攻撃・速度上昇）。覚醒中に被弾するほどさらに加速する。進化で終了時に隻眼の衝撃波","夏侯淵":"最も近い敵集団方向へ高速6連射＋最後に強射1発。進化で8連射・前後2方向へ","張遼":"敵集団の中心へ水平に騎馬突入し、着地（半径100）斬撃＋怯み。進化で往復突入へ","張郃":"前方扇形に槍の衝撃波3連（間合いが伸びていく巧変）。進化で波が跳ね返る往復波へ","曹仁":"盾を構え周囲へ反撃の衝撃波＋味方に小バリア。進化で波が前後2方向へ","賈詡":"敵集団に混乱の霧（半径95・4秒）。鈍足＋進化で毒と同士討ちの爆発","荀彧":"味方全体の攻撃速度+15%（6秒）＋敵集団へ駆虎呑狼の計弾。進化で君主計略も早まる","程昱":"前方の敵集団方向へ直線の火線（幅80・長さ200）＋燃焼。進化で火線が十字に展開","于禁":"前方へ整然とした衝撃波2連、当たった敵を大きく押し戻す。進化で3連波＋最終波にスタン","太史慈":"前方へ強射3連＋最後の1発が貫通強撃。進化で強射が爆裂矢化","黄蓋":"自ら火を纏う6秒の覚醒。攻撃速度上昇＋通常攻撃に燃焼付与、周囲に小炎ダメージ。進化で終了時に火船突撃風の大爆発","程普":"槍を地面に突き立て放射状4方向へ地波。進化で8方向＋波が2重へ","孫尚香":"前方扇形に5連射。進化で7連射・全方位リング射撃へ","大喬":"周囲の味方を回復＋撤退中の仲間の復帰を早める風。進化で回復＋攻撃バフの風","周泰":"HPが低いほど強い6秒の覚醒（攻撃上昇は残HP連動・最大+80%）。進化で一度だけHP1で踏みとどまる","丁奉":"短い武器で敵集団へ素早く斬り込み3連斬り。進化で最終斬りに衝撃波","魯粛":"味方の足元に陣（半径120・6秒）を敷き、陣内の味方は攻撃+10%・被ダメージ軽減。進化で陣が2つへ","孟獲":"巨棍を地面に叩きつけ周囲（半径120）ダメージ＋放射状の地波。進化で象の突進幻影","祝融":"炎の飛刀を最大6体へ投げ、燃焼を付与。進化で飛刀が爆発し周囲も燃やす","馬雲騄":"敵集団へ駆け込み、槍を回転させて着地旋斬り。進化で前方へ槍の波","蔡文姫":"周囲の味方を回復＋音波が敵を鈍足させる。進化で音波に小ダメージ＋怯み","張繍":"最も濃い集団へ直線突進し経路を全貫通＋着地で爆発斬り。進化で突進が往復化","顔良":"大刀を前方直線へ振り下ろす中幅・高威力の単発（幅60・長さ150）。進化で衝撃波追加","文醜":"敵集団へ疾駆ダイブ。進化でダイブ2連へ","田豊":"敵集団の中心へ直言の雷（攻撃力×3.0＋小範囲）。進化で雷が3連に","沮授":"敵集団に弱体の陣（半径100・5秒、敵の攻撃−15%＋鈍足）。進化で陣に小ダメージ追加"};
+const SIG_DESC={"呂布":"前方へ突進し、着地点の周囲（半径100）に攻撃力×3.2×1.15の範囲ダメージ。固有技Lvアップで斬撃が増える","董卓":"周囲（半径130）の敵すべてに攻撃力×3.2×1.05の範囲ダメージを与え、1.2秒足止めして吹き飛ばす","華雄":"前方扇形に特大斬撃（攻撃力×3.5）。固有技Lvアップで扇が広がり地割れ波へ","凌統":"前方へ突進し、着地点の周囲（半径88）に攻撃力×3.2の範囲ダメージ。自分のHPが減っているほど威力が上がり、最大で約2倍","関羽":"偃月刀を大きく薙ぎ、周囲（半径140）の敵すべてに攻撃力×3.2の範囲ダメージ＋押し退け。固有技Lvアップで斬撃追加・青龍の衝撃波・龍の幻影へ","張飛":"咆哮で周囲（半径130）の敵を吹き飛ばし、1.6秒間怯ませる","趙雲":"最も近い敵集団へ単騎で駆け抜け、経路上の敵を攻撃力×2.6で斬る。固有技Lvアップで対象数増・往復ダッシュ「七進七出」へ","馬超":"高く跳躍して最も濃い敵集団の中心へ槍を突き下ろし、着地（半径120）に攻撃力×3.4の爆発ダメージ。固有技Lvアップで二段ダイブへ","黄忠":"最もHPの高い敵1体に攻撃力×7.0の狙撃","諸葛亮":"足元に八陣図（半径150・5秒間）を展開し、敵全体を3秒間鈍らせる","龐統":"周囲（半径170）の敵に連環を付与（4秒間）。受けたダメージの一部が近くの敵にも伝わる","郭嘉":"所持している全計略の残り待ち時間を半分に短縮する","司馬懿":"敵全体を4秒間鈍らせ、増援の到着も遅らせる","周瑜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","陸遜":"敵の密集地（半径85）に攻撃力×2.6の範囲ダメージ＋燃焼エリア（4秒間）","華佗":"最も傷ついた味方1人を最大HPの25%回復する","貂蝉":"周囲（半径150）の敵を魅了し、2秒間足止めする","典韋":"双戟を頭上から振り下ろし、前方直線（幅110・長さ160）に攻撃力×3.7の範囲ダメージ＋地面の亀裂。固有技Lvアップで3連振り下ろしへ","許褚":"その場で大刀を振り下ろし、前方直線（幅90・長さ180）を地割れで攻撃力×3.0＋強吹き飛ばし。固有技Lvアップで地割れがT字へ","徐晃":"大斧を2回転させ周囲（半径115）を薙ぐ持続薙ぎ。固有技Lvアップで3回転＋旋風斧へ","呂蒙":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","甘寧":"弓兵・精鋭・ボスを優先して背後に回り込み、攻撃力×4.5の奇襲","楽進":"最も遠い敵集団へ跳躍突入する最長距離ダイブ（半径92）。固有技Lvアップで二段跳躍へ","李典":"周囲（半径120）の敵に攻撃力×3.0の範囲ダメージ＋吹き飛ばしと0.7秒の怯み","小喬":"周囲300以内の味方全員と君主を最大HPの14%回復する","甄姫":"最も傷ついた味方1人を最大HPの22%回復し、君主にバリア（40）を張る","黄月英":"敵の密集地に木牛流馬の陣（半径95・4秒間）を展開し、攻撃力×3.0の範囲ダメージ＋敵全体を2秒間鈍らせる","鄧艾":"最もHPの高い敵の背後へ回り込み、周囲（半径85）に攻撃力×3.5の範囲ダメージ","鍾会":"周囲（半径185）の敵に連環を付与（4秒間）し、周囲（半径120）に攻撃力×1.6の範囲ダメージ","周倉":"周囲（半径118）の敵すべてに攻撃力×3.2の範囲ダメージ＋吹き飛ばし","馬岱":"HP割合の低い精鋭・ボス優先で駆け寄り、残HPが低い敵ほど威力の上がる処刑級の一閃。固有技Lvアップで連斬処刑へ","高順":"陥陣営の兵影と共に前方へ波状突貫する直線範囲攻撃＋0.8秒の怯み。固有技Lvアップで波が重なり止め斬りへ","陳宮":"所持している全計略の残り待ち時間を3割短縮し、敵の密集地（半径75）に攻撃力×2.6の範囲ダメージ","公孫瓚":"白馬で敵集団へ突撃し、経路上の敵を最大6体まで攻撃力×2.7で斬る","関索":"周囲（半径100）の敵すべてに攻撃力×3.2の範囲ダメージ＋追撃の斬撃","関銀屏":"周囲（半径105）の敵すべてに攻撃力×3.0の範囲ダメージ。双剣で両側を薙ぐ","鮑三娘":"周囲（半径110）の敵すべてに攻撃力×3.0の範囲ダメージ。双刀で両側を薙ぐ","花鬘":"周囲（半径280）の敵を最大6体まで、攻撃力×2.4で射抜く","馬良":"6秒間、仲間全員の攻撃力を15%上げる","曹丕":"周囲（半径100）の敵すべてに攻撃力×3.2の範囲ダメージ＋追撃の斬撃","諸葛恪":"敵の密集地へ丹陽精兵の投槍が3度降り注ぎ、各回 攻撃力×1.3（半径80）の範囲ダメージ","魏延":"6秒間、赤いオーラを纏う覚醒。攻撃+40%・攻撃速度+40%で斬撃が赤く大型化。固有技Lvアップで持続延長・終了時に爆発薙ぎ払い","姜維":"槍を回して周囲を3連斬り、最後に前方へ槍の波。固有技Lvアップで波が増え小八陣の残像を残す","関平":"父譲りの偃月刀を前方へ振り下ろし、直線（幅70・長さ150）に攻撃力×3.4。固有技Lvアップで十字範囲・青龍の衝撃波へ","徐庶":"敵集団に縛陣（半径95・4秒）を置き、鈍足＋固有技Lvアップで周期ダメージ。静かに戦場を縛る策","法正":"6秒間、味方全体に反撃オーラ。味方の近くの敵へ自動で計略弾が飛ぶ（恩には恩、仇には倍の仇）","馬謖":"敵集団へ水ゾーン（半径95・4秒）。押し流し＋鈍足。固有技Lvアップで大水と波のフィニッシュ","夏侯惇":"6秒間の覚醒（攻撃・速度上昇）。覚醒中に被弾するほどさらに加速する。固有技Lvアップで終了時に隻眼の衝撃波","夏侯淵":"最も近い敵集団方向へ高速6連射＋最後に強射1発。固有技Lvアップで8連射・前後2方向へ","張遼":"敵集団の中心へ水平に騎馬突入し、着地（半径100）斬撃＋怯み。固有技Lvアップで往復突入へ","張郃":"前方扇形に槍の衝撃波3連（間合いが伸びていく巧変）。固有技Lvアップで波が跳ね返る往復波へ","曹仁":"盾を構え周囲へ反撃の衝撃波＋味方に小バリア。固有技Lvアップで波が前後2方向へ","賈詡":"敵集団に混乱の霧（半径95・4秒）。鈍足＋固有技Lvアップで毒と同士討ちの爆発","荀彧":"味方全体の攻撃速度+15%（6秒）＋敵集団へ駆虎呑狼の計弾。固有技Lvアップで君主計略も早まる","程昱":"前方の敵集団方向へ直線の火線（幅80・長さ200）＋燃焼。固有技Lvアップで火線が十字に展開","于禁":"前方へ整然とした衝撃波2連、当たった敵を大きく押し戻す。固有技Lvアップで3連波＋最終波にスタン","太史慈":"前方へ強射3連＋最後の1発が貫通強撃。固有技Lvアップで強射が爆裂矢化","黄蓋":"自ら火を纏う6秒の覚醒。攻撃速度上昇＋通常攻撃に燃焼付与、周囲に小炎ダメージ。固有技Lvアップで終了時に火船突撃風の大爆発","程普":"槍を地面に突き立て放射状4方向へ地波。固有技Lvアップで8方向＋波が2重へ","孫尚香":"前方扇形に5連射。固有技Lvアップで7連射・全方位リング射撃へ","大喬":"周囲の味方を回復＋撤退中の仲間の復帰を早める風。固有技Lvアップで回復＋攻撃バフの風","周泰":"HPが低いほど強い6秒の覚醒（攻撃上昇は残HP連動・最大+80%）。固有技Lvアップで一度だけHP1で踏みとどまる","丁奉":"短い武器で敵集団へ素早く斬り込み3連斬り。固有技Lvアップで最終斬りに衝撃波","魯粛":"味方の足元に陣（半径120・6秒）を敷き、陣内の味方は攻撃+10%・被ダメージ軽減。固有技Lvアップで陣が2つへ","孟獲":"巨棍を地面に叩きつけ周囲（半径120）ダメージ＋放射状の地波。固有技Lvアップで象の突進幻影","祝融":"炎の飛刀を最大6体へ投げ、燃焼を付与。固有技Lvアップで飛刀が爆発し周囲も燃やす","馬雲騄":"敵集団へ駆け込み、槍を回転させて着地旋斬り。固有技Lvアップで前方へ槍の波","蔡文姫":"周囲の味方を回復＋音波が敵を鈍足させる。固有技Lvアップで音波に小ダメージ＋怯み","張繍":"最も濃い集団へ直線突進し経路を全貫通＋着地で爆発斬り。固有技Lvアップで突進が往復化","顔良":"大刀を前方直線へ振り下ろす中幅・高威力の単発（幅60・長さ150）。固有技Lvアップで衝撃波追加","文醜":"敵集団へ疾駆ダイブ。固有技Lvアップでダイブ2連へ","田豊":"敵集団の中心へ直言の雷（攻撃力×3.0＋小範囲）。固有技Lvアップで雷が3連に","沮授":"敵集団に弱体の陣（半径100・5秒、敵の攻撃−15%＋鈍足）。固有技Lvアップで陣に小ダメージ追加"};
 const GENERIC_SIG={melee:["猛攻・連撃","周囲（半径95）の敵すべてに攻撃力×3.2の範囲ダメージ"],cav:["猛攻・連撃","周囲（半径95）の敵すべてに攻撃力×3.2の範囲ダメージ"],archer:["狙撃・連射","射程（260）内の敵を最大5体まで、攻撃力×2.2で撃ち抜く"],strat:["計略・連弾","最も近い敵集団の中心（半径80）に攻撃力×2.9の範囲ダメージ"],support:["支援・回復","周囲（半径300）の味方全員を最大HPの12%回復（君主は8%）"]};
 const SPECIAL_DESC={"凌統":"復讐心：体力が減るほど通常攻撃の威力が上がる（最大+50%）。父・凌操を討った甘寧への因縁が力になる","郭嘉":"遺計：撤退した時、一度だけ周囲に大ダメージを与え、全計略の待ち時間をリセットする","徐庶":"薦才：徐庶がいる時、次の登用で諸葛亮が必ず候補に現れる","華佗":"名医：仲間の撤退からの復帰時間が25秒→17秒に短縮。医術：14秒ごとに射程内の最も傷ついた味方1人を最大HPの10%回復する","魯粛":"仲介：パーティ内の悪相性のマイナスを和らげる","孟獲":"七縱七擒：撤退して復帰するたび、攻撃+10%が積み上がる","孫尚香":"政略結婚：戦闘中、たまに実家へ一時離脱する。帰ってくる時は攻撃+15%の強化付き","于禁":"樊城の屈辱：水辺では統制が乱れるが、水辺から離れると持ち直す（悪相性「樊城の屈辱」参照）","馬謖":"街亭：水のない高所（画面上部）では計略が空回りすることがある（張飛がいると失敗しない）","賈詡":"毒士：計略で敵の同士討ちを誘うことがある","司馬懿":"忍耐：定期計略のたびに敵の動きを鈍らせる","関羽":"刮骨療毒：華佗が仲間にいると、自動で回復し続ける","周泰":"忠臣：孫権の近くにいると自動で回復する","劉備":"仁徳オーラ：近くの仲間を少しずつ回復する","曹操":"覇道：会心率が高く、計略の回転が速い","孫権":"守成：防御が高く、近くの周泰を回復させる"};
 const WEAPON_NAME={dual:"双剣",longsword:"大剣",sword:"剣",guandao:"偃月刀",spear:"槍",bow:"弓",fan:"羽扇",hammer:"大槌",halberd:"双戟",staff:"杖"};
@@ -3665,7 +3672,7 @@ function renderDetail(){
  let abilityHtml="";
  if(isLord){abilityHtml+=`<p>計略の発動者。ゲージが満タンになったら右下の「計略」ボタンで放つ（合体相性が揃えば合体計略「${G.comboName}」として発動する）。</p>`;}
  const sig=SIGNATURES[m.name];
- if(sig)abilityHtml+=`<p>固有技「${sig.n}」：${SIG_DESC[m.name]||""}（約${sig.cd}秒ごとに本人の判断で自動発動）</p>`+(isLord?"":`<p>固有技Lv <b>${sigLv(o)}</b>${sigLv(o)<5?` ― 次の進化（宝箱）：${sigNextDesc(o)}`:" ― 最終形態"}</p>`);
+ if(sig)abilityHtml+=`<p>固有技「${sig.n}」：${SIG_DESC[m.name]||""}（約${sig.cd}秒ごとに本人の判断で自動発動）</p>`+(isLord?"":`<p>固有技Lv <b>${sigLv(o)}</b> / 5${sigLv(o)<5?` ― 宝箱の「固有技Lvアップ」でLv${sigLv(o)+1}に：次の変化は「${sigNextDesc(o)}」`:" ― 最終形態（Lv5・これ以上は上がらない）"}</p>`);
  else if(!isLord){const gs=GENERIC_SIG[m.role]||GENERIC_SIG.melee;abilityHtml+=`<p>固有技「${gs[0]}」：${gs[1]}（約17秒ごとに本人の判断で自動発動）</p>`;}
  if(m.role==="strat"){
   let extra="";const nm=m.name;
@@ -4511,6 +4518,7 @@ function loop(ts){
  if(!idle)update(dt);
  if(idle){_idleSkip++;if(_idleSkip%6!==1){requestAnimationFrame(loop);return;}} // #37 停止中は背後の描画を間引く
  else _idleSkip=0;
+ if(LITE_MODE){_liteSkip++;if(_liteSkip%2===0){requestAnimationFrame(loop);return;}} // 軽量モード：描画だけ半フレームに間引く（更新は毎フレーム維持）
  render();
  requestAnimationFrame(loop);
 }
@@ -4525,6 +4533,23 @@ function riverSlow(x,y){
  const w=G&&G.world;if(!w||!w.river)return 1;
  if(Math.abs(y-w.river.at)>=w.river.half)return 1;
  return Math.abs(x-w.river.bridgeX)<80?1:0.55;
+}
+// ジェム合体（熱対策・監査B-10）：場のXPジェムが上限を超えたら、近いジェム同士を1個に合体させる（v の合計＝XP総量は保存される）。回復ジェムは対象外
+const GEM_CAP=250;
+function mergeGems(radius){
+ const cell=radius,map=new Map(),out=[];
+ for(const g of G.gems){
+  if(g.heal||g.got){out.push(g);continue;}
+  let host=null;
+  const cx=Math.floor(g.x/cell),cy=Math.floor(g.y/cell);
+  for(let dx=-1;dx<=1&&!host;dx++)for(let dy=-1;dy<=1&&!host;dy++){
+   const arr=map.get((cx+dx)+":"+(cy+dy));
+   if(arr)for(const m of arr){const ddx=m.x-g.x,ddy=m.y-g.y;if(ddx*ddx+ddy*ddy<cell*cell){host=m;break;}}
+  }
+  if(host){host.v=(host.v||1)+(g.v||1);host.x=(host.x+g.x)/2;host.y=(host.y+g.y)/2;}
+  else{const k=cx+":"+cy;if(!map.get(k))map.set(k,[]);map.get(k).push(g);out.push(g);}
+ }
+ G.gems=out;
 }
 function update(dt){
  if(G.duel){duelUpdate(dt);return;}
@@ -4827,9 +4852,10 @@ function update(dt){
  G.drops=G.drops.filter(d=>!d.got);
  if(G.vacuumT>0)G.vacuumT-=dt;
  if(G.gemChainT>0){G.gemChainT-=dt;if(G.gemChainT<=0)G.gemChain=0;}
+ if(G.gems.length>GEM_CAP){mergeGems(52);if(G.gems.length>GEM_CAP*1.6)mergeGems(110);} // 合体は上限超過時のみ（密集地帯から効く）
  for(const g of G.gems){
   if(g.heal){const cp=G.party.find(p=>!p.away&&p.downT<=0&&p.hp<=p.maxhp*0.6&&Math.hypot(p.x-g.x,p.y-g.y)<20);if(cp){g.got=true;const ch=Math.max(1,Math.round(cp.maxhp*0.10));cp.hp=Math.min(cp.maxhp,cp.hp+ch);addText(cp.x,cp.y-52,"+"+ch,"#a5f2a5",12);G.rings.push({x:cp.x,y:cp.y,r:8,t:0.4,col:"#7ae0a3"});continue;}}
-  if(g.vx){g.x+=g.vx*dt*60;g.y+=g.vy*dt*60;const gd=Math.pow(0.02,dt);g.vx*=gd;g.vy*=gd;if(Math.abs(g.vx)<0.05&&Math.abs(g.vy)<0.05){g.vx=0;g.vy=0;}} const d=dist(g,L);const magnetR=(G.waveState==="collect"?215:86)*(1+0.25*lvStk("shinkou"))*(G.lord.name==="劉禅"?1+0.2*(G.hataStk||0):1)*((G.weather&&G.weather.id==="fog")?0.8:1);if(d<magnetR||G.vacuumT>0){g.x+=(L.x-g.x)*dt*9;g.y+=(L.y-g.y)*dt*9;}if(d<20){g.got=true;if(g.heal){const lh=Math.max(1,Math.round(L.maxhp*0.10));L.hp=Math.min(L.maxhp,L.hp+lh);addText(L.x,L.y-52,"+"+lh,"#a5f2a5",12);G.party.forEach(p=>{if(!p.away&&p.downT<=0){p.hp=Math.min(p.maxhp,p.hp+Math.max(1,Math.round(p.maxhp*0.05)));}});}else{G.gemChain=Math.min(12,(G.gemChain||0)+1);G.gemChainT=0.9;sfxGem(G.gemChain);fxPart({x:L.x+(fxRand()-0.5)*14,y:L.y-12,vx:(fxRand()-0.5)*1.2,vy:-1.6-fxRand(),t:0.3,col:"#aee9ff",s:1.9});gainXp(1);}}}
+  if(g.vx){g.x+=g.vx*dt*60;g.y+=g.vy*dt*60;const gd=Math.pow(0.02,dt);g.vx*=gd;g.vy*=gd;if(Math.abs(g.vx)<0.05&&Math.abs(g.vy)<0.05){g.vx=0;g.vy=0;}} const d=dist(g,L);const magnetR=(G.waveState==="collect"?215:86)*(1+0.25*lvStk("shinkou"))*(G.lord.name==="劉禅"?1+0.2*(G.hataStk||0):1)*((G.weather&&G.weather.id==="fog")?0.8:1);if(d<magnetR||G.vacuumT>0){g.x+=(L.x-g.x)*dt*9;g.y+=(L.y-g.y)*dt*9;}if(d<20){g.got=true;if(g.heal){const lh=Math.max(1,Math.round(L.maxhp*0.10));L.hp=Math.min(L.maxhp,L.hp+lh);addText(L.x,L.y-52,"+"+lh,"#a5f2a5",12);G.party.forEach(p=>{if(!p.away&&p.downT<=0){p.hp=Math.min(p.maxhp,p.hp+Math.max(1,Math.round(p.maxhp*0.05)));}});}else{G.gemChain=Math.min(12,(G.gemChain||0)+1);G.gemChainT=0.9;sfxGem(G.gemChain);fxPart({x:L.x+(fxRand()-0.5)*14,y:L.y-12,vx:(fxRand()-0.5)*1.2,vy:-1.6-fxRand(),t:0.3,col:"#aee9ff",s:1.9});gainXp(g.v||1);}}}
  G.gems=G.gems.filter(g=>!g.got);
  castTactics(dt);orbitTick(dt);trapTick(dt);kohyoTick(dt);troopTick(dt);runEvents(dt);
  fxTick(dt);barkTick(dt);presPump();cinePump();
@@ -5071,7 +5097,8 @@ function sigCharge(p,distPx){
 }
 // ===== #39 固有技Lv制（Lv1〜5）: sigEvo(宝箱で最大4回) + 1 が現在のLv。成長経路は宝箱の進化だけ =====
 function sigLv(p){return Math.max(1,Math.min(5,(p.sigEvo||0)+1));}
-function sigNextDesc(p){const a=(typeof SIG_LV_DESC!=="undefined")?SIG_LV_DESC[p.name]:null;if(!a)return "段数・個数が増え、見た目が派手になる";return a[Math.min(3,p.sigEvo||0)]||"最終形態";}
+function sigNameOf(p){const s=(typeof SIGNATURES!=="undefined")?SIGNATURES[p.name]:null;if(s&&s.n)return s.n;const gs=(typeof GENERIC_SIG!=="undefined")?(GENERIC_SIG[p.role]||GENERIC_SIG.melee):null;return gs?gs[0]:"固有技";}
+function sigNextDesc(p){const a=(typeof SIG_LV_DESC!=="undefined")?SIG_LV_DESC[p.name]:null;if(!a)return "攻撃の段数・個数が増える";return a[Math.min(3,p.sigEvo||0)]||"最終形態";}
 // 着火: 燃焼の威力は「火をつけた側の威力」(burnPow=0.5秒tickぶん)で記録する (#38 A-2)
 function ignite(e,pow,t){if(!e||e.dead)return;e.burnT=Math.max(e.burnT||0,t||2);if(pow!=null&&pow>(e.burnPow||0))e.burnPow=pow;}
 const FRENZY_AURA={"魏延":"fx_aura_red","夏侯惇":"fx_aura_blue","黄蓋":"fx_aura_fire","周泰":"fx_aura_blood"};
@@ -5134,7 +5161,7 @@ function sigSkill(p){
      pushImgFx("fx_dash_streak",(_ox+_ex)/2,(_oy+_ey)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(_uy,_ux)});
      if(LV>=3)for(let gi=1;gi<=2;gi++)G.ghosts.push({x:_ox+_ux*_dl*gi/3,y:_oy+_uy*_dl*gi/3,name:p.name,col:FACTION_COLOR[p.faction],face:_ux>=0?1:-1,t:0.35});
      p.x=_ex;p.y=_ey;if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
-     if(LV>=5&&n<cap){sigDelay(()=>{const bx=p.x,by=p.y;_pass(bx,by,_ox,_oy,-_ux,-_uy,_dl);pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});p.x=_ox;p.y=_oy;p.face=_ux>0?1:-1;addText(p.x,p.y-34,"七進七出！","#eef2f8",13);},0.22);}}
+     if(LV>=5){sigDelay(()=>{const bx=p.x,by=p.y;_pass(bx,by,_ox,_oy,-_ux,-_uy,_dl);pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});p.x=_ox;p.y=_oy;p.face=_ux>0?1:-1;addText(p.x,p.y-34,"七進七出！","#eef2f8",13);},0.22);}}
     if(!n){for(const e of G.enemies){if(n>=cap)break;if(!e.dead&&dist(p,e)<200){damageEnemy(e,dmg*0.8,true,p.name);G.slashes.push({x:e.x,y:e.y,face:p.face||1,t:0.16,col:"#e8ecf2",r:15});n++;}}}
     G.rings.push({x:p.x,y:p.y,r:10,t:0.3,col:"#e8ecf2"});G.rings.push({x:p.x,y:p.y,r:3,t:0.45,col:"#ffffff"});sigBurst(p.x,p.y,"#e8ecf2",6,1.6);}break;
   case "馬超":{const c=clusterNear(p,460,110);const tgt=c||(()=>{const ne=nearestEnemy(p,460);return ne?{x:ne.x,y:ne.y}:null;})();
@@ -5248,9 +5275,9 @@ function sigSkill(p){
   case "周瑜":{const _cc=clusterNear(p,420,85);if(_cc){const cx=_cc.x,cy=_cc.y;const offs=[[0,0],[64,-24],[-56,32]];const nf=LV>=5?3:(LV>=2?2:1);for(let i2=0;i2<nf;i2++)G.fires.push({x:cx+offs[i2][0],y:cy+offs[i2][1],t:LV>=3?5:4,r:85,dps:dmg*1.3,spread:LV>=4?true:undefined});aoe(cx,cy,85,LV>=4?0.95:0.8);sigBurst(cx,cy,"#ff8a5a",12+(LV-1)*3,2.6);G.rings.push({x:cx,y:cy,r:10,t:0.4,col:"#ff8a5a"});}}break;
   case "陸遜":{const _cc=clusterNear(p,420,85);if(_cc){const cx=_cc.x,cy=_cc.y;const dd=Math.hypot(cx-p.x,cy-p.y)||1,ux=(cx-p.x)/dd,uy=(cy-p.y)/dd;for(let i2=0;i2<5;i2++)G.parts.push({x:p.x+ux*(20+i2*22),y:p.y+uy*(20+i2*22)-6,vx:ux*1.6,vy:uy*1.6-0.4,t:0.4,col:i2%2?"#ffab6a":"#ff7a3c",s:2.4});const nf=LV>=4?3:(LV>=2?2:1);for(let i2=0;i2<nf;i2++)G.fires.push({x:cx+ux*66*i2,y:cy+uy*66*i2,t:LV>=3?6:4,r:85,dps:dmg*1.3});aoe(cx,cy,85,0.8);sigBurst(cx,cy,"#ffab6a",9,2.2);
    if(LV>=5){G.fires.push({x:cx+ux*66-uy*55,y:cy+uy*66+ux*55,t:5,r:78,dps:dmg*1.3});G.fires.push({x:cx+ux*66+uy*55,y:cy+uy*66-ux*55,t:5,r:78,dps:dmg*1.3});aoe(cx+ux*66,cy+uy*66,85,0.6);addText(cx,cy-44,"連営、焼き尽くす！","#ffd2b8",12);}}}break;
-  case "呂蒙":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,380);if(tgt){p.x=tgt.x-20*p.face;p.y=tgt.y;damageEnemy(tgt,dmg*(LV>=4?1.6:1.4),true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#e8ecf2"});if(LV>=2)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#ffffff",r:24,rot:0.4}),0.08);if(LV>=3)aoe(tgt.x,tgt.y,85,0.6);sigBurst(tgt.x,tgt.y,"#e8ecf2",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
+  case "呂蒙":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,380);if(tgt){p.x=tgt.x-20*(p.face||1);p.y=tgt.y;damageEnemy(tgt,dmg*(LV>=4?1.6:1.4),true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#e8ecf2"});if(LV>=2)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#ffffff",r:24,rot:0.4}),0.08);if(LV>=3)aoe(tgt.x,tgt.y,85,0.6);sigBurst(tgt.x,tgt.y,"#e8ecf2",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
    if(LV>=5)sigDelay(()=>{if(!tgt.dead){G.ghosts.push({x:tgt.x-30,y:tgt.y,name:p.name,col:FACTION_COLOR[p.faction],face:p.face||1,t:0.4});damageEnemy(tgt,dmg*0.9,true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:-(p.face||1),t:0.22,col:"#ffffff",big:1});addText(tgt.x,tgt.y-64,"白衣の残像がもう一撃！","#ffffff",12);}},0.3);}}break;
-  case "甘寧":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,300);if(tgt){p.x=tgt.x-20*p.face;p.y=tgt.y;damageEnemy(tgt,dmg*1.4,true,p.name);G.rings.push({x:tgt.x,y:tgt.y,r:6,t:0.3,col:"#ffd964"});G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.48,col:"#ffe9a8"});if(LV>=2)G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.66,col:"#ffd964"});if(LV>=3)aoe(tgt.x,tgt.y,80,0.6);if(LV>=4&&!tgt.boss&&!tgt.isFinal)tgt.stun=Math.max(tgt.stun||0,1.0);sigBurst(tgt.x,tgt.y,"#ffd964",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
+  case "甘寧":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,300);if(tgt){p.x=tgt.x-20*(p.face||1);p.y=tgt.y;damageEnemy(tgt,dmg*1.4,true,p.name);G.rings.push({x:tgt.x,y:tgt.y,r:6,t:0.3,col:"#ffd964"});G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.48,col:"#ffe9a8"});if(LV>=2)G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.66,col:"#ffd964"});if(LV>=3)aoe(tgt.x,tgt.y,80,0.6);if(LV>=4&&!tgt.boss&&!tgt.isFinal)tgt.stun=Math.max(tgt.stun||0,1.0);sigBurst(tgt.x,tgt.y,"#ffd964",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
    if(LV>=5){aoe(tgt.x,tgt.y,110,0.7);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-tgt.x,e.y-tgt.y)<115*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.6);});pushImgFx("fx_roar_ring",tgt.x,tgt.y,240,158,0.5,{grow:0.4});addText(tgt.x,tgt.y-64,"鈴の音波！","#ffe9a8",12);}}}break;
   case "太史慈":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<380).sort((a,b)=>b.hp-a.hp);if(tgts.length){const shots=LV>=2?4:3;for(let s2=0;s2<shots;s2++){const strong=s2>=shots-(LV>=3?2:1);sigDelay(()=>{const t2=tgts[s2%tgts.length];if(!t2||t2.dead)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8.8,vy:(t2.y-p.y)/dd*8.8,dmg:dmg*(strong?1.1:0.62),src:p.name,t:1.15,targetRef:t2,homing:true,pierce:strong&&LV>=3?1:0});if(LV>=4)applyArmorBreak(t2);
     if(strong&&LV>=5)sigDelay(()=>{aoe(t2.x,t2.y,70,0.12);G.rings.push({x:t2.x,y:t2.y,r:8,t:0.35,col:"#ffb84f"});addText(t2.x,t2.y-40,"爆裂矢！","#ffd98a",11);},0.3);},0.13*s2);}}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#ffb84f"});}break;
@@ -5347,7 +5374,7 @@ function sigSkill(p){
     if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<110*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});
     if(LV>=5)sigDelay(()=>{let c2=clusterNear(p,460,100);if(c2&&Math.hypot(c2.x-c.x,c2.y-c.y)<140)c2=null;const ne2=nearestEnemy(p,460);const t2=c2||(ne2?{x:ne2.x,y:ne2.y}:null);if(t2){diveTo(t2.x,t2.y,105,0.85,{col:"#d88a4f"});addText(p.x,p.y-34,"疾駆・二連！","#ffd2a8",12);}},0.4);}
    else aoe(p.x,p.y,90,1);}break;
-  case "田豊":{const boltAt=(cx,cy,mul)=>{G.bolts.push({x:cx,y:cy,t:0.3,seed:Math.random()*100});aoe(cx,cy,LV>=3?95:80,mul);G.rings.push({x:cx,y:cy,r:8,t:0.35,col:"#c8c8a0"});};const c=clusterNear(p,430,85);const cx=c?c.x:p.x,cy=c?c.y:p.y;boltAt(cx,cy,0.95);G.flashT=Math.max(G.flashT||0,0.15);
+  case "田豊":{const boltAt=(cx,cy,mul)=>{G.bolts.push({x:cx,y:cy,t:0.3,seed:Math.random()*100});aoe(cx,cy,LV>=3?95:80,mul);pushImgFx("fx_hit_spark",cx,cy-6,110,92,0.3,{});sigBurst(cx,cy,"#e8e8c8",7,1.8);G.rings.push({x:cx,y:cy,r:8,t:0.35,col:"#c8c8a0"});};const c=clusterNear(p,430,85);const cx=c?c.x:p.x,cy=c?c.y:p.y;boltAt(cx,cy,0.95);sigBurst(p.x,p.y,"#c8c8a0",6,1.5);G.flashT=Math.max(G.flashT||0,0.15);
    if(LV>=2){const ne2=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-cx,e.y-cy)>130).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];if(ne2)sigDelay(()=>boltAt(ne2.x,ne2.y,0.8),0.15);}
    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-cx,e.y-cy)<100*SR){if(!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.8);if(e.elite||e.boss||e.isFinal)applyArmorBreak(e);}});
    if(LV>=5)sigDelay(()=>{for(let b2=0;b2<2;b2++){const cc2=clusterNear(p,430,85);const t2=cc2&&Math.hypot(cc2.x-cx,cc2.y-cy)>100?cc2:{x:cx+(b2?90:-90),y:cy+(b2?-50:60)};boltAt(t2.x,t2.y,0.8);}addText(p.x,p.y-36,"直言の雷・三連！","#e8e8c8",12);},0.3);}break;
@@ -6135,7 +6162,7 @@ function drawTerrain(){
   for(let x=10;x<WORLD_W;x+=62){if(x<camX-70||x>camX+W+70)continue;const y=rv.at-rv.half+16+((x*7)%(rv.half*2-30))+Math.sin(tt+x/70)*2.4;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+24,y);ctx.stroke();}
   ctx.fillStyle="#8a6238";ctx.fillRect(rv.bridgeX-80,rv.at-rv.half,160,rv.half*2);ctx.strokeStyle="rgba(60,38,16,0.65)";ctx.lineWidth=2;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(rv.bridgeX+i*22,rv.at-rv.half);ctx.lineTo(rv.bridgeX+i*22,rv.at+rv.half);ctx.stroke();}}
  ctx.textAlign="center";
- for(const p of w.props){if(p.x<camX-50||p.x>camX+W+50||p.y<camY-60||p.y>camY+H+60)continue;const pim=ASSET_IMG[PROP_KEY[p.k]];
+ for(const p of w.props){if(p.x<camX-50||p.x>camX+W+50||p.y<camY-60||p.y>camY+H+60)continue;if(LITE_MODE&&(((Math.round(p.x)*31+Math.round(p.y)*17)>>>0)%2===0))continue;const pim=ASSET_IMG[PROP_KEY[p.k]]; // 軽量モード時は小道具を半分に間引く（位置ハッシュで固定＝チラつかない）
   if(pim&&pim.complete&&pim.naturalWidth>0){const ph=p.s*2.2,pw=ph*(pim.width/pim.height);ctx.fillStyle="rgba(0,0,0,0.18)";ctx.beginPath();ctx.ellipse(p.x,p.y+3,ph*0.34,ph*0.11,0,0,7);ctx.fill();ctx.drawImage(pim,p.x-pw/2,p.y-ph+6,pw,ph);}
   else{ctx.font=p.s+"px serif";ctx.fillText(p.k,p.x,p.y);}}
  for(const b of w.breakables){if(b.dead)continue;if(b.x<camX-60||b.x>camX+W+60||b.y<camY-70||b.y>camY+H+60)continue;drawBreakable(b);}
@@ -6335,7 +6362,7 @@ function portraitURL(o){
 function render(){
  const camX=G&&G.cam?G.cam.x:0,camY=G&&G.cam?G.cam.y:0;
  const NOW=performance.now(); // #37 フレーム内で1回だけ取得して使い回す
- if(G&&G.parts&&G.parts.length>420)G.parts.splice(0,G.parts.length-420); // #37 粒子上限を描画直前にも強制（後段pushで上限を超える問題の修正）
+ if(G&&G.parts){const pc=LITE_MODE?210:420;if(G.parts.length>pc)G.parts.splice(0,G.parts.length-pc);} // #37 粒子上限を描画直前にも強制（後段pushで上限を超える問題の修正）／軽量モード時は上限半分
  const offV=(x,y,m)=>x<camX-m||x>camX+W+m||y<camY-m||y>camY+H+m; // #37 画面外カリング判定
  const shX=(G&&G.shake>0.2)?(Math.random()-0.5)*G.shake:0,shY=(G&&G.shake>0.2)?(Math.random()-0.5)*G.shake:0;
  ctx.save();ctx.translate(-camX+shX,-camY+shY);
@@ -6390,7 +6417,7 @@ function render(){
  // ドロップアイテム（宝箱・全ジェム吸収）
  G.drops.forEach(dr=>{if(offV(dr.x,dr.y,50))return;const pl=1+Math.sin(NOW/220+dr.x)*0.1;ctx.save();ctx.translate(dr.x,dr.y);ctx.scale(pl,pl);if(dr.kind==="chest"){const cim=ASSET_IMG.chest;if(cim&&cim.complete&&cim.naturalWidth>0)ctx.drawImage(cim,-14,-18,28,24);else{ctx.fillStyle="#8a5a20";ctx.fillRect(-13,-9,26,18);ctx.fillStyle="#c9a227";ctx.fillRect(-13,-11,26,6);ctx.fillRect(-2,-11,4,20);}}else if(ASSET_IMG.vacuum&&ASSET_IMG.vacuum.complete&&ASSET_IMG.vacuum.naturalWidth>0){ctx.drawImage(ASSET_IMG.vacuum,-11,-11,22,22);}else{ctx.fillStyle="#123a55";ctx.beginPath();ctx.arc(0,0,11,0,7);ctx.fill();ctx.strokeStyle="#69d2ff";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#bfe9ff";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText("吸",0,4);ctx.textAlign="left";}ctx.restore();ctx.fillStyle=dr.kind==="chest"?"#ffd964":"#bfe9ff";ctx.font="bold 10px sans-serif";ctx.textAlign="center";ctx.fillText(dr.kind==="chest"?"宝箱":"吸収",dr.x,dr.y-18);ctx.textAlign="left";});
  // 経験値
- G.gems.forEach(g=>{if(offV(g.x,g.y,45))return;const s=2.6+Math.sin(NOW/200+g.x)*0.8;if(g.heal){const pu=1+0.16*Math.sin(NOW/170+g.x);ctx.save();ctx.globalAlpha=0.38;ctx.fillStyle="#ff7a9a";ctx.beginPath();ctx.arc(g.x,g.y,12.5*pu,0,7);ctx.fill();ctx.globalAlpha=1;ctx.font=Math.round(17*pu)+"px sans-serif";ctx.textAlign="center";ctx.fillText("\u2764\uFE0F",g.x,g.y+6*pu);ctx.restore();ctx.textAlign="left";return;}const ge=ASSET_IMG.gem;if(ge&&ge.complete&&ge.naturalWidth>0){ctx.drawImage(ge,g.x-s*1.9,g.y-s*1.9,s*3.8,s*3.8);return;}ctx.fillStyle="#69d2ff";ctx.fillRect(g.x-s,g.y-s,s*2,s*2);ctx.fillStyle="#fff";ctx.fillRect(g.x-1,g.y-1,2,2);});
+ G.gems.forEach(g=>{if(offV(g.x,g.y,45))return;const s=2.6+Math.sin(NOW/200+g.x)*0.8;if(g.heal){const pu=1+0.16*Math.sin(NOW/170+g.x);ctx.save();ctx.globalAlpha=0.38;ctx.fillStyle="#ff7a9a";ctx.beginPath();ctx.arc(g.x,g.y,12.5*pu,0,7);ctx.fill();ctx.globalAlpha=1;ctx.font=Math.round(17*pu)+"px sans-serif";ctx.textAlign="center";ctx.fillText("\u2764\uFE0F",g.x,g.y+6*pu);ctx.restore();ctx.textAlign="left";return;}const ge=ASSET_IMG.gem;const vs=(g.v||1)>1?Math.min(2.0,1+0.14*((g.v||1)-1)):1;if(ge&&ge.complete&&ge.naturalWidth>0){ctx.drawImage(ge,g.x-s*1.9*vs,g.y-s*1.9*vs,s*3.8*vs,s*3.8*vs);return;}ctx.fillStyle="#69d2ff";ctx.fillRect(g.x-s*vs,g.y-s*vs,s*2*vs,s*2*vs);ctx.fillStyle="#fff";ctx.fillRect(g.x-1,g.y-1,2,2);});
  // 敵の攻撃予告（範囲が赤く満ちていく＝満ちる前に範囲外へ出ればかわせる）
  G.enemies.forEach(e=>{if(e.chargeTele>0&&!e.dead){ctx.strokeStyle="rgba(255,90,60,0.55)";ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(e.x,e.y-8);ctx.lineTo(e.chargeTx||e.x,e.chargeTy||e.y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#ff4040";ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.fillText("！",e.x,(e.boss||e.elite||e.namedMob)?enemyTopY(e)-24:e.y-46);ctx.textAlign="left";}});
  G.enemies.forEach(e=>{if(!e.windT||e.windT<=0||!e.windDur)return;const pr=1-e.windT/e.windDur;
@@ -6410,7 +6437,7 @@ function render(){
    // 兵種スプライト（歩行ボブ・左右反転・被弾白フラッシュ・溜めの傾き）
    const ebob=(e.moving?Math.abs(Math.sin(NOW/70+(e.phase||0)))*1.8:Math.sin(NOW/300+(e.phase||0))*0.9);
    const ey=e.y+ebob;const EH=(e.type==="cav"?46:40)*(e.big?(e.mobVis===5?1.45:1.3):1);const EW=EH*espr.img.naturalWidth/espr.img.naturalHeight;
-   {const _shw=shadowSprite(),_sr=Math.max(11,EW*0.32);if(_shw)ctx.drawImage(_shw,e.x+ox-_sr,ey+15-4.2,_sr*2,8.4);else{ctx.fillStyle="rgba(0,0,0,0.28)";ctx.beginPath();ctx.ellipse(e.x+ox,ey+15,_sr,4.2,0,0,7);ctx.fill();}}
+   if(!LITE_MODE){const _shw=shadowSprite(),_sr=Math.max(11,EW*0.32);if(_shw)ctx.drawImage(_shw,e.x+ox-_sr,ey+15-4.2,_sr*2,8.4);else{ctx.fillStyle="rgba(0,0,0,0.28)";ctx.beginPath();ctx.ellipse(e.x+ox,ey+15,_sr,4.2,0,0,7);ctx.fill();}} // 軽量モード時は敵の影を省略
    ctx.save();ctx.translate(e.x+ox,ey+15);ctx.scale(e.face||1,1);
    if(e.windT>0)ctx.rotate(-pr*0.14);else if(e.swing>0)ctx.rotate(0.3*Math.sin((0.18-e.swing)/0.18*Math.PI));
    if(bombFlash>0&&espr.w)ctx.drawImage(espr.w,-EW/2,-EH,EW,EH);else ctx.drawImage(espr.img,-EW/2,-EH,EW,EH);
@@ -6494,7 +6521,7 @@ function render(){
  G.bolts.forEach(b=>{if(b.x<camX-110||b.x>camX+W+110||b.y+24<camY||b.y-215>camY+H)return;const bim=ASSET_IMG[b.t>=0.28?"fx_bolt":"fx_bolt_s"];if(bim&&bim.complete&&bim.naturalWidth>0){const bh=b.t>=0.28?198:176,bw=bh*(bim.naturalWidth/bim.naturalHeight);ctx.save();ctx.globalAlpha=Math.min(1,b.t*3.4);ctx.translate(b.x,b.y+8);if(b.seed%2<1)ctx.scale(-1,1);ctx.drawImage(bim,-bw/2,-bh,bw,bh);ctx.restore();return;}
  ctx.strokeStyle=`rgba(200,230,255,${Math.max(0,b.t*3.4)})`;ctx.lineWidth=3;ctx.beginPath();let bx=b.x,by=b.y-170;ctx.moveTo(bx,by);const rnd=(n)=>{const x=Math.sin(b.seed*n*13.7)*10;return x;};for(let i=1;i<=5;i++){ctx.lineTo(b.x+rnd(i),b.y-170+34*i);}ctx.stroke();ctx.fillStyle=`rgba(220,240,255,${Math.max(0,b.t*2.6)})`;ctx.beginPath();ctx.arc(b.x,b.y,16,0,7);ctx.fill();});
  // ダメージ数字
- G.texts.forEach(tx=>{if(offV(tx.x,tx.y,70))return;const sz=tx.size||13,life=tx.t0||0.7,age=Math.max(0,life-tx.t);let sc=1;if(tx.pop){const k=Math.max(0,1-age/0.15);sc=1+(tx.pop>=2?0.8:0.38)*k*k;}const fs=Math.max(9,Math.round(sz*sc)),yy=tx.y-age*26;ctx.font="bold "+fs+"px sans-serif";ctx.textAlign="center";ctx.lineWidth=Math.max(2,fs/5);ctx.strokeStyle="rgba(24,12,0,0.78)";ctx.strokeText(tx.txt,tx.x,yy);ctx.fillStyle=tx.col;ctx.globalAlpha=Math.min(1,tx.t/0.18);ctx.fillText(tx.txt,tx.x,yy);ctx.globalAlpha=1;ctx.textAlign="left";});
+ G.texts.forEach(tx=>{if(offV(tx.x,tx.y,70))return;const sz=tx.size||13,life=tx.t0||0.7,age=Math.max(0,life-tx.t);let sc=1;if(tx.pop){const k=Math.max(0,1-age/0.15);sc=1+(tx.pop>=2?0.8:0.38)*k*k;}const fs=Math.max(9,Math.round(sz*sc)),yy=tx.y-age*26;ctx.font="bold "+fs+"px sans-serif";ctx.textAlign="center";if(tx.pop>=2||sz>=17){ctx.lineWidth=Math.max(2,fs/5);ctx.strokeStyle="rgba(24,12,0,0.78)";ctx.strokeText(tx.txt,tx.x,yy);}ctx.fillStyle=tx.col;ctx.globalAlpha=Math.min(1,tx.t/0.18);ctx.fillText(tx.txt,tx.x,yy);ctx.globalAlpha=1;ctx.textAlign="left";});
  G.floats.forEach(f=>{ctx.font=`bold ${f.size}px sans-serif`;ctx.textAlign="center";ctx.globalAlpha=Math.min(1,f.t);f.y-=0.35;ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y);ctx.globalAlpha=1;ctx.textAlign="left";});
  ctx.restore();
  // HUD
@@ -6518,7 +6545,7 @@ function render(){
  else if(!G.duel&&!G.finalSpawned&&!G.stageBossSpawned){const q=stageQuota();ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(W/2-100,58,200,22);ctx.strokeStyle="#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-100,58,200,22);ctx.fillStyle="#ffe9a8";ctx.font="bold 12.5px sans-serif";ctx.fillText(G.stageKills>=q?"討伐 "+q+"/"+q+" ― 強敵接近…":"討伐 "+G.stageKills+"/"+q,W/2,73);}
  ctx.textAlign="left";
  // パーティ体力チップ
- G.party.forEach((p,i)=>{const cx=14+i*118,cy=50;ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(cx,cy,110,37);ctx.fillStyle=FACTION_COLOR[p.faction];ctx.fillRect(cx,cy,3,37);ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";{const _rk={melee:"斬",cav:"騎",archer:"弓",strat:"軍",support:"癒"}[p.role]||"斬";ctx.fillStyle={melee:"#ffb27a",cav:"#ffd964",archer:"#aee2ff",strat:"#d8b4ff",support:"#7ae0a3"}[p.role]||"#fff";ctx.fillText(_rk,cx+7,cy+12);ctx.fillStyle="#fff";}ctx.fillText(p.away?"離脱中":p.downT>0?"撤退 "+Math.ceil(p.downT)+"s":p.name,cx+20,cy+12);ctx.fillStyle="#ffd964";ctx.font="bold 10px sans-serif";ctx.fillText("撃破"+(p.kills||0)+(p.upgCount?" ★"+p.upgCount:""),cx+7,cy+24);ctx.fillStyle="#300";ctx.fillRect(cx+6,cy+29,98,5);ctx.fillStyle=p.hp/p.maxhp<0.3?"#ff5040":"#7be07b";ctx.fillRect(cx+6,cy+29,98*Math.max(0,p.hp/p.maxhp),5);});
+ G.party.forEach((p,i)=>{const cx=14+i*118,cy=50;ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(cx,cy,110,37);ctx.fillStyle=FACTION_COLOR[p.faction];ctx.fillRect(cx,cy,3,37);ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";{const _rk={melee:"斬",cav:"騎",archer:"弓",strat:"軍",support:"癒"}[p.role]||"斬";ctx.fillStyle={melee:"#ffb27a",cav:"#ffd964",archer:"#aee2ff",strat:"#d8b4ff",support:"#7ae0a3"}[p.role]||"#fff";ctx.fillText(_rk,cx+7,cy+12);ctx.fillStyle="#fff";}ctx.fillText(p.away?"離脱中":p.downT>0?"撤退 "+Math.ceil(p.downT)+"s":p.name,cx+20,cy+12);ctx.fillStyle="#9fe8ff";ctx.textAlign="right";ctx.fillText("固有技Lv"+sigLv(p),cx+104,cy+12);ctx.textAlign="left";ctx.fillStyle="#ffd964";ctx.font="bold 10px sans-serif";ctx.fillText("撃破"+(p.kills||0)+(p.upgCount?" ★"+p.upgCount:""),cx+7,cy+24);ctx.fillStyle="#300";ctx.fillRect(cx+6,cy+29,98,5);ctx.fillStyle=p.hp/p.maxhp<0.3?"#ff5040":"#7be07b";ctx.fillRect(cx+6,cy+29,98*Math.max(0,p.hp/p.maxhp),5);});
  if(G.chainLvl>0){ctx.fillStyle="#ffd964";ctx.font="bold 12px sans-serif";ctx.fillText("🔥連斬ボーナス中：射程・速度+"+Math.round((G.chainRangeBonus||0)*100)+"%",14,G.endless?126:92);}
  // 被弾ビネット（画面端が赤く光る）
  const lowHp=L.hp/L.maxhp<0.3?0.16+0.1*Math.sin(NOW/220):0;
