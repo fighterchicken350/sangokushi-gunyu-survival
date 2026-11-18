@@ -3837,10 +3837,10 @@ function lordArtFx(){
  }else if(L.name==="劉禅"){
   const r=Math.random();
   if(r<1/3){G.lastTenun="heal";const heal=a=>{a.hp=Math.min(a.maxhp,a.hp+a.maxhp*0.4);addText(a.x,a.y-56,"大回復！","#a5f2a5",14);};heal(L);aliveParty().forEach(heal);sub+=" ― 天運：大回復！";}
-  else if(r<2/3){G.lastTenun="thunder";const dmg=(120+L.atk*6)*1.3;[...G.enemies].filter(e=>!e.dead).sort((a,b)=>b.hp-a.hp).slice(0,5).forEach(e=>G.bolts.push({x:e.x,y:e.y,t:0.3,seed:Math.random()*100}));G.enemies.forEach(e=>{if(!e.dead)damageEnemy(e,dmg,true,"君主",{tac:1,lordArt:1});});G.flashT=Math.max(G.flashT,0.3);G.shake=Math.max(G.shake,7);sub+=" ― 天運：天雷！";}
+  else if(r<2/3){G.lastTenun="thunder";const dmg=(120+L.atk*6)*1.3;[...G.enemies].filter(e=>!e.dead&&tacOnScreen(e.x,e.y)).sort((a,b)=>b.hp-a.hp).slice(0,5).forEach(e=>G.bolts.push({x:e.x,y:e.y,t:0.3,seed:Math.random()*100}));G.enemies.forEach(e=>{if(!e.dead)damageEnemy(e,dmg,true,"君主",{tac:1,lordArt:1});});G.flashT=Math.max(G.flashT,0.3);G.shake=Math.max(G.shake,7);sub+=" ― 天運：天雷！";}
   else{G.lastTenun="grace";G.gauge=50;for(let i=0;i<12;i++)G.gems.push({x:L.x+(Math.random()*120-60),y:L.y+(Math.random()*120-60),v:1});G.gems.push({x:L.x+16,y:L.y,v:0,heal:true});sub+=" ― 天運：恵み（ゲージ半分還流）";}
  }else if(L.name==="孫策"){
-  const tgt=nearestEnemy(L,620);const ang=tgt?Math.atan2(tgt.y-L.y,tgt.x-L.x):(L.face>0?0:Math.PI);
+  let tgt=null,tbd=620*620;G.enemies.forEach(e=>{if(e.dead||!tacOnScreen(e.x,e.y))return;const dx=e.x-L.x,dy=e.y-L.y,d2=dx*dx+dy*dy;if(d2<tbd){tbd=d2;tgt=e;}});const ang=tgt?Math.atan2(tgt.y-L.y,tgt.x-L.x):(L.face>0?0:Math.PI);
   G.projs.push({x:L.x,y:L.y-6,vx:Math.cos(ang)*10,vy:Math.sin(ang)*10,dmg:L.atk*3.4,src:"君主",t:0.85,wave:true,big:1,col:"#ffb27a"});
   G.lordFastT=10;G.lordSpdBuffT=10;G.slashes.push({x:L.x,y:L.y,face:L.face||1,t:0.25,col:"#ffb27a",big:1});
   sub+=" ― 特大斬撃波＋自身が加速（10秒）";
@@ -3890,7 +3890,7 @@ function pairArtFx(A,B,def,plan){
   G.shake=Math.max(G.shake,6);sfxTaiko();
  }else if(key==="諸葛亮×龐統"){
   // 八陣図で足止めし、連環の鎖が近い敵から次々と貫く
-  const c=clusterNear({x:mx,y:my},460,120)||{x:mx,y:my};
+  const c=clusterNear({x:mx,y:my},460,120,1)||{x:mx,y:my};
   G.zones.push({x:c.x,y:c.y,r:165,t:6,type:"hachijin"});
   G.slowT=Math.max(G.slowT,3);
   const hit=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-c.x,e.y-c.y)<215).sort((a,b)=>Math.hypot(a.x-c.x,a.y-c.y)-Math.hypot(b.x-c.x,b.y-c.y));
@@ -3900,14 +3900,14 @@ function pairArtFx(A,B,def,plan){
   sigBurst(c.x,c.y,"#c8aaff",14,2.4);
  }else if(key==="周瑜×小喬"){
   // 都督の火攻め＋小喬の癒しの舞（攻防一体）
-  const c=clusterNear(A,420,90);
+  const c=clusterNear(A,420,90,1);
   if(c){G.fires.push({x:c.x,y:c.y,t:4,r:90,dps:dSum*0.6});G.fires.push({x:c.x+52,y:c.y-20,t:4,r:78,dps:dSum*0.6});aoeP(c.x,c.y,95,dSum*0.5,A.name);sigBurst(c.x,c.y,"#ff8a5a",14,2.6);G.rings.push({x:c.x,y:c.y,r:10,t:0.4,col:"#ff8a5a"});sfxSplash();}
   const healA=a=>{if(Math.hypot(a.x-B.x,a.y-B.y)<=340){healText(a,healUnit(a,a.maxhp*0.16),B.name);G.rings.push({x:a.x,y:a.y,r:6,t:0.45,col:"#ffb7d5"});pushImgFx("fx_heal_burst",a.x,a.y-8,110,138,0.6,{});}};
   healA(L);aliveParty().forEach(healA);
   sigPetals(B.x,B.y,22);
  }else if(key==="司馬懿×張郃"){
   // 敵を引き寄せて一所に集め、張郃が斬り込む。敵全体も鈍る
-  const c=clusterNear({x:mx,y:my},460,130)||{x:mx,y:my};
+  const c=clusterNear({x:mx,y:my},460,130,1)||{x:mx,y:my};
   G.enemies.forEach(e=>{if(e.dead)return;const d=Math.hypot(e.x-c.x,e.y-c.y);if(d<285&&d>4){const pull=e.boss?0.12:0.45;e.x+=(c.x-e.x)*pull;e.y+=(c.y-e.y)*pull;}});
   if(!G.links)G.links=[];G.links.push({x1:A.x,y1:A.y-12,x2:c.x,y2:c.y-12,t:0.4,col:"#8a97d8"});G.links.push({x1:B.x,y1:B.y-12,x2:c.x,y2:c.y-12,t:0.4,col:"#8a97d8"});
   aoeP(c.x,c.y,145,dSum*0.8,B.name);
@@ -3947,7 +3947,7 @@ function pairArtFx(A,B,def,plan){
   sigDelay(()=>{const cx=(A.x+B.x)/2,cy=(A.y+B.y)/2;aoeP(cx,cy,125,dSum*0.4,A.name);G.slashes.push({x:cx,y:cy,face:1,t:0.24,col:"#ffffff",big:1});G.slashes.push({x:cx,y:cy,face:-1,t:0.24,col:"#ffe9a8",big:1,rot:0.5});G.shake=Math.max(G.shake,4);},0.14);
  }else if(key==="夏侯惇×夏侯淵"){
   // 夏侯淵の矢の雨（3連射）が密集地を射すくい、夏侯惇が斬り込む
-  const c=clusterNear(B,470,95)||{x:B.x+(B.face||1)*120,y:B.y};
+  const c=clusterNear(B,470,95,1)||{x:B.x+(B.face||1)*120,y:B.y};
   for(let i2=0;i2<3;i2++){const volley=()=>{pushImgFx("fx_arrow_rain",c.x,c.y-24,215,132,0.4,{});aoeP(c.x,c.y,100,dSum*0.22,B.name);for(let k2=0;k2<6;k2++)G.parts.push({x:c.x+(Math.random()*100-50),y:c.y-95-Math.random()*30,vx:0.3,vy:2.8,t:0.3,col:k2%2?"#69a8ff":"#cfe6ff",s:2.4});G.rings.push({x:c.x,y:c.y,r:8,t:0.3,col:"#69a8ff"});sfxSpear();};
    if(i2===0)volley();else sigDelay(volley,0.15*i2);}
   const dir=A.face||1,ox0=A.x;A.x+=dir*115;
@@ -3957,9 +3957,9 @@ function pairArtFx(A,B,def,plan){
   G.rings.push({x:A.x,y:A.y,r:10,t:0.4,col:"#69a8ff"});G.shake=Math.max(G.shake,4);
  }else if(key==="呂蒙×陸遜"){
   // 陸遜の火攻めが密集地を焼き、呂蒙が白衣の奇襲で大物を仕留める（攻防の継承）
-  const c=clusterNear(B,430,90);
+  const c=clusterNear(B,430,90,1);
   if(c){G.fires.push({x:c.x,y:c.y,t:4,r:92,dps:dSum*0.6});aoeP(c.x,c.y,98,dSum*0.45,B.name);sigBurst(c.x,c.y,"#ff6a3d",12,2.4);G.rings.push({x:c.x,y:c.y,r:10,t:0.4,col:"#ff6a3d"});sfxSplash();}
-  let tgt=null,bhp=-1;G.enemies.forEach(e=>{if(e.dead)return;const d=Math.hypot(e.x-A.x,e.y-A.y);if(d<520&&e.hp>bhp){bhp=e.hp;tgt=e;}});
+  let tgt=null,bhp=-1;G.enemies.forEach(e=>{if(e.dead||!tacOnScreen(e.x,e.y))return;const d=Math.hypot(e.x-A.x,e.y-A.y);if(d<520&&e.hp>bhp){bhp=e.hp;tgt=e;}});
   if(tgt){const d=Math.hypot(tgt.x-A.x,tgt.y-A.y)||1;const mv=Math.min(190,Math.max(0,d-26));A.x+=(tgt.x-A.x)/d*mv;A.y+=(tgt.y-A.y)/d*mv;A.face=(tgt.x>=A.x)?1:-1;
    aoeP(A.x,A.y,105,dSum*0.55,A.name);tgt.stun=Math.max(tgt.stun||0,1.5);
    G.slashes.push({x:A.x,y:A.y,face:A.face,t:0.28,col:"#ffe9c9",big:1});
@@ -3967,7 +3967,7 @@ function pairArtFx(A,B,def,plan){
    G.rings.push({x:A.x,y:A.y,r:10,t:0.4,col:"#ffe9c9"});}
  }else if(key==="法正×黄忠"){
   // 法正の策で最も手強い敵を縛り（印＋鈍化）、黄忠の一矢が仕留める
-  let tgt=null,bhp=-1;G.enemies.forEach(e=>{if(!e.dead&&e.hp>bhp){bhp=e.hp;tgt=e;}});
+  let tgt=null,bhp=-1;G.enemies.forEach(e=>{if(!e.dead&&e.hp>bhp&&tacOnScreen(e.x,e.y)){bhp=e.hp;tgt=e;}});
   if(tgt){
    if(!G.links)G.links=[];G.links.push({x1:A.x,y1:A.y-14,x2:tgt.x,y2:tgt.y-14,t:0.5,col:"#ffd964"});
    G.rings.push({x:tgt.x,y:tgt.y,r:16,t:0.55,col:"#ffd964"});
@@ -3979,7 +3979,7 @@ function pairArtFx(A,B,def,plan){
   // 王佐の鼓舞（全軍の攻撃+15%・15秒）＋鬼才の読み（計略CD短縮）＋盤面の一撃（支援＋攻撃）
   G.atkBuffMul=Math.max(G.atkBuffMul||1,1.15);G.atkBuffT=Math.max(G.atkBuffT||0,15);G.mods=computeMods();
   if(G.tacT)for(const id in G.tacT)G.tacT[id]*=0.4;
-  const c=clusterNear({x:mx,y:my},460,110)||{x:mx,y:my};
+  const c=clusterNear({x:mx,y:my},460,110,1)||{x:mx,y:my};
   if(!G.links)G.links=[];G.links.push({x1:A.x,y1:A.y-14,x2:c.x,y2:c.y-14,t:0.45,col:"#9fb8ff"});G.links.push({x1:B.x,y1:B.y-14,x2:c.x,y2:c.y-14,t:0.45,col:"#9fb8ff"});
   aoeP(c.x,c.y,130,dSum*0.5,B.name);
   G.rings.push({x:c.x,y:c.y,r:12,t:0.45,col:"#9fb8ff"});sigBurst(c.x,c.y,"#9fb8ff",12,2.2);
@@ -3997,7 +3997,7 @@ function pairArtFx(A,B,def,plan){
   G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-A.x,e.y-A.y)<165){e.stun=Math.max(e.stun||0,1.2);const d=Math.hypot(e.x-A.x,e.y-A.y)||1;const kb=e.boss?2:8;e.kx=(e.kx||0)+(e.x-A.x)/d*kb;e.ky=(e.ky||0)+(e.y-A.y)/d*kb;}});
   G.rings.push({x:A.x,y:A.y,r:16,t:0.55,col:"#ff8a3c"});G.rings.push({x:A.x,y:A.y,r:5,t:0.7,col:"#ffb27a"});
   G.shake=Math.max(G.shake,6);sfxTaiko();
-  const c=clusterNear(B,470,95)||{x:B.x+(B.face||1)*130,y:B.y};
+  const c=clusterNear(B,470,95,1)||{x:B.x+(B.face||1)*130,y:B.y};
   G.fires.push({x:c.x,y:c.y,t:3,r:80,dps:dSum*0.6});
   for(let i2=0;i2<3;i2++){const volley=()=>{aoeP(c.x,c.y,95,dSum*0.18,B.name);for(let k2=0;k2<6;k2++)G.parts.push({x:c.x+(Math.random()*90-45),y:c.y-90-Math.random()*30,vx:0.3,vy:2.8,t:0.3,col:k2%2?"#ff8a3c":"#ffd2b8",s:2.5});G.rings.push({x:c.x,y:c.y,r:8,t:0.3,col:"#ff8a3c"});};
    if(i2===0)volley();else sigDelay(volley,0.15*i2);}
@@ -4014,7 +4014,7 @@ function pairArtFx(A,B,def,plan){
  }else if(key==="馬良×馬謖"){
   // 白眉の献策：全軍の固有技が早まる＋馬謖の兵法が密集地を討つ（支援＋攻撃）
   aliveParty().forEach(a=>{a.sigT=Math.max(0,(a.sigT||0)*0.5);});
-  const c=clusterNear({x:mx,y:my},460,110)||{x:mx,y:my};
+  const c=clusterNear({x:mx,y:my},460,110,1)||{x:mx,y:my};
   if(!G.links)G.links=[];G.links.push({x1:A.x,y1:A.y-14,x2:c.x,y2:c.y-14,t:0.45,col:"#dfeaff"});G.links.push({x1:B.x,y1:B.y-14,x2:c.x,y2:c.y-14,t:0.45,col:"#dfeaff"});
   aoeP(c.x,c.y,135,dSum*0.6,B.name);
   G.rings.push({x:c.x,y:c.y,r:12,t:0.45,col:"#dfeaff"});sigBurst(c.x,c.y,"#dfeaff",12,2.2);
@@ -4034,7 +4034,7 @@ function pairArtFx(A,B,def,plan){
   G.slashes.push({x:A.x,y:A.y,face:dirA,t:0.28,col:"#f0c05a",big:1});
   for(let i2=0;i2<5;i2++)G.parts.push({x:oxA+dirA*(16+i2*20),y:A.y+6,vx:-dirA*0.4,vy:-0.3-Math.random()*0.4,t:0.4,col:"#c9b489",s:2.6});
   // 凌統は一番近い敵へ復讐の突撃（残りHPが少ないほど重い＝固有技の味付け）
-  let tgt=null,bd=460;G.enemies.forEach(e=>{if(e.dead)return;const d=Math.hypot(e.x-B.x,e.y-B.y);if(d<bd){bd=d;tgt=e;}});
+  let tgt=null,bd=460;G.enemies.forEach(e=>{if(e.dead||!tacOnScreen(e.x,e.y))return;const d=Math.hypot(e.x-B.x,e.y-B.y);if(d<bd){bd=d;tgt=e;}});
   const lowhp=1-Math.max(0,B.hp)/B.maxhp;
   if(tgt){const d=Math.hypot(tgt.x-B.x,tgt.y-B.y)||1;const mv=Math.min(150,Math.max(0,d-30));B.x+=(tgt.x-B.x)/d*mv;B.y+=(tgt.y-B.y)/d*mv;B.face=(tgt.x>=B.x)?1:-1;}
   else B.x+=(B.face||1)*110;
@@ -4300,11 +4300,15 @@ function castFusion(){const L=G.lord;const id=G.fusion;if(!id)return;
  else if(id==="fuse_tc"){const best=strongInRange();const pw=fusionPower(85);if(best){G.bolts.push({x:best.x,y:best.y,t:0.3,seed:Math.random()*100});damageEnemy(best,pw,true,"君主",{tac:2});best.stun=Math.max(best.stun||0,1.4);}const pw2=fusionPower(14);for(let a=0;a<12;a++){const ang=a/12*Math.PI*2;G.projs.push({x:L.x,y:L.y,vx:Math.cos(ang)*7,vy:Math.sin(ang)*7,dmg:pw2,src:"君主",t:0.55,trail:true,ab:(G.mastery&&G.mastery.crossbow)?1:0});}addText(L.x,L.y-52,"奥義・雷弩連射！","#ffe9a8",19);}
  else if(id==="fuse_hh"){if(!G.hachiZones)G.hachiZones=[];G.hachiZones.push({x:L.x,y:L.y,r:210,t:8,slow:0.32});G.zones.push({x:L.x,y:L.y,r:210,t:8,type:"hachijin"});const hAmt=L.maxhp*0.12*(1+0.35*4)*G.mods.tacPower;healUnit(L,hAmt);G.party.forEach(p=>{if(!p.away&&p.downT<=0)healUnit(p,hAmt*0.67);});pushImgFx("fx_heal_burst",L.x,L.y-10,195,244,0.85,{});G.rings.push({x:L.x,y:L.y,r:10,t:0.6,col:"#7ae0a3"});addText(L.x,L.y-52,"奥義・生門の陣！","#a5f2a5",19);}
 }
-// ===== 計略の照準（照準バグ修正 2026-11-17）：君主の周囲およそ画面内（半径560px）の敵だけを狙う =====
+// ===== 計略の照準（照準バグ修正 2026-11-17／画面内限定 2026-11-18 #51）：君主の周囲（半径560px）かつカメラの可視範囲内にいる敵だけを狙う =====
 // 旧仕様は「敵配列の先頭30体の平均位置」を狙っていたため、(a)2つの群れの間の無人地点に落ちる、
 // (b)遠方の初期湧きに引っ張られて画面外に発動する、という問題があった。
+// #51（真衣の指示「計略が画面外で発生しないようにして」）：照準候補は画面内（G.cam の可視矩形＝左上＋W×H）にいる敵のみ。
+// 画面内に有効な照準がなければ tacAim が null を返し、発動側は従来どおり待機する（CD・ゲージを消費しない）。
+// 効果範囲が画面端に掛かる場合（中心は画面内・範囲の一部が画面外）は発動可とする（中心＝発生地点が見えていることが基準）。
 const TAC_AIM_R=560;
-function tacFoes(){const L=G.lord,out=[];for(const e of G.enemies){if(e.dead)continue;const dx=e.x-L.x,dy=e.y-L.y;if(dx*dx+dy*dy<=TAC_AIM_R*TAC_AIM_R)out.push(e);}return out;}
+function tacOnScreen(x,y){if(!G||!G.cam)return true;return x>=G.cam.x&&x<=G.cam.x+W&&y>=G.cam.y&&y<=G.cam.y+H;}
+function tacFoes(){const L=G.lord,out=[];for(const e of G.enemies){if(e.dead)continue;const dx=e.x-L.x,dy=e.y-L.y;if(dx*dx+dy*dy<=TAC_AIM_R*TAC_AIM_R&&tacOnScreen(e.x,e.y))out.push(e);}return out;}
 // 効果半径r内に最も多くの敵を含む地点を返す。中心は群れの重心に最も近い「実在の敵」に寄せるため、
 // 半径内に最低1体が必ず含まれ、無人地点には落ちない。範囲内に敵がいなければnull（＝発動待機）
 function bestCluster(r){
@@ -4319,8 +4323,9 @@ function bestCluster(r){
 }
 function strongInRange(){const foes=tacFoes();let best=null,bhp=-1;for(const e of foes){if(e.hp>bhp){bhp=e.hp;best=e;}}return best;}
 // 仲間用：fromの周囲range内の敵から、半径r内に最も多くの敵を含む地点（中心は実在の敵）。なければnull
-function clusterNear(from,range,r){
- const foes=[];for(const e of G.enemies){if(e.dead)continue;const dx=e.x-from.x,dy=e.y-from.y;if(dx*dx+dy*dy<=range*range)foes.push(e);}
+// vis=1 のときは画面内の敵だけを候補にする（#51：ペア合体技など計略発動に紐づく照準用。仲間の固有技は従来どおり vis なし）
+function clusterNear(from,range,r,vis){
+ const foes=[];for(const e of G.enemies){if(e.dead)continue;if(vis&&!tacOnScreen(e.x,e.y))continue;const dx=e.x-from.x,dy=e.y-from.y;if(dx*dx+dy*dy<=range*range)foes.push(e);}
  if(!foes.length)return null;
  let best=null,bestN=-1,bestD=1e18;
  for(const c of foes){let n=0;for(const e of foes){const dx=e.x-c.x,dy=e.y-c.y;if(dx*dx+dy*dy<=r*r)n++;}
@@ -4346,8 +4351,8 @@ function tacAim(id){
   case "hachijin":return{x:L.x,y:L.y,r:170,icon:"\u{1FAA8}"};
   case "wind":return{x:L.x,y:L.y,r:46,icon:"\u{1F4A8}"};
   case "crossbow":return{x:L.x,y:L.y,r:62,icon:"\u{1F3F9}"};
-  case "spear":{const slv=(G.tactics&&G.tactics.spear)||1;const d=lordAimDir();const len=(235+22*(slv-1))*G.mods.tacRange,wid=15+3.5*(slv-1);let ok=false;G.enemies.forEach(e=>{if(ok||e.dead)return;const rx=e.x-L.x,ry=e.y-L.y;const pr=rx*d.x+ry*d.y;if(pr<0||pr>len)return;const qx=rx-pr*d.x,qy=ry-pr*d.y;if(qx*qx+qy*qy<=wid*wid+110)ok=true;});return ok?{x:L.x,y:L.y,r:52,icon:"\u{1F531}"}:null;}
-  case "homing":{let best=null,bd=TAC_AIM_R;G.enemies.forEach(e=>{if(!e.dead){const dd=dist(L,e);if(dd<bd){bd=dd;best=e;}}});return best?{tgt:best,r:26,icon:"\u{1F3AF}"}:null;}
+  case "spear":{const slv=(G.tactics&&G.tactics.spear)||1;const d=lordAimDir();const len=(235+22*(slv-1))*G.mods.tacRange,wid=15+3.5*(slv-1);let ok=false;G.enemies.forEach(e=>{if(ok||e.dead||!tacOnScreen(e.x,e.y))return;const rx=e.x-L.x,ry=e.y-L.y;const pr=rx*d.x+ry*d.y;if(pr<0||pr>len)return;const qx=rx-pr*d.x,qy=ry-pr*d.y;if(qx*qx+qy*qy<=wid*wid+110)ok=true;});return ok?{x:L.x,y:L.y,r:52,icon:"\u{1F531}"}:null;}
+  case "homing":{let best=null,bd=TAC_AIM_R;G.enemies.forEach(e=>{if(!e.dead&&tacOnScreen(e.x,e.y)){const dd=dist(L,e);if(dd<bd){bd=dd;best=e;}}});return best?{tgt:best,r:26,icon:"\u{1F3AF}"}:null;}
   case "trap":return{x:L.x,y:L.y,r:34,icon:"\u{1F573}\uFE0F"};
   case "fuse_fw":{const r=95*G.mods.tacRange*G.mods.fireMul;const c=cent(r);return c?{x:c.x,y:c.y,r,icon:"\u{1F300}",gold:1}:null;}
   case "fuse_tc":{const b=strong();return b?{tgt:b,r:34,icon:"\u26A1",gold:1}:null;}
@@ -4413,9 +4418,9 @@ function castTactics(dt){
    for(let i=0;i<30;i++){const px=cx+(Math.random()*r*1.1-r*0.55);G.parts.push({x:px,y:cy+Math.random()*14-4,vx:(Math.random()-0.5)*0.7,vy:-2.6-Math.random()*3.4,t:0.45+Math.random()*0.5,col:["#ff7a3c","#ffb27a","#ffd964"][i%3],s:2.6+Math.random()*2});}
    for(let i=0;i<12;i++)G.parts.push({x:cx+(Math.random()*r*1.4-r*0.7),y:cy-6,vx:(Math.random()-0.5)*1.4,vy:-1.2-Math.random()*1.8,t:0.8+Math.random()*0.7,col:"#ff9a3c",s:1.8});
    G.rings.push({x:cx,y:cy,r:10,t:0.4,col:"#ff9a3c"});G.fireFlashT=0.32;G.shake=Math.max(G.shake,2.5);}
-  if(id==="thunder"){const best=am.tgt;if(best){G.bolts.push({x:best.x,y:best.y,t:0.3,seed:Math.random()*100});damageEnemy(best,power,true,"君主",{tac:2,tacLv:lv});best.stun=Math.max(best.stun||0,1.4);if(G.mastery&&G.mastery.thunder){const ch=G.enemies.filter(e=>e!==best&&!e.dead).sort((a,b)=>dist(best,a)-dist(best,b)).slice(0,2);ch.forEach(e=>{G.bolts.push({x:e.x,y:e.y,t:0.24,seed:Math.random()*100});damageEnemy(e,power*0.5,true,"君主",{tac:2,tacLv:lv});e.stun=Math.max(e.stun||0,0.7);});}addText(best.x,best.y-44,"落雷！","#bfe3ff",18);
+  if(id==="thunder"){const best=am.tgt;if(best){G.bolts.push({x:best.x,y:best.y,t:0.3,seed:Math.random()*100});damageEnemy(best,power,true,"君主",{tac:2,tacLv:lv});best.stun=Math.max(best.stun||0,1.4);if(G.mastery&&G.mastery.thunder){const ch=G.enemies.filter(e=>e!==best&&!e.dead&&tacOnScreen(e.x,e.y)).sort((a,b)=>dist(best,a)-dist(best,b)).slice(0,2);ch.forEach(e=>{G.bolts.push({x:e.x,y:e.y,t:0.24,seed:Math.random()*100});damageEnemy(e,power*0.5,true,"君主",{tac:2,tacLv:lv});e.stun=Math.max(e.stun||0,0.7);});}addText(best.x,best.y-44,"落雷！","#bfe3ff",18);
    // 演出のみ：周囲にも落雷（ダメージは従来どおり本命のみ）＋着弾リング＋白フラッシュ
-   const near=G.enemies.filter(e=>e!==best&&!e.dead).sort((a,b)=>dist(best,a)-dist(best,b)).slice(0,3);
+   const near=G.enemies.filter(e=>e!==best&&!e.dead&&tacOnScreen(e.x,e.y)).sort((a,b)=>dist(best,a)-dist(best,b)).slice(0,3);
    near.forEach((e,i)=>{G.bolts.push({x:e.x,y:e.y,t:0.24-i*0.03,seed:Math.random()*100});G.rings.push({x:e.x,y:e.y,r:6,t:0.3,col:"#bfe3ff"});});
    G.rings.push({x:best.x,y:best.y,r:8,t:0.4,col:"#d8ecff"});G.flashT=Math.max(G.flashT||0,0.22);G.shake=Math.max(G.shake,3);}}
   if(id==="heal"){const hAmt=L.maxhp*0.12*(1+0.35*(lv-1))*G.mods.tacPower;healUnit(L,hAmt);G.party.forEach(p=>{if(!p.away&&p.downT<=0)healUnit(p,hAmt*0.67);});pushImgFx("fx_heal_burst",L.x,L.y-8,150,188,0.7,{});G.rings.push({x:L.x,y:L.y,r:10,t:0.6,col:"#7ae0a3"});G.zones.push({x:L.x,y:L.y,r:70,t:1.2,type:"heal"});addText(L.x,L.y-52,"回復陣","#a5f2a5",16);
@@ -4444,7 +4449,7 @@ function castTactics(dt){
   let _pb=0;G.enemies.forEach(e=>{if(_pb>=24)return;if(Math.hypot(e.x-cx,e.y-cy)<r){for(let i=0;i<2;i++){_pb++;fxPart({x:e.x+(fxRand()-0.5)*14,y:e.y-16-fxRand()*8,vx:(fxRand()-0.5)*0.4,vy:-0.7-fxRand()*0.7,t:0.6,col:"#b8e07a",s:1.8+fxRand()*1.6});}}});
   sfxPoison();}
   if(id==="spear"){castSpear(lv,power,1);}
-  if(id==="homing"){const nShot=[3,3,4,5,6][lv-1]||3;const tgts=G.enemies.filter(e=>!e.dead&&dist(L,e)<=TAC_AIM_R).sort((a,b)=>dist(L,a)-dist(L,b)).slice(0,Math.max(1,Math.min(nShot,G.enemies.length)));
+  if(id==="homing"){const nShot=[3,3,4,5,6][lv-1]||3;const tgts=G.enemies.filter(e=>!e.dead&&dist(L,e)<=TAC_AIM_R&&tacOnScreen(e.x,e.y)).sort((a,b)=>dist(L,a)-dist(L,b)).slice(0,Math.max(1,Math.min(nShot,G.enemies.length)));
    if(tgts.length){for(let i=0;i<nShot;i++){const tg=tgts[i%tgts.length];const a=Math.atan2(tg.y-L.y,tg.x-L.x)+(i-(nShot-1)/2)*0.16;const spd=8.6;G.projs.push({x:L.x,y:L.y-6,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,dmg:power,src:"君主",t:1.5,trail:true,homing:1,targetRef:tg,bounces:(G.mastery&&G.mastery.homing)?2:0,mas:(G.mastery&&G.mastery.homing)?1:0});}
    sfxArrow();addText(L.x,L.y-52,"穿楊の矢！","#ffd98a",16);}}
   if(id==="trap"){if(!G.traps)G.traps=[];const cap=[3,3,4,4,5][lv-1]||3;G.traps.push({x:L.x,y:L.y,r:27,boomR:(76+7*(lv-1))*G.mods.tacRange,dmg:power,t:26,lv:lv,armT:0.35});while(G.traps.length>cap)G.traps.shift();sfxTrapSet();addText(L.x,L.y-52,"落穴設置","#d8c9a0",14);}
@@ -4526,7 +4531,7 @@ function splashEProj(pr,exclude){
  if(pr._splashed)return;pr._splashed=1;const L=G.lord;
  G.rings.push({x:pr.x,y:pr.y,r:7,t:0.3,col:"#d8cdb2"});for(let i=0;i<5;i++)G.parts.push({x:pr.x,y:pr.y-4,vx:(Math.random()-0.5)*2.6,vy:-Math.random()*2,t:0.3,col:"#b8ab8d",s:2.2});
  if(L!==exclude&&Math.hypot(pr.x-L.x,pr.y-L.y)<46)hitAlly(L,pr.atk*0.7);
- for(const p of G.party){if(p!==exclude&&!p.away&&p.downT<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<46)hitAlly(p,pr.atk*0.7);}
+ for(const p of G.party){if(p!==exclude&&!p.away&&p.downT<=0&&(p.airT||0)<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<46)hitAlly(p,pr.atk*0.7);}
  if(G.cart&&G.cart!==exclude&&Math.hypot(pr.x-G.cart.x,pr.y-G.cart.y)<46)damageCart(pr.atk*0.7);
 }
 function riverSlow(x,y){
@@ -4623,8 +4628,10 @@ function update(dt){
  G.party.forEach(p=>{if(p.downT>0||p.away)return;if(L.name==="劉備"&&dist(L,p)<110)p.hp=Math.min(p.maxhp,p.hp+1.6*(1+0.5*(G.hataStk||0))*dt);if(L.name==="孫権"&&p.name==="周泰"&&dist(L,p)<110)p.hp=Math.min(p.maxhp,p.hp+1.9*dt);});
  // 仲間AI
  G.party.forEach((p,idx)=>{
-  if(p.away)return;
-  if(p.downT>0){const rescued=dist(p,L)<75;p.downT-=dt*(rescued?3:1);if(rescued&&Math.random()<dt*1.2)addText(p.x,p.y-56,"救援中…","#ffd964",12);if(p.downT<=0){p.hp=p.maxhp*0.5*(1+0.2*lvStk("fukki"));const fo=formOffset(idx);p.x=fo.x;p.y=fo.y;if(p.name==="孟獲")G.mengStacks++;addText(p.x,p.y-40,`${p.name} 復帰！`,"#a5f2a5",15);pushFx(p.name,"in",returnLineOf(p));if(p.name==="凌統"&&rescued&&!G.lingEvolved&&has("甘寧"))evolveLingGan();}return;}
+  if(p.away){p.dashT=0;p.dashLand=null;return;}
+  if(p.downT>0){p.dashT=0;p.dashLand=null;const rescued=dist(p,L)<75;p.downT-=dt*(rescued?3:1);if(rescued&&Math.random()<dt*1.2)addText(p.x,p.y-56,"救援中…","#ffd964",12);if(p.downT<=0){p.hp=p.maxhp*0.5*(1+0.2*lvStk("fukki"));const fo=formOffset(idx);p.x=fo.x;p.y=fo.y;if(p.name==="孟獲")G.mengStacks++;addText(p.x,p.y-40,`${p.name} 復帰！`,"#a5f2a5",15);pushFx(p.name,"in",returnLineOf(p));if(p.name==="凌統"&&rescued&&!G.lingEvolved&&has("甘寧"))evolveLingGan();}return;}
+  if((p.airT||0)>0){p.moving=0;if(G.t-(p.airStartT||0)>(p.airDur||1.05)+1.5){p.airT=0;if(p.airX!=null){p.x=p.airX;p.y=p.airY;}}else return;} // #52 空中（馬超ダイブ等）：場にいない扱い。通常攻撃・移動・固有技タイマーすべて停止。末尾は安全網：着地コールバックが失われた場合のみ強制着地（通常経路では発火しない）
+  if((p.dashT||0)>0){p.dashT-=dt;const _dk=p.dashDur>0?1-Math.max(0,p.dashT)/p.dashDur:1;p.x=p.dashX0+(p.dashX1-p.dashX0)*_dk;p.y=p.dashY0+(p.dashY1-p.dashY0)*_dk;p.moving=1;if(p.dashT<=0){p.x=p.dashX1;p.y=p.dashY1;const _lf=p.dashLand;p.dashLand=null;if(_lf)_lf();}return;} // #53 ダッシュ中：位置を補間して実際に移動する（通常行動は停止、被弾は通常どおり）
   const fo=formOffset(idx);const fx=fo.x,fy=fo.y;
   if(p.hurtFlash>0)p.hurtFlash-=dt;if(p.ifr>0)p.ifr-=dt;
   if(p.swing>0)p.swing-=dt;if(p.atkMotT>0)p.atkMotT-=dt;if(p.recoilT>0)p.recoilT-=dt;
@@ -4766,7 +4773,7 @@ function update(dt){
   e.moving=1;
   if(e.stun>0){e.stun-=dt/(1+0.2*lvStk("renkan"));continue;}
   let target=L,bd2=(L.x-e.x)*(L.x-e.x)+(L.y-e.y)*(L.y-e.y);
-  for(const p of G.party){if(p.away||p.downT>0)continue;const _pdx=p.x-e.x,_pdy=p.y-e.y,_pd2=_pdx*_pdx+_pdy*_pdy;if(_pd2<bd2){bd2=_pd2;target=p;}}
+  for(const p of G.party){if(p.away||p.downT>0||(p.airT||0)>0)continue;const _pdx=p.x-e.x,_pdy=p.y-e.y,_pd2=_pdx*_pdx+_pdy*_pdy;if(_pd2<bd2){bd2=_pd2;target=p;}}
   if(G.cart&&(e.cartAggro||e.type==="siege")){target=G.cart;const _cdx=G.cart.x-e.x,_cdy=G.cart.y-e.y;bd2=_cdx*_cdx+_cdy*_cdy;}
   const d=Math.sqrt(bd2);e.face=target.x>=e.x?1:-1;let hzMul=1;if(G.hachiZones&&G.hachiZones.length){for(const hz of G.hachiZones){const _hzx=e.x-hz.x,_hzy=e.y-hz.y;if(_hzx*_hzx+_hzy*_hzy<hz.r*hz.r){hzMul=hz.slow||0.4;break;}}}if(e._orbT>0)e._orbT-=dt;if(e.orbitSlowT>0)e.orbitSlowT-=dt;
   const slowMul=((G.slowT>0&&dist(e,L)<170)?0.5:1)*((e.orbitSlowT||0)>0?0.62:1)*hzMul*((G.fogT||0)>0?0.8:1)*((G.dullT||0)>0?0.55:1)*((G.waterZones&&G.waterZones.some(z=>{const _wzX=e.x-z.x,_wzY=e.y-z.y;return _wzX*_wzX+_wzY*_wzY<z.r*z.r;}))?0.55:1)*((G.weather&&G.weather.id==="fog")?0.9:1);if(G.mastery&&G.mastery.hachijin&&G.hachiZones&&!e.boss&&!e.isFinal){for(const hz of G.hachiZones){const hd=Math.hypot(e.x-hz.x,e.y-hz.y);if(hd<hz.r&&hd>4){e.x+=(hz.x-e.x)/hd*22*dt;e.y+=(hz.y-e.y)/hd*22*dt;}}}
@@ -4809,7 +4816,7 @@ function update(dt){
   if(pr.splash&&pr.t<=0)splashEProj(pr,null);
   if(G.cart&&Math.hypot(pr.x-G.cart.x,pr.y-G.cart.y)<18){damageCart(pr.atk);if(pr.splash)splashEProj(pr,G.cart);pr.t=0;continue;}
   if(Math.hypot(pr.x-L.x,pr.y-L.y)<15){(G._hitCtx={arrow:true},hitAlly(L,pr.atk));if(pr.splash)splashEProj(pr,L);pr.t=0;continue;}
-  for(const p of G.party){if(!p.away&&p.downT<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<15){hitAlly(p,pr.atk);if(pr.splash)splashEProj(pr,p);pr.t=0;break;}}
+  for(const p of G.party){if(!p.away&&p.downT<=0&&(p.airT||0)<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<15){hitAlly(p,pr.atk);if(pr.splash)splashEProj(pr,p);pr.t=0;break;}}
  }
  G.eprojs=G.eprojs.filter(p=>p.t>0);
  for(const e of G.enemies){if(e.dead||e.type!=="medic")continue;e._medT=(e._medT||0)-dt;if(e._medT<=0){e._medT=3;let w=null,wr=1;for(const o of G.enemies){if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<130&&o.hp/o.maxhp<wr){wr=o.hp/o.maxhp;w=o;}}if(w&&wr<1){w.hp=Math.min(w.maxhp,w.hp+w.maxhp*0.06);G.rings.push({x:w.x,y:w.y,r:7,t:0.4,col:"#7ae0a3"});}}}
@@ -5084,6 +5091,14 @@ function sigReady(p){
    return near(95);
  }
 }
+// #53 ダッシュ移動：瞬間移動ではなく短時間（距離÷1500、0.14〜0.3秒）で実際に移動し、着地時に landFn を実行する。移動中は仲間AIが補間する
+function startDash(p,tx,ty,landFn){
+ tx=Math.max(24,Math.min(WORLD_W-24,tx));ty=Math.max(24,Math.min(WORLD_H-24,ty));
+ const dd=Math.hypot(tx-p.x,ty-p.y);
+ if(dd<10){p.x=tx;p.y=ty;if(landFn)landFn();return;}
+ p.dashX0=p.x;p.dashY0=p.y;p.dashX1=tx;p.dashY1=ty;
+ p.dashDur=Math.max(0.14,Math.min(0.3,dd/1500));p.dashT=p.dashDur;p.dashLand=landFn||null;
+}
 function sigCharge(p,distPx){
  const ox=p.x,oy=p.y;let ux=p.face||1,uy=0;
  const c=(typeof clusterNear==="function")?clusterNear(p,380,90):null;
@@ -5092,7 +5107,7 @@ function sigCharge(p,distPx){
  if(tx!==null){const dx=tx-ox,dy=ty-oy;const dd=Math.hypot(dx,dy);if(dd>4){ux=dx/dd;uy=dy/dd;}}
  p.x=Math.max(24,Math.min(WORLD_W-24,ox+ux*distPx));p.y=Math.max(24,Math.min(WORLD_H-24,oy+uy*distPx));
  if(Math.abs(ux)>0.05)p.face=ux>0?1:-1;
- pushImgFx("fx_charge_trail",(ox+p.x)/2,(oy+p.y)/2+6,distPx+76,(distPx+76)*0.21,0.3,{rot:Math.atan2(uy,ux)});
+ pushImgFx("fx_charge_trail",(ox+p.x)/2,(oy+p.y)/2+6,distPx+76,(distPx+76)*0.21,0.45,{rot:Math.atan2(uy,ux)}); // #53 軌跡の表示を少し延ばして移動が読めるように
  return{ux,uy,ox,oy};
 }
 // ===== #39 固有技Lv制（Lv1〜5）: sigEvo(宝箱で最大4回) + 1 が現在のLv。成長経路は宝箱の進化だけ =====
@@ -5134,12 +5149,17 @@ function sigSkill(p){
  const faceAng=(range)=>{const ne=nearestEnemy(p,range||420);if(ne){p.face=ne.x>=p.x?1:-1;return Math.atan2(ne.y-p.y,ne.x-p.x);}return (p.face||1)>0?0:Math.PI;};
  const wave=(ux,uy,mul,opt)=>{const o=opt||{};G.projs.push({x:o.x!=null?o.x:p.x,y:o.y!=null?o.y:p.y-6,vx:ux*(o.spd||7),vy:uy*(o.spd||7),dmg:dmg*mul,src:p.name,t:o.t||0.5,wave:true,big:o.big||0,col:o.col||ACOL});};
  const diveTo=(tx,ty,r,mul,opt)=>{const o2=opt||{};const ox=p.x,oy=p.y;const dd=Math.hypot(tx-ox,ty-oy)||1;const ux=(tx-ox)/dd,uy=(ty-oy)/dd;
-  for(let gi=1;gi<=3;gi++)G.ghosts.push({x:ox+ux*dd*gi/4,y:oy+uy*dd*gi/4,name:p.name,col:FACTION_COLOR[p.faction],face:ux>=0?1:-1,t:0.35});
-  pushImgFx("fx_dive_trail",(ox+tx)/2,(oy+ty)/2-8,Math.min(310,dd+110),Math.min(310,dd+110)*0.66,0.36,{rot:Math.atan2(uy,ux)});
-  p.x=Math.max(24,Math.min(WORLD_W-24,tx));p.y=Math.max(24,Math.min(WORLD_H-24,ty));if(Math.abs(ux)>0.05)p.face=ux>0?1:-1;
-  const n=aoe(p.x,p.y,r,mul);G.rings.push({x:p.x,y:p.y,r:10,t:0.4,col:o2.col||ACOL});
+  for(let gi=1;gi<=3;gi++){const gx=ox+ux*dd*gi/4,gy=oy+uy*dd*gi/4-Math.sin(Math.PI*gi/4)*30;const gg={x:gx,y:gy,name:p.name,col:FACTION_COLOR[p.faction],face:ux>=0?1:-1,t:0.55};if(gi===1)G.ghosts.push(gg);else sigDelay(()=>G.ghosts.push(gg),0.05*gi);} // #53 残像を時間差＋放物線で出し「跳んで移動した」ことが目で追えるように
+  pushImgFx("fx_dive_trail",(ox+tx)/2,(oy+ty)/2-8,Math.min(310,dd+110),Math.min(310,dd+110)*0.66,0.5,{rot:Math.atan2(uy,ux)});
+  if(Math.abs(ux)>0.05)p.face=ux>0?1:-1;
+  startDash(p,tx,ty,()=>{aoe(p.x,p.y,r,mul);G.rings.push({x:p.x,y:p.y,r:10,t:0.4,col:o2.col||ACOL});
   if(o2.crack)pushImgFx("fx_crack",p.x,p.y+12,r*2.3,r*2.3*0.5,0.7,{});
-  sigBurst(p.x,p.y,o2.col||ACOL,9,2.1);G.shake=Math.max(G.shake,3);return n;};
+  sigBurst(p.x,p.y,o2.col||ACOL,9,2.1);G.shake=Math.max(G.shake,3);}); // #53 瞬間移動ではなく実際にダッシュし、着地で攻撃する
+  return 0;};
+ // #53 背後取り・急所突き等の瞬間移動に「移動の軌跡」を見せる（残像を時間差で弧状に＋軌跡画像）。位置とダメージは変えない
+ const dashFx=(ox,oy,tx,ty)=>{const dd=Math.hypot(tx-ox,ty-oy)||1;const ux=(tx-ox)/dd,uy=(ty-oy)/dd;
+  for(let gi=1;gi<=3;gi++){const gx=ox+ux*dd*gi/4,gy=oy+uy*dd*gi/4-Math.sin(Math.PI*gi/4)*26;const gg={x:gx,y:gy,name:p.name,col:FACTION_COLOR[p.faction],face:ux>=0?1:-1,t:0.55};if(gi===1)G.ghosts.push(gg);else sigDelay(()=>G.ghosts.push(gg),0.05*gi);}
+  pushImgFx("fx_dive_trail",(ox+tx)/2,(oy+ty)/2-8,Math.min(310,dd+110),Math.min(310,dd+110)*0.66,0.5,{rot:Math.atan2(uy,ux)});};
  const startFrenzy=(auraKey,flavor)=>{p.frenzyT=6+(LV>=2?2:0);p.frenzyLv=LV;p.frenzyHits=0;pushImgFx(auraKey,p.x,p.y-4,104,140,0.8,{});G.rings.push({x:p.x,y:p.y,r:10,t:0.45,col:ACOL});sigBurst(p.x,p.y,ACOL,10,2.2);addText(p.x,p.y-34,flavor,ACOL,13);};
  const zonePush=(kind,x,y,r,t,opt)=>{if(!G.sigZones)G.sigZones=[];const z=Object.assign({kind,x,y,r,t,src:p.name},opt||{});G.sigZones.push(z);return z;};
  switch(p.name){
@@ -5160,19 +5180,43 @@ function sigSkill(p){
      _pass(_ox,_oy,_ex,_ey,_ux,_uy,_dl);
      pushImgFx("fx_dash_streak",(_ox+_ex)/2,(_oy+_ey)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(_uy,_ux)});
      if(LV>=3)for(let gi=1;gi<=2;gi++)G.ghosts.push({x:_ox+_ux*_dl*gi/3,y:_oy+_uy*_dl*gi/3,name:p.name,col:FACTION_COLOR[p.faction],face:_ux>=0?1:-1,t:0.35});
-     p.x=_ex;p.y=_ey;if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
-     if(LV>=2){aoe(_ex,_ey,62,0.3);pushImgFx("fx_ground_wave",_ex,_ey+8,140,80,0.45,{grow:0.3});G.rings.push({x:_ex,y:_ey,r:9,t:0.35,col:"#e8ecf2"});G.shake=Math.max(G.shake,2);}
-     if(LV>=5){sigDelay(()=>{const bx=p.x,by=p.y;_pass(bx,by,_ox,_oy,-_ux,-_uy,_dl);pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});p.x=_ox;p.y=_oy;p.face=_ux>0?1:-1;addText(p.x,p.y-34,"七進七出！","#eef2f8",13);},0.22);}}
+     if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
+     startDash(p,_ex,_ey,()=>{if(LV>=2){aoe(p.x,p.y,62,0.3);pushImgFx("fx_ground_wave",p.x,p.y+8,140,80,0.45,{grow:0.3});G.rings.push({x:p.x,y:p.y,r:9,t:0.35,col:"#e8ecf2"});G.shake=Math.max(G.shake,2);}}); // #53 瞬間移動ではなく実際にダッシュし、Lv2の着地衝撃波は着地で発動
+     if(LV>=5){sigDelay(()=>{const bx=p.x,by=p.y;_pass(bx,by,_ox,_oy,-_ux,-_uy,_dl);pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});startDash(p,_ox,_oy,null);p.face=_ux>0?1:-1;addText(_ox,_oy-34,"七進七出！","#eef2f8",13);},0.36);}}
     if(!n){for(const e of G.enemies){if(!e.dead&&dist(p,e)<200){damageEnemy(e,dmg*0.8,true,p.name);G.slashes.push({x:e.x,y:e.y,face:p.face||1,t:0.16,col:"#e8ecf2",r:15});n++;}}}
     G.rings.push({x:p.x,y:p.y,r:10,t:0.3,col:"#e8ecf2"});G.rings.push({x:p.x,y:p.y,r:3,t:0.45,col:"#ffffff"});sigBurst(p.x,p.y,"#e8ecf2",6,1.6);}break;
   case "馬超":{const c=clusterNear(p,460,110);const tgt=c||(()=>{const ne=nearestEnemy(p,460);return ne?{x:ne.x,y:ne.y}:null;})();
-   if(tgt){diveTo(tgt.x,tgt.y,120,1.05,{col:"#ffe9a8"});
-    if(LV>=3)sigDelay(()=>{aoe(p.x,p.y,120,0.5);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ffffff",big:1});},0.12);
-    if(LV>=2)sigDelay(()=>{const a=faceAng(320);wave(Math.cos(a),Math.sin(a),0.6,{t:0.5,col:"#ffe9a8"});pushImgFx("fx_spear_beam",p.x+Math.cos(a)*80,p.y+Math.sin(a)*80-6,190,44,0.3,{rot:a});},0.2);
-    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<125*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.6);});
-    if(LV>=5)sigDelay(()=>{let c2=clusterNear(p,460,110);if(c2&&Math.hypot(c2.x-tgt.x,c2.y-tgt.y)<150)c2=null;if(!c2){let bd=1e9,be=null;G.enemies.forEach(e=>{if(e.dead||Math.hypot(e.x-tgt.x,e.y-tgt.y)<150)return;const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<460&&d<bd){bd=d;be=e;}});if(be)c2={x:be.x,y:be.y};}if(c2){diveTo(c2.x,c2.y,120,0.82,{col:"#ffe9a8"});addText(p.x,p.y-34,"天馬、二段跳び！","#ffe9a8",13);}},0.45);
-   }else aoe(p.x,p.y,110,0.9);}break;
-  case "黄忠":{let best=null,bhp=-1,best2=null,bhp2=-1,best3=null,bhp3=-1;G.enemies.forEach(e=>{if(e.dead)return;if(e.hp>bhp){best3=best2;bhp3=bhp2;best2=best;bhp2=bhp;bhp=e.hp;best=e;}else if(e.hp>bhp2){best3=best2;bhp3=bhp2;bhp2=e.hp;best2=e;}else if(e.hp>bhp3){bhp3=e.hp;best3=e;}});const tracer=tgt=>{const _tl=Math.hypot(tgt.x-p.x,tgt.y-p.y);pushImgFx("fx_snipe_tracer",(p.x+tgt.x)/2,(p.y+tgt.y)/2-13,_tl+70,(_tl+70)*0.14,0.3,{rot:Math.atan2(tgt.y-p.y,tgt.x-p.x)});G.rings.push({x:tgt.x,y:tgt.y,r:7,t:0.32,col:"#ffd964"});sigBurst(tgt.x,tgt.y,"#ffd964",6,1.7);};if(best){tracer(best);damageEnemy(best,dmg*2.2,true,p.name);if(LV>=4)applyArmorBreak(best);if(LV>=5){aoe(best.x,best.y,70,0.8);G.rings.push({x:best.x,y:best.y,r:9,t:0.35,col:"#ffb27a"});addText(best.x,best.y-40,"爆裂矢！","#ffd964",12);}}if(LV>=2&&best2&&best2!==best){tracer(best2);damageEnemy(best2,dmg*1.6,true,p.name);}if(LV>=3&&best3&&best3!==best&&best3!==best2){tracer(best3);damageEnemy(best3,dmg*1.2,true,p.name);}}break;
+   // #52 作り替え：跳ぶ→画面外へ消える→約1秒の空中→着地点へ落下して攻撃（旧：即時テレポートで一瞬で終わっていた）
+   const AIR=1.05;
+   const launch=(lx,ly,mul,isSecond)=>{
+    lx=Math.max(30,Math.min(WORLD_W-30,lx));ly=Math.max(30,Math.min(WORLD_H-30,ly));
+    const ox=p.x,oy=p.y,dx=lx-ox,dy=ly-oy,dd=Math.hypot(dx,dy)||1;
+    p.face=dx>=0?1:-1;
+    // 跳躍：上昇する残像（時間差で出現）＋上向きの軌跡＋跳び出しの土煙と輪
+    for(let gi=0;gi<3;gi++){const gg={x:ox,y:oy-46*(gi+1),name:p.name,col:"#ffe9a8",face:p.face,t:0.42};if(gi===0)G.ghosts.push(gg);else sigDelay(()=>G.ghosts.push(gg),0.05*gi);}
+    pushImgFx("fx_dive_trail",ox,oy-70,120,120*0.66,0.4,{rot:-Math.PI/2});
+    G.rings.push({x:ox,y:oy,r:9,t:0.4,col:"#ffe9a8"});sigBurst(ox,oy,"#ffe9a8",8,1.9);
+    // 着地点マーカー（落下予告）
+    G.rings.push({x:lx,y:ly,r:14,t:0.55,col:"#ffe9a8"});
+    sigDelay(()=>{G.rings.push({x:lx,y:ly,r:10,t:0.5,col:"#ffffff"});},0.55);
+    p.airT=AIR;p.airDur=AIR;p.airStartT=G.t;p.airX=lx;p.airY=ly;
+    const land=()=>{
+     p.airT=0;p.x=lx;p.y=ly;p.face=dx>=0?1:-1;
+     pushImgFx("fx_dive_trail",lx,ly-70,150,150*0.66,0.45,{rot:Math.PI/2});
+     const n=aoe(lx,ly,120,mul);
+     G.rings.push({x:lx,y:ly,r:10,t:0.5,col:"#ffe9a8"});sigBurst(lx,ly,"#ffe9a8",10,2.3);G.shake=Math.max(G.shake,3);
+     if(isSecond)addText(p.x,p.y-34,"天馬、二段跳び！","#ffe9a8",13);
+     if(!isSecond){
+      if(LV>=3)sigDelay(()=>{aoe(p.x,p.y,120,0.5);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ffffff",big:1});},0.12);
+      if(LV>=2)sigDelay(()=>{const a=faceAng(320);wave(Math.cos(a),Math.sin(a),0.6,{t:0.5,col:"#ffe9a8"});pushImgFx("fx_spear_beam",p.x+Math.cos(a)*80,p.y+Math.sin(a)*80-6,190,44,0.3,{rot:a});},0.2);
+      if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<125*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.6);});
+      if(LV>=5)sigDelay(()=>{let c2=clusterNear(p,460,110);if(c2&&Math.hypot(c2.x-tgt.x,c2.y-tgt.y)<150)c2=null;if(!c2){let bd=1e9,be=null;G.enemies.forEach(e=>{if(e.dead||Math.hypot(e.x-tgt.x,e.y-tgt.y)<150)return;const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<460&&d<bd){bd=d;be=e;}});if(be)c2={x:be.x,y:be.y};}if(c2)launch(c2.x,c2.y,0.82,true);},0.45);
+     }
+     return n;};
+    sigDelay(land,AIR);};
+   if(tgt)launch(tgt.x,tgt.y,1.05,false);
+   else aoe(p.x,p.y,110,0.9);}break;
+  case "黄忠":{let best=null,bhp=-1,best2=null,bhp2=-1,best3=null,bhp3=-1;G.enemies.forEach(e=>{if(e.dead)return;if(e.hp>bhp){best3=best2;bhp3=bhp2;best2=best;bhp2=bhp;bhp=e.hp;best=e;}else if(e.hp>bhp2){best3=best2;bhp3=bhp2;bhp2=e.hp;best2=e;}else if(e.hp>bhp3){bhp3=e.hp;best3=e;}});const tracer=tgt=>{const _tl=Math.hypot(tgt.x-p.x,tgt.y-p.y);pushImgFx("fx_snipe_tracer",(p.x+tgt.x)/2,(p.y+tgt.y)/2-13,_tl+70,(_tl+70)*0.14,0.45,{rot:Math.atan2(tgt.y-p.y,tgt.x-p.x)});G.rings.push({x:tgt.x,y:tgt.y,r:7,t:0.45,col:"#ffd964"});sigBurst(tgt.x,tgt.y,"#ffd964",6,1.7);};if(best){tracer(best);damageEnemy(best,dmg*2.2,true,p.name);if(LV>=4)applyArmorBreak(best);if(LV>=5){aoe(best.x,best.y,70,0.8);G.rings.push({x:best.x,y:best.y,r:9,t:0.35,col:"#ffb27a"});addText(best.x,best.y-40,"爆裂矢！","#ffd964",12);}}if(LV>=2&&best2&&best2!==best){tracer(best2);damageEnemy(best2,dmg*1.6,true,p.name);}if(LV>=3&&best3&&best3!==best&&best3!==best2){tracer(best3);damageEnemy(best3,dmg*1.2,true,p.name);}}break;
   case "魏延":startFrenzy("fx_aura_red","反骨の狂刃、解き放つ！");break;
   case "諸葛亮":{const dur=LV>=3?7:5;G.zones.push({x:p.x,y:p.y,r:150,t:dur,type:"hachijin"});if(LV>=2)G.zones.push({x:p.x,y:p.y,r:82,t:dur,type:"hachijin"});if(LV>=4)zonePush("dps",p.x,p.y,LV>=5?165:150,dur,{dps:dmg*(LV>=5?0.22:0.10)});for(let i2=0;i2<8;i2++){const an=i2/8*Math.PI*2+0.4;G.parts.push({x:p.x+Math.cos(an)*120,y:p.y+Math.sin(an)*120-14,vx:0,vy:-0.9-Math.random()*0.5,t:0.7,col:"#c8aaff",s:2.4});}G.slowT=Math.max(G.slowT,LV>=3?4:3);addText(p.x,p.y-30,LV>=5?"死門が開く…":"敵が鈍る…","#e8d8ff",13);}break;
   case "龐統":{const hit=[];G.enemies.forEach(e=>{if(!e.dead&&dist(p,e)<170*SR){e.chainT=LV>=3?5:4;if(LV>=4)e.orbitSlowT=Math.max(e.orbitSlowT||0,1);if(LV>=5)ignite(e,dmg*0.13,3);hit.push(e);}});hit.sort((a,b)=>((a.x-p.x)*(a.x-p.x)+(a.y-p.y)*(a.y-p.y))-((b.x-p.x)*(b.x-p.x)+(b.y-p.y)*(b.y-p.y)));if(!G.links)G.links=[];let prev=p;for(const e of hit.slice(0,LV>=3?12:10)){G.links.push({x1:prev.x,y1:prev.y-12,x2:e.x,y2:e.y-12,t:0.4,col:"#ffd2b8"});prev=e;}if(LV>=2)hit.slice(0,8).forEach(e=>G.rings.push({x:e.x,y:e.y,r:5,t:0.35,col:"#ffb98a"}));sigBurst(p.x,p.y,"#ffb98a",6,1.5);addText(p.x,p.y-30,"被害が連環する","#ffd2b8",13);}break;
@@ -5188,7 +5232,7 @@ function sigSkill(p){
   case "法正":{p.auraT=6;p.auraLv=LV;[L,...aliveParty()].forEach(a2=>G.rings.push({x:a2.x,y:a2.y,r:8,t:0.45,col:"#e07840"}));pushImgFx("fx_rally_burst",p.x,p.y-10,170,213,0.7,{});addText(p.x,p.y-34,"睚眦の策 ― 仇には倍の仇を","#ffb98a",13);}break;
   case "馬謖":{const c=clusterNear(p,420,95);const zx=c?c.x:p.x,zy=c?c.y:p.y;const dur=4+(LV>=2?1:0);const rr=LV>=5?125:95;zonePush("water",zx,zy,rr,dur,{slow:1,push:LV>=4?44:(LV>=3?34:22),dps:LV>=3?dmg*0.3:0});G.zones.push({x:zx,y:zy,r:rr,t:dur,type:"water"});G.rings.push({x:zx,y:zy,r:10,t:0.4,col:"#7ac8ff"});addText(zx,zy-40,"水攻めの計","#aee2ff",13);
    if(LV>=5)sigDelay(()=>{pushImgFx("fx_water_wave",zx,zy-6,260,124,0.6,{});aoe(zx,zy,125,0.7);},dur);}break;
-  case "関索":{if(LV>=3){for(let s2=0;s2<3;s2++)sigDelay(()=>{aoe(p.x,p.y,105,0.5);G.slashes.push({x:p.x,y:p.y,face:s2%2?1:-1,t:0.2,col:"#ffb7c9",big:1,rot:s2*0.6});sigPetals(p.x,p.y,6);},0.13*s2);if(LV>=4)sigDelay(()=>aoe(p.x,p.y,105,0.8),0.42);if(LV>=5)sigDelay(()=>{const c=clusterNear(p,300,90);if(c){p.x=c.x;p.y=c.y;}aoe(p.x,p.y,120,0.9);sigPetals(p.x,p.y,22);G.rings.push({x:p.x,y:p.y,r:11,t:0.45,col:"#ffb7c9"});addText(p.x,p.y-34,"花嵐の旋風！","#ffd3de",13);},0.55);}
+  case "関索":{if(LV>=3){for(let s2=0;s2<3;s2++)sigDelay(()=>{aoe(p.x,p.y,105,0.5);G.slashes.push({x:p.x,y:p.y,face:s2%2?1:-1,t:0.2,col:"#ffb7c9",big:1,rot:s2*0.6});sigPetals(p.x,p.y,6);},0.13*s2);if(LV>=4)sigDelay(()=>aoe(p.x,p.y,105,0.8),0.42);if(LV>=5)sigDelay(()=>{const c=clusterNear(p,300,90);if(c){const _ox=p.x,_oy=p.y;p.x=c.x;p.y=c.y;dashFx(_ox,_oy,p.x,p.y);}aoe(p.x,p.y,120,0.9);sigPetals(p.x,p.y,22);G.rings.push({x:p.x,y:p.y,r:11,t:0.45,col:"#ffb7c9"});addText(p.x,p.y-34,"花嵐の旋風！","#ffd3de",13);},0.55);}
    else{aoe(p.x,p.y,100,1);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ffb7c9",big:1});sigDelay(()=>{aoe(p.x,p.y,100,0.7);G.slashes.push({x:p.x,y:p.y,face:-(p.face||1),t:0.22,col:"#ffd3de",r:40,rot:0.4});},0.16);if(LV>=2)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.24,col:"#ffb7c9",big:1,r:44,rot:0.5}),0.3);sigPetals(p.x,p.y,10);G.rings.push({x:p.x,y:p.y,r:9,t:0.35,col:"#ffb7c9"});}}break;
   case "関銀屏":{const ch=sigCharge(p,110);aoe(p.x,p.y,105,0.95);G.slashes.push({x:p.x,y:p.y,face:1,t:0.2,col:"#a0e8ff",big:1});G.slashes.push({x:p.x,y:p.y,face:-1,t:0.2,col:"#d0f4ff",big:1,rot:1.1});
    if(LV>=2)sigDelay(()=>{aoe(p.x,p.y,105,0.6);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#a0e8ff",big:1,r:42,rot:0.5});},0.16);
@@ -5204,7 +5248,7 @@ function sigSkill(p){
   case "周倉":{aoe(p.x,p.y,118,1);kbAll(p.x,p.y,125*SR,LV>=3?8:5);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.26,col:"#8fe388",big:1});if(LV>=2)sigDelay(()=>G.slashes.push({x:p.x,y:p.y,face:-(p.face||1),t:0.24,col:"#b8f2ae",big:1,r:44,rot:0.4}),0.1);if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<125*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});
    if(LV>=5)sigDelay(()=>{const a=faceAng(260);wave(Math.cos(a),Math.sin(a),0.7,{t:0.5,col:"#8fe388"});pushImgFx("fx_ground_wave",p.x+Math.cos(a)*80,p.y+Math.sin(a)*80+8,190,107,0.55,{});},0.2);G.rings.push({x:p.x,y:p.y,r:11,t:0.4,col:"#8fe388"});sigBurst(p.x,p.y,"#8fe388",8,2);}break;
   case "馬岱":{const execFrac=LV>=3?0.7:0.5;let tgt=null,bs=-1;G.enemies.forEach(e=>{if(e.dead||Math.hypot(e.x-p.x,e.y-p.y)>560)return;const sc=(e.elite||e.boss||e.isFinal)?(2-e.hp/e.maxhp):(1-e.hp/e.maxhp)*0.6;if(sc>bs){bs=sc;tgt=e;}});
-   const strike=(t2,chainN)=>{if(!t2||t2.dead)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;p.x=Math.max(24,Math.min(WORLD_W-24,t2.x-(t2.x-p.x)/dd*30));p.y=Math.max(24,Math.min(WORLD_H-24,t2.y-(t2.y-p.y)/dd*30));p.face=t2.x>=p.x?1:-1;const frac=t2.hp/t2.maxhp;let mul=1;if(frac<execFrac)mul*=1+(execFrac-frac)*2;const before=t2.hp;damageEnemy(t2,dmg*mul,true,p.name);G.slashes.push({x:t2.x,y:t2.y,face:p.face,t:0.22,col:"#a8c8ff",big:1});sigBurst(t2.x,t2.y,"#a8c8ff",7,1.9);addText(t2.x,t2.y-46,frac<execFrac?"斬首！":"追討の一閃","#d6e6ff",13);
+   const strike=(t2,chainN)=>{if(!t2||t2.dead)return;const _ox=p.x,_oy=p.y;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;p.x=Math.max(24,Math.min(WORLD_W-24,t2.x-(t2.x-p.x)/dd*30));p.y=Math.max(24,Math.min(WORLD_H-24,t2.y-(t2.y-p.y)/dd*30));p.face=t2.x>=p.x?1:-1;dashFx(_ox,_oy,p.x,p.y);const frac=t2.hp/t2.maxhp;let mul=1;if(frac<execFrac)mul*=1+(execFrac-frac)*2;const before=t2.hp;damageEnemy(t2,dmg*mul,true,p.name);G.slashes.push({x:t2.x,y:t2.y,face:p.face,t:0.22,col:"#a8c8ff",big:1});sigBurst(t2.x,t2.y,"#a8c8ff",7,1.9);addText(t2.x,t2.y-46,frac<execFrac?"斬首！":"追討の一閃","#d6e6ff",13);
     if(LV>=2)aoe(t2.x,t2.y,85,0.6);
     if((LV>=4)&&before>0&&t2.dead&&chainN<(LV>=5?3:1)){let nt=null,nb=1e9;G.enemies.forEach(e=>{if(e.dead||e===t2)return;const d2=Math.hypot(e.x-p.x,e.y-p.y);if(d2<240&&e.hp/e.maxhp<nb){nb=e.hp/e.maxhp;nt=e;}});if(nt)sigDelay(()=>strike(nt,chainN+1),0.18);}};
    if(tgt)strike(tgt,0);else{const ch=sigCharge(p,105);aoe(p.x,p.y,85,1);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.2,col:"#a8c8ff"});}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#a8c8ff"});}break;
@@ -5218,11 +5262,11 @@ function sigSkill(p){
    if(_tx!==null){const _ox=p.x,_oy=p.y;const _dx=_tx-_ox,_dy=_ty-_oy;const _dd=Math.hypot(_dx,_dy)||1;const _ux=_dx/_dd,_uy=_dy/_dd;const _dl=Math.min(_dd+70,LV>=2?460:380);const _ex=Math.max(24,Math.min(WORLD_W-24,_ox+_ux*_dl)),_ey=Math.max(24,Math.min(WORLD_H-24,_oy+_uy*_dl));
     let n=0;const _hits=[];for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-_ox,_ry=e.y-_oy;const _pr=_rx*_ux+_ry*_uy;if(_pr<-10||_pr>_dl+10)continue;const _px=_rx-_pr*_ux,_py=_ry-_pr*_uy;if(_px*_px+_py*_py>46*46)continue;_hits.push({e,pr:_pr});}_hits.sort((a,b)=>a.pr-b.pr);for(const h of _hits){damageEnemy(h.e,dmg*0.75,true,p.name);n++;}
     pushImgFx("fx_dash_streak",(_ox+_ex)/2,(_oy+_ey)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(_uy,_ux)});
-    p.x=_ex;p.y=_ey;if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
-    aoe(p.x,p.y,100,0.9);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<105*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,LV>=4?1.4:0.8);});
+    if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
+    startDash(p,_ex,_ey,()=>{aoe(p.x,p.y,100,0.9);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<105*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,LV>=4?1.4:0.8);});
     if(LV>=3){aoe(p.x,p.y,130,0.4);pushImgFx("fx_ground_wave",p.x,p.y+8,240,135,0.55,{});}
-    G.slashes.push({x:p.x,y:p.y,face:p.face,t:0.26,col:"#4f9be0",big:1});addText(p.x,p.y-40,"遼来々！","#a8d8ff",15);G.shake=Math.max(G.shake,3);
-    if(LV>=5)sigDelay(()=>{const bx=p.x,by=p.y;let n2=0;const _h2=[];for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-bx,_ry=e.y-by;const _pr=_rx*(-_ux)+_ry*(-_uy);if(_pr<-10||_pr>_dl+10)continue;const _px=_rx-_pr*(-_ux),_py=_ry-_pr*(-_uy);if(_px*_px+_py*_py>46*46)continue;_h2.push({e,pr:_pr});}_h2.sort((a,b)=>a.pr-b.pr);for(const h of _h2){damageEnemy(h.e,dmg*0.7,true,p.name);n2++;}pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});p.x=_ox;p.y=_oy;aoe(p.x,p.y,100,0.7);addText(p.x,p.y-40,"往復突入！","#a8d8ff",13);},0.3);}
+    G.slashes.push({x:p.x,y:p.y,face:p.face,t:0.26,col:"#4f9be0",big:1});addText(p.x,p.y-40,"遼来々！","#a8d8ff",15);G.shake=Math.max(G.shake,3);}); // #53 瞬間移動ではなく実際にダッシュし、着地で発動
+    if(LV>=5)sigDelay(()=>{const bx=p.x,by=p.y;let n2=0;const _h2=[];for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-bx,_ry=e.y-by;const _pr=_rx*(-_ux)+_ry*(-_uy);if(_pr<-10||_pr>_dl+10)continue;const _px=_rx-_pr*(-_ux),_py=_ry-_pr*(-_uy);if(_px*_px+_py*_py>46*46)continue;_h2.push({e,pr:_pr});}_h2.sort((a,b)=>a.pr-b.pr);for(const h of _h2){damageEnemy(h.e,dmg*0.7,true,p.name);n2++;}pushImgFx("fx_dash_streak",(bx+_ox)/2,(by+_oy)/2,_dl+60,(_dl+60)*0.25,0.32,{rot:Math.atan2(-_uy,-_ux)});startDash(p,_ox,_oy,()=>{aoe(p.x,p.y,100,0.7);});addText(_ox,_oy-40,"往復突入！","#a8d8ff",13);},0.36);}
    else aoe(p.x,p.y,100,0.9);}break;
   case "許褚":{const a=faceAng(300);const ux=Math.cos(a),uy=Math.sin(a);const len=LV>=3?210:180;const slam=(mul,delay)=>sigDelay(()=>{line(ux,uy,len,45,mul);pushImgFx("fx_crack",p.x+ux*len/2,p.y+uy*len/2+10,len+80,(len+80)*0.5,0.65,{rot:a});G.slashes.push({x:p.x+ux*80,y:p.y+uy*80,face:ux>=0?1:-1,t:0.24,col:"#ffb27a",big:1});kbAll(p.x,p.y,60,2);G.enemies.forEach(e=>{if(e.dead)return;const rx=e.x-p.x,ry=e.y-p.y;const pr=rx*ux+ry*uy;if(pr>0&&pr<len&&Math.abs(rx*uy-ry*ux)<50){const dd=Math.hypot(rx,ry)||1;e.kx=(e.kx||0)+rx/dd*5;e.ky=(e.ky||0)+ry/dd*5;}});G.shake=Math.max(G.shake,3);},delay);slam(0.95,0);if(LV>=2)slam(0.75,0.16);
    if(LV>=3)sigDelay(()=>{aoe(p.x+ux*len,p.y+uy*len,70,0.6);G.rings.push({x:p.x+ux*len,y:p.y+uy*len,r:8,t:0.35,col:"#ffb27a"});},0.1);
@@ -5257,12 +5301,12 @@ function sigSkill(p){
   case "楽進":{let c=clusterNear(p,620,95);if(!c){const ne=nearestEnemy(p,620);if(ne)c={x:ne.x,y:ne.y};}
    if(c){const ox=p.x,oy=p.y;diveTo(c.x,c.y,LV>=3?110:92,1.05,{col:"#ffcf7a"});
     if(LV>=5)sigDelay(()=>{aoe((ox+c.x)/2,(oy+c.y)/2,80,0.6);G.slashes.push({x:(ox+c.x)/2,y:(oy+c.y)/2,face:p.face||1,t:0.22,col:"#ffe2ae",big:1});},0.12);
-    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?110:92,0.6),0.18);
-    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<115*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.8);});}
+    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?110:92,0.6),0.36);
+    if(LV>=4)sigDelay(()=>{G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<115*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.8);});},0.34);}
    else aoe(p.x,p.y,95,1);}break;
   case "李典":{aoe(p.x,p.y,120,0.95);G.enemies.forEach(e=>{if(!e.dead&&dist(p,e)<130*SR){e.stun=Math.max(e.stun||0,LV>=3?1.1:0.7);const d=dist(p,e)||1;e.kx=(e.kx||0)+(e.x-p.x)/d*6;e.ky=(e.ky||0)+(e.y-p.y)/d*6;if(LV>=4)e.orbitSlowT=Math.max(e.orbitSlowT||0,1.5);}});G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.24,col:"#a8d8ff",big:1});G.rings.push({x:p.x,y:p.y,r:12,t:0.4,col:"#a8d8ff"});if(LV>=2)G.rings.push({x:p.x,y:p.y,r:5,t:0.55,col:"#d6ecff"});if(LV>=5)[L,...aliveParty()].forEach(a2=>{if(Math.hypot(a2.x-p.x,a2.y-p.y)<150)a2.shield=(a2.shield||0)+a2.maxhp*0.10;});sigBurst(p.x,p.y,"#a8d8ff",8,2);}break;
   case "鄧艾":{let best=null,bhp=-1;G.enemies.forEach(e=>{if(e.dead||dist(p,e)>560)return;const sc=LV>=3?((e.boss||e.isFinal)?3:(e.elite?2:0))+e.hp:e.hp;if(sc>bhp){bhp=sc;best=e;}});const tgt=best||nearestEnemy(p,300);
-   const ambush=(t2,mul,delay)=>sigDelay(()=>{if(!t2||t2.dead)return;p.x=t2.x-20*(p.face||1);p.y=t2.y;aoe(t2.x,t2.y,85,mul);G.slashes.push({x:t2.x,y:t2.y,face:p.face||1,t:0.22,col:"#9fe8c9",big:1});if(LV>=4)applyArmorBreak(t2);G.rings.push({x:t2.x,y:t2.y,r:9,t:0.35,col:"#9fe8c9"});sigBurst(t2.x,t2.y,"#9fe8c9",8,2);addText(t2.x,t2.y-46,"背後から奇襲！","#c9f5e2",12);},delay);
+   const ambush=(t2,mul,delay)=>sigDelay(()=>{if(!t2||t2.dead)return;const _ox=p.x,_oy=p.y;p.x=t2.x-20*(p.face||1);p.y=t2.y;dashFx(_ox,_oy,p.x,p.y);aoe(t2.x,t2.y,85,mul);G.slashes.push({x:t2.x,y:t2.y,face:p.face||1,t:0.22,col:"#9fe8c9",big:1});if(LV>=4)applyArmorBreak(t2);G.rings.push({x:t2.x,y:t2.y,r:9,t:0.35,col:"#9fe8c9"});sigBurst(t2.x,t2.y,"#9fe8c9",8,2);addText(t2.x,t2.y-46,"背後から奇襲！","#c9f5e2",12);},delay);
    if(tgt){ambush(tgt,LV>=4?1.25:1.1,0);if(LV>=2)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.22,col:"#c9f5e2",big:1,r:40,rot:0.5}),0.12);if(LV>=5)sigDelay(()=>{let t3=null,b3=-1;G.enemies.forEach(e=>{if(e.dead||e===tgt||dist(p,e)>320)return;if(e.hp>b3){b3=e.hp;t3=e;}});if(t3)ambush(t3,0.95,0);},0.3);}else aoe(p.x,p.y,95,1);}break;
   case "鍾会":{const hit=[];G.enemies.forEach(e=>{if(!e.dead&&dist(p,e)<185*SR){e.chainT=4;if(LV>=4)e.orbitSlowT=Math.max(e.orbitSlowT||0,1);hit.push(e);}});hit.sort((a,b)=>((a.x-p.x)*(a.x-p.x)+(a.y-p.y)*(a.y-p.y))-((b.x-p.x)*(b.x-p.x)+(b.y-p.y)*(b.y-p.y)));if(!G.links)G.links=[];let prev=p;for(const e of hit.slice(0,10+(LV-1)*2)){G.links.push({x1:prev.x,y1:prev.y-12,x2:e.x,y2:e.y-12,t:0.4,col:"#c9a0ff"});prev=e;}aoe(p.x,p.y,120,LV>=3?0.65:0.5);G.rings.push({x:p.x,y:p.y,r:11,t:0.45,col:"#c9a0ff"});sigBurst(p.x,p.y,"#c9a0ff",8,2);
    if(LV>=5&&hit.length){const last=hit[Math.min(hit.length-1,10+(LV-1)*2-1)];sigDelay(()=>{aoe(last.x,last.y,80,0.4);G.rings.push({x:last.x,y:last.y,r:8,t:0.35,col:"#c9a0ff"});addText(last.x,last.y-40,"連環・爆発伝播","#e2ccff",11);},0.25);}}break;
@@ -5276,9 +5320,9 @@ function sigSkill(p){
   case "周瑜":{const _cc=clusterNear(p,420,85);if(_cc){const cx=_cc.x,cy=_cc.y;const offs=[[0,0],[64,-24],[-56,32]];const nf=LV>=5?3:(LV>=2?2:1);for(let i2=0;i2<nf;i2++)G.fires.push({x:cx+offs[i2][0],y:cy+offs[i2][1],t:LV>=3?5:4,r:85,dps:dmg*1.3,spread:LV>=4?true:undefined});aoe(cx,cy,85,LV>=4?0.95:0.8);sigBurst(cx,cy,"#ff8a5a",12+(LV-1)*3,2.6);G.rings.push({x:cx,y:cy,r:10,t:0.4,col:"#ff8a5a"});}}break;
   case "陸遜":{const _cc=clusterNear(p,420,85);if(_cc){const cx=_cc.x,cy=_cc.y;const dd=Math.hypot(cx-p.x,cy-p.y)||1,ux=(cx-p.x)/dd,uy=(cy-p.y)/dd;for(let i2=0;i2<5;i2++)G.parts.push({x:p.x+ux*(20+i2*22),y:p.y+uy*(20+i2*22)-6,vx:ux*1.6,vy:uy*1.6-0.4,t:0.4,col:i2%2?"#ffab6a":"#ff7a3c",s:2.4});const nf=LV>=4?3:(LV>=2?2:1);for(let i2=0;i2<nf;i2++)G.fires.push({x:cx+ux*66*i2,y:cy+uy*66*i2,t:LV>=3?6:4,r:85,dps:dmg*1.3});aoe(cx,cy,85,0.8);sigBurst(cx,cy,"#ffab6a",9,2.2);
    if(LV>=5){G.fires.push({x:cx+ux*66-uy*55,y:cy+uy*66+ux*55,t:5,r:78,dps:dmg*1.3});G.fires.push({x:cx+ux*66+uy*55,y:cy+uy*66-ux*55,t:5,r:78,dps:dmg*1.3});aoe(cx+ux*66,cy+uy*66,85,0.6);addText(cx,cy-44,"連営、焼き尽くす！","#ffd2b8",12);}}}break;
-  case "呂蒙":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,380);if(tgt){p.x=tgt.x-20*(p.face||1);p.y=tgt.y;damageEnemy(tgt,dmg*(LV>=4?1.6:1.4),true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#e8ecf2"});if(LV>=2)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#ffffff",r:24,rot:0.4}),0.08);if(LV>=3)aoe(tgt.x,tgt.y,85,0.6);sigBurst(tgt.x,tgt.y,"#e8ecf2",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
+  case "呂蒙":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,380);if(tgt){const _ox=p.x,_oy=p.y;p.x=tgt.x-20*(p.face||1);p.y=tgt.y;dashFx(_ox,_oy,p.x,p.y);damageEnemy(tgt,dmg*(LV>=4?1.6:1.4),true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#e8ecf2"});if(LV>=2)sigDelay(()=>G.slashes.push({x:tgt.x,y:tgt.y,face:p.face||1,t:0.2,col:"#ffffff",r:24,rot:0.4}),0.08);if(LV>=3)aoe(tgt.x,tgt.y,85,0.6);sigBurst(tgt.x,tgt.y,"#e8ecf2",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
    if(LV>=5)sigDelay(()=>{if(!tgt.dead){G.ghosts.push({x:tgt.x-30,y:tgt.y,name:p.name,col:FACTION_COLOR[p.faction],face:p.face||1,t:0.4});damageEnemy(tgt,dmg*0.9,true,p.name);G.slashes.push({x:tgt.x,y:tgt.y,face:-(p.face||1),t:0.22,col:"#ffffff",big:1});addText(tgt.x,tgt.y-64,"白衣の残像がもう一撃！","#ffffff",12);}},0.3);}}break;
-  case "甘寧":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,300);if(tgt){p.x=tgt.x-20*(p.face||1);p.y=tgt.y;damageEnemy(tgt,dmg*1.4,true,p.name);G.rings.push({x:tgt.x,y:tgt.y,r:6,t:0.3,col:"#ffd964"});G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.48,col:"#ffe9a8"});if(LV>=2)G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.66,col:"#ffd964"});if(LV>=3)aoe(tgt.x,tgt.y,80,0.6);if(LV>=4&&!tgt.boss&&!tgt.isFinal)tgt.stun=Math.max(tgt.stun||0,1.0);sigBurst(tgt.x,tgt.y,"#ffd964",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
+  case "甘寧":{let best=null,bd=520;G.enemies.forEach(e=>{if(!e.dead&&(e.type==="bow"||e.elite||e.boss)&&dist(p,e)<bd){bd=dist(p,e);best=e;}});const tgt=best||nearestEnemy(p,300);if(tgt){const _ox=p.x,_oy=p.y;p.x=tgt.x-20*(p.face||1);p.y=tgt.y;dashFx(_ox,_oy,p.x,p.y);damageEnemy(tgt,dmg*1.4,true,p.name);G.rings.push({x:tgt.x,y:tgt.y,r:6,t:0.3,col:"#ffd964"});G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.48,col:"#ffe9a8"});if(LV>=2)G.rings.push({x:tgt.x,y:tgt.y,r:2,t:0.66,col:"#ffd964"});if(LV>=3)aoe(tgt.x,tgt.y,80,0.6);if(LV>=4&&!tgt.boss&&!tgt.isFinal)tgt.stun=Math.max(tgt.stun||0,1.0);sigBurst(tgt.x,tgt.y,"#ffd964",6,1.6);addText(tgt.x,tgt.y-50,"背後から奇襲！","#ffd964",14);
    if(LV>=5){aoe(tgt.x,tgt.y,110,0.7);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-tgt.x,e.y-tgt.y)<115*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.6);});pushImgFx("fx_roar_ring",tgt.x,tgt.y,240,158,0.5,{grow:0.4});addText(tgt.x,tgt.y-64,"鈴の音波！","#ffe9a8",12);}}}break;
   case "太史慈":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<380).sort((a,b)=>b.hp-a.hp);if(tgts.length){const shots=LV>=2?4:3;for(let s2=0;s2<shots;s2++){const strong=s2>=shots-(LV>=3?2:1);sigDelay(()=>{const t2=tgts[s2%tgts.length];if(!t2||t2.dead)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8.8,vy:(t2.y-p.y)/dd*8.8,dmg:dmg*(strong?1.1:0.62),src:p.name,t:1.15,targetRef:t2,homing:true,pierce:strong&&LV>=3?1:0});if(LV>=4)applyArmorBreak(t2);
     if(strong&&LV>=5)sigDelay(()=>{aoe(t2.x,t2.y,70,0.12);G.rings.push({x:t2.x,y:t2.y,r:8,t:0.35,col:"#ffb84f"});addText(t2.x,t2.y-40,"爆裂矢！","#ffd98a",11);},0.3);},0.13*s2);}}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#ffb84f"});}break;
@@ -5298,8 +5342,8 @@ function sigSkill(p){
    if(LV>=5)sigDelay(()=>{const a=faceAng(280);wave(Math.cos(a),Math.sin(a),0.7,{t:0.5,col:"#ffb0a0"});addText(p.x,p.y-34,"猛襲・締めの衝撃波","#ffd9d0",12);},0.09*slashes+0.05);addText(p.x,p.y-40,"雪中奮短兵！","#ffb0a0",12);}break;
   case "凌統":{const c=clusterNear(p,460,100);const lowhp=1-Math.max(0,p.hp)/p.maxhp;const mul=1+lowhp*1.2;
    if(c){diveTo(c.x,c.y,LV>=3?105:88,mul,{col:"#ff8a7a"});
-    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?105:88,mul*0.6),0.15);
-    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<110*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});
+    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?105:88,mul*0.6),0.36);
+    if(LV>=4)sigDelay(()=>{G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<110*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});},0.34);
     if(LV>=5)sigDelay(()=>{G.ghosts.push({x:p.x-26,y:p.y,name:p.name,col:"#8a2a20",face:p.face||1,t:0.5});pushImgFx("fx_dash_streak",p.x,p.y,190,48,0.35,{rot:0});aoe(p.x,p.y,LV>=3?105:88,mul*0.9);G.slashes.push({x:p.x,y:p.y,face:-(p.face||1),t:0.26,col:"#ffb0a0",big:1});addText(p.x,p.y-46,"父・凌操の影がもう一撃！","#ffb0a0",14);G.shake=Math.max(G.shake,3);},0.32);
    }else{const ch=sigCharge(p,80);aoe(p.x,p.y,88,mul);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ff8a7a"});}addText(p.x,p.y-30,"復讐のダイブ！","#ff9a8a",13);}break;
   case "魯粛":{const dur=LV>=2?8:6;zonePush("lusu",p.x,p.y,120,dur,{heal:LV>=4?2:(LV>=3?1:0)});G.zones.push({x:p.x,y:p.y,r:120,t:dur,type:"heal"});if(LV>=5){zonePush("lusu",L.x,L.y,120,dur,{heal:LV>=4?2:(LV>=3?1:0)});G.zones.push({x:L.x,y:L.y,r:120,t:dur,type:"heal"});addText(L.x,L.y-52,"榻上の策 ― 陣が二つ","#a5f2d2",12);}G.rings.push({x:p.x,y:p.y,r:10,t:0.45,col:"#7ac8a8"});addText(p.x,p.y-34,"榻上の策 ― 陣内は攻防向上","#a5f2d2",12);}break;
@@ -5318,10 +5362,10 @@ function sigSkill(p){
   case "祝融":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<330).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y)).slice(0,LV>=2?8:6);tgts.forEach((t2,i2)=>{const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8,vy:(t2.y-p.y)/dd*8,dmg:dmg*0.55,src:p.name,t:1.05,targetRef:t2,homing:true,magic:LV>=4,col:"#ff6a3d"});
    if(LV>=3)sigDelay(()=>{if(!t2.dead)ignite(t2,dmg*0.11,3);},0.4);
    if(LV>=5)sigDelay(()=>{if(!t2.dead){aoe(t2.x,t2.y,55,0.35);ignite(t2,dmg*0.11,3);G.rings.push({x:t2.x,y:t2.y,r:6,t:0.3,col:"#ff6a3d"});}},0.45);});if(tgts.length)addText(p.x,p.y-34,"火神の飛刀！","#ffb98a",12);}break;
-  case "馬雲騄":{const c=clusterNear(p,440,100);if(c){diveTo(c.x,c.y,LV>=3?110:95,0.9,{col:"#ff9ad5"});G.slashes.push({x:p.x,y:p.y,face:1,t:0.22,col:"#ff9ad5",big:1,rot:0.6});G.slashes.push({x:p.x,y:p.y,face:-1,t:0.22,col:"#ffd2ea",big:1,rot:-0.6});
-    if(LV>=2)sigDelay(()=>{aoe(p.x,p.y,LV>=3?110:95,0.6);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ff9ad5",big:1,rot:1.2});},0.15);
-    if(LV>=4){kbAll(p.x,p.y,115*SR,6);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<115*SR)e.orbitSlowT=Math.max(e.orbitSlowT||0,1);});}
-    if(LV>=5)sigDelay(()=>{const a=faceAng(300);wave(Math.cos(a),Math.sin(a),0.7,{t:0.5,col:"#ff9ad5"});pushImgFx("fx_spear_wave",p.x+Math.cos(a)*90,p.y+Math.sin(a)*90-4,220,132,0.4,{rot:a});},0.3);}
+  case "馬雲騄":{const c=clusterNear(p,440,100);if(c){diveTo(c.x,c.y,LV>=3?110:95,0.9,{col:"#ff9ad5"});sigDelay(()=>{G.slashes.push({x:p.x,y:p.y,face:1,t:0.22,col:"#ff9ad5",big:1,rot:0.6});G.slashes.push({x:p.x,y:p.y,face:-1,t:0.22,col:"#ffd2ea",big:1,rot:-0.6});},0.34);
+    if(LV>=2)sigDelay(()=>{aoe(p.x,p.y,LV>=3?110:95,0.6);G.slashes.push({x:p.x,y:p.y,face:p.face||1,t:0.22,col:"#ff9ad5",big:1,rot:1.2});},0.36);
+    if(LV>=4)sigDelay(()=>{kbAll(p.x,p.y,115*SR,6);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<115*SR)e.orbitSlowT=Math.max(e.orbitSlowT||0,1);});},0.34);
+    if(LV>=5)sigDelay(()=>{const a=faceAng(300);wave(Math.cos(a),Math.sin(a),0.7,{t:0.5,col:"#ff9ad5"});pushImgFx("fx_spear_wave",p.x+Math.cos(a)*90,p.y+Math.sin(a)*90-4,220,132,0.4,{rot:a});},0.38);}
    else aoe(p.x,p.y,95,0.9);}break;
   case "蔡文姫":{const _sh=1+0.15*(((G.gunrei||{}).support)||0);const hr=LV>=2?0.15:0.12;[L,...aliveParty()].forEach(a2=>{if(Math.hypot(a2.x-p.x,a2.y-p.y)<=300){healText(a2,healUnit(a2,a2.maxhp*hr*_sh),p.name);G.rings.push({x:a2.x,y:a2.y,r:5,t:0.4,col:"#d8c9ff"});}});
    const wr=LV>=3?200:160;G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<wr){e.orbitSlowT=Math.max(e.orbitSlowT||0,2);if(LV>=4){const dd=Math.hypot(e.x-p.x,e.y-p.y)||1;e.kx=(e.kx||0)+(e.x-p.x)/dd*4;e.ky=(e.ky||0)+(e.y-p.y)/dd*4;}}});
@@ -5333,15 +5377,15 @@ function sigSkill(p){
     const _pass=(sx,sy,ux,uy,dl2,mul)=>{for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-sx,_ry=e.y-sy;const _pr=_rx*ux+_ry*uy;if(_pr<-10||_pr>dl2+10)continue;const _px=_rx-_pr*ux,_py=_ry-_pr*uy;if(_px*_px+_py*_py>44*44)continue;damageEnemy(e,dmg*mul,true,p.name);if(LV>=4&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.4);G.slashes.push({x:e.x,y:e.y,face:ux>=0?1:-1,t:0.15,col:"#a89aff",r:14});}};
     _pass(_ox,_oy,_ux,_uy,_dl,0.8);
     pushImgFx("fx_spear_beam",(_ox+_ex)/2,(_oy+_ey)/2-6,_dl+70,46,0.34,{rot:Math.atan2(_uy,_ux)});
-    p.x=_ex;p.y=_ey;if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
-    aoe(p.x,p.y,LV>=3?115:95,0.9);pushImgFx("fx_crack",p.x,p.y+10,(LV>=3?115:95)*2.1,(LV>=3?115:95)*1.05,0.55,{});G.shake=Math.max(G.shake,3);
-    if(LV>=5)sigDelay(()=>{_pass(p.x,p.y,-_ux,-_uy,_dl,0.7);pushImgFx("fx_spear_beam",(p.x+_ox)/2,(p.y+_oy)/2-6,_dl+70,46,0.34,{rot:Math.atan2(-_uy,-_ux)});p.x=_ox;p.y=_oy;aoe(p.x,p.y,95,0.7);addText(p.x,p.y-36,"北地槍王・往復！","#c9c2ff",12);},0.28);}
+    if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
+    startDash(p,_ex,_ey,()=>{aoe(p.x,p.y,LV>=3?115:95,0.9);pushImgFx("fx_crack",p.x,p.y+10,(LV>=3?115:95)*2.1,(LV>=3?115:95)*1.05,0.55,{});G.shake=Math.max(G.shake,3);}); // #53 瞬間移動ではなく実際にダッシュし、着地で発動
+    if(LV>=5)sigDelay(()=>{_pass(p.x,p.y,-_ux,-_uy,_dl,0.7);pushImgFx("fx_spear_beam",(p.x+_ox)/2,(p.y+_oy)/2-6,_dl+70,46,0.34,{rot:Math.atan2(-_uy,-_ux)});startDash(p,_ox,_oy,()=>{aoe(p.x,p.y,95,0.7);});addText(_ox,_oy-36,"北地槍王・往復！","#c9c2ff",12);},0.38);}
    else aoe(p.x,p.y,95,0.9);}break;
   case "高順":{const a=faceAng(340);const ux=Math.cos(a),uy=Math.sin(a);const waveLine=(mul,delay,off)=>sigDelay(()=>{line(ux,uy,200,55,mul,p.x-uy*off,p.y+ux*off);pushImgFx("fx_soldier_shadow",p.x+ux*100-uy*off,p.y+uy*100+ux*off+4,300,77,0.45,{rot:a});},delay);waveLine(1.0,0,0);
    G.enemies.forEach(e=>{if(e.dead)return;const rx=e.x-p.x,ry=e.y-p.y;const pr=rx*ux+ry*uy;if(pr>0&&pr<210&&Math.abs(rx*uy-ry*ux)<60&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.8);});
    if(LV>=2)waveLine(0.7,0.16,0);if(LV>=3)waveLine(0.7,0.3,44);
    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&(e.elite||e.boss||e.isFinal)){const rx=e.x-p.x,ry=e.y-p.y;const pr=rx*ux+ry*uy;if(pr>0&&pr<210&&Math.abs(rx*uy-ry*ux)<60)applyArmorBreak(e);}});
-   if(LV>=5)sigDelay(()=>{diveTo(p.x+ux*190,p.y+uy*190,95,0.9,{col:"#ff9a6a"});addText(p.x,p.y-36,"陥陣営・止め斬り！","#ffc4a0",12);},0.45);
+   if(LV>=5)sigDelay(()=>{diveTo(p.x+ux*190,p.y+uy*190,95,0.9,{col:"#ff9a6a"});sigDelay(()=>addText(p.x,p.y-36,"陥陣営・止め斬り！","#ffc4a0",12),0.22);},0.45);
    G.slashes.push({x:p.x+ux*60,y:p.y+uy*60,face:ux>=0?1:-1,t:0.22,col:"#ff9a6a",big:1});G.shake=Math.max(G.shake,2);}break;
   case "公孫瓚":{let n=0;
     const _c=clusterNear(p,460,95);let _tx=null,_ty=null;
@@ -5353,7 +5397,8 @@ function sigSkill(p){
      for(const h of _hits){damageEnemy(h.e,dmg*0.85,true,p.name);if(LV>=4&&(h.e.elite||h.e.boss||h.e.isFinal))applyArmorBreak(h.e);G.slashes.push({x:h.e.x,y:h.e.y,face:_ux>=0?1:-1,t:0.16,col:"#f2f5fa",r:15});n++;}
      pushImgFx("fx_dash_horse",(_ox+_ex)/2,(_oy+_ey)/2,_dl+70,(_dl+70)*0.33,0.34,{rot:Math.atan2(_uy,_ux)});
      if(LV>=3)for(let gi=1;gi<=2;gi++)G.ghosts.push({x:_ox+_ux*_dl*gi/3,y:_oy+_uy*_dl*gi/3,name:p.name,col:FACTION_COLOR[p.faction],face:_ux>=0?1:-1,t:0.35});
-     p.x=_ex;p.y=_ey;if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
+     if(Math.abs(_ux)>0.05)p.face=_ux>0?1:-1;
+     startDash(p,_ex,_ey,null); // #53 瞬間移動ではなく実際にダッシュする（経路ダメージと残像追撃は従来どおり）
      const _ghostPass=(mul)=>{const _h2=[];for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-_ox,_ry=e.y-_oy;const _pr=_rx*_ux+_ry*_uy;if(_pr<-10||_pr>_dl+10)continue;const _px=_rx-_pr*_ux,_py=_ry-_pr*_uy;if(_px*_px+_py*_py>_wid*_wid)continue;_h2.push({e,pr:_pr});}_h2.sort((a,b)=>a.pr-b.pr);for(const h of _h2){damageEnemy(h.e,dmg*mul,true,p.name);G.slashes.push({x:h.e.x,y:h.e.y,face:_ux>=0?1:-1,t:0.14,col:"#f2f5fa",r:13});}};
      if(LV>=2)sigDelay(()=>{_ghostPass(LV>=5?0.5:0.25);for(let gi=1;gi<=2;gi++)G.ghosts.push({x:_ox+_ux*_dl*gi/3,y:_oy+_uy*_dl*gi/3,name:p.name,col:FACTION_COLOR[p.faction],face:_ux>=0?1:-1,t:0.35});pushImgFx("fx_dash_horse",(_ox+_ex)/2,(_oy+_ey)/2,_dl+70,(_dl+70)*0.33,0.3,{rot:Math.atan2(_uy,_ux)});addText(p.x,p.y-36,LV>=5?"白馬隊の残像追撃！":"白馬の残像追撃！","#ffffff",12);},0.3);
      if(LV>=5)sigDelay(()=>{_ghostPass(0.5);pushImgFx("fx_dash_horse",(_ox+_ex)/2,(_oy+_ey)/2,_dl+70,(_dl+70)*0.33,0.3,{rot:Math.atan2(_uy,_ux)});addText(p.x,p.y-36,"白馬隊、二連追撃！","#ffffff",12);},0.58);}
@@ -5373,11 +5418,11 @@ function sigSkill(p){
    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&(e.elite||e.boss||e.isFinal)){const rx=e.x-p.x,ry=e.y-p.y;const pr=rx*ux+ry*uy;if(pr>0&&pr<len&&Math.abs(rx*uy-ry*ux)<40)applyArmorBreak(e);}});
    if(LV>=5)sigDelay(()=>wave(ux,uy,0.7,{t:0.5,col:"#f0b84f"}),0.2);}break;
   case "文醜":{const c=clusterNear(p,460,100);if(c){diveTo(c.x,c.y,LV>=3?105:90,1.0,{col:"#d88a4f"});
-    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?105:90,0.6),0.15);
-    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<110*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});
+    if(LV>=2)sigDelay(()=>aoe(p.x,p.y,LV>=3?105:90,0.6),0.36);
+    if(LV>=4)sigDelay(()=>{G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<110*SR&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.5);});},0.34);
     if(LV>=5)sigDelay(()=>{let c2=clusterNear(p,460,100);if(c2&&Math.hypot(c2.x-c.x,c2.y-c.y)<140)c2=null;const ne2=nearestEnemy(p,460);const t2=c2||(ne2?{x:ne2.x,y:ne2.y}:null);if(t2){diveTo(t2.x,t2.y,105,0.85,{col:"#d88a4f"});addText(p.x,p.y-34,"疾駆・二連！","#ffd2a8",12);}},0.4);}
    else aoe(p.x,p.y,90,1);}break;
-  case "田豊":{const boltAt=(cx,cy,mul)=>{G.bolts.push({x:cx,y:cy,t:0.3,seed:Math.random()*100});aoe(cx,cy,LV>=3?95:80,mul);pushImgFx("fx_hit_spark",cx,cy-6,110,92,0.3,{});sigBurst(cx,cy,"#e8e8c8",7,1.8);G.rings.push({x:cx,y:cy,r:8,t:0.35,col:"#c8c8a0"});};const c=clusterNear(p,430,85);const cx=c?c.x:p.x,cy=c?c.y:p.y;boltAt(cx,cy,0.95);sigBurst(p.x,p.y,"#c8c8a0",6,1.5);G.flashT=Math.max(G.flashT||0,0.15);
+  case "田豊":{const boltAt=(cx,cy,mul)=>{G.bolts.push({x:cx,y:cy,t:0.5,seed:Math.random()*100});aoe(cx,cy,LV>=3?95:80,mul);pushImgFx("fx_hit_spark",cx,cy-6,110,92,0.45,{});sigBurst(cx,cy,"#e8e8c8",7,1.8);G.rings.push({x:cx,y:cy,r:8,t:0.35,col:"#c8c8a0"});};const c=clusterNear(p,430,85);const cx=c?c.x:p.x,cy=c?c.y:p.y;boltAt(cx,cy,0.95);sigBurst(p.x,p.y,"#c8c8a0",6,1.5);G.flashT=Math.max(G.flashT||0,0.15);
    if(LV>=2){const ne2=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-cx,e.y-cy)>130).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];if(ne2)sigDelay(()=>boltAt(ne2.x,ne2.y,0.8),0.15);}
    if(LV>=4)G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-cx,e.y-cy)<100*SR){if(!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.8);if(e.elite||e.boss||e.isFinal)applyArmorBreak(e);}});
    if(LV>=5)sigDelay(()=>{for(let b2=0;b2<2;b2++){const cc2=clusterNear(p,430,85);const t2=cc2&&Math.hypot(cc2.x-cx,cc2.y-cy)>100?cc2:{x:cx+(b2?90:-90),y:cy+(b2?-50:60)};boltAt(t2.x,t2.y,0.8);}addText(p.x,p.y-36,"直言の雷・三連！","#e8e8c8",12);},0.3);}break;
@@ -5391,6 +5436,7 @@ default:{
  }
 }
 function hitAlly(target,atk){
+ if(target!==G.lord&&(target.airT||0)>0)return; // #52 空中は場にいない扱い：全ての被弾経路で無効
  if(target!==G.lord&&(target.ifr||0)>0)return;
  if(target===G.lord){if(G.lord.ifr>0)return;G.lord.ifr=0.5;sfxHurt();const defMul=G.mods.partyDef*(1+G.lord.def*0.02);let dmg=Math.max(1,atk*1.1/defMul);if(G.lord._lusuT>G.t)dmg*=0.9;if(G.party.some(p=>p.role==="support"&&!p.away&&p.downT<=0&&Math.hypot(p.x-G.lord.x,p.y-G.lord.y)<220))dmg*=0.9;if(G.lord.shield>0){const ab=Math.min(G.lord.shield,dmg);G.lord.shield-=ab;dmg-=ab;if(ab>0)G.texts.push({x:G.lord.x+(Math.random()*16-8),y:G.lord.y-58,txt:"バリア-"+Math.round(ab),t:0.7,size:12,col:"#aee8ff"});}G.lord.hp-=dmg;if(G.lord.hp<0)G.lord.hp=0;
   if(G.lord.hp<=0&&!G.deathCause){const ctx=G._hitCtx||{};const alive=G.enemies.filter(x=>!x.dead);const ne=alive.slice().sort((a,b)=>((a.x-G.lord.x)*(a.x-G.lord.x)+(a.y-G.lord.y)*(a.y-G.lord.y))-((b.x-G.lord.x)*(b.x-G.lord.x)+(b.y-G.lord.y)*(b.y-G.lord.y)))[0];
@@ -6465,6 +6511,7 @@ function render(){
  G.eprojs.forEach(p=>{if(offV(p.x,p.y,50))return;if(p.splash){const sim=fxImgReady("fx_eproj_stone");if(sim){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(NOW/260+(p.vx+p.vy)*1.7);ctx.drawImage(sim,-8.5,-8.5,17,17);ctx.restore();return;}ctx.fillStyle="#cfc4ae";ctx.beginPath();ctx.arc(p.x,p.y,3.6,0,7);ctx.fill();ctx.fillStyle="#8d8272";ctx.beginPath();ctx.arc(p.x-1,p.y-1,1.6,0,7);ctx.fill();return;}const aim=fxImgReady("fx_eproj_arrow");if(aim){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.drawImage(aim,-20,-7.5,40,15);ctx.restore();return;}ctx.strokeStyle="#ff9a7a";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(p.x-p.vx*2.2,p.y-p.vy*2.2);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.fillStyle="#ffd2b8";ctx.fillRect(p.x-2,p.y-2,4,4);});
  // 仲間
  G.party.forEach(p=>{if(p.away)return;if(p.downT>0){drawFighter(p.x,p.y,{name:p.name,color:FACTION_COLOR[p.faction],weapon:p.role,kanji:p.kanji,phase:p.phase,flash:0,face:p.face||1,size:46,topple:0.85});ctx.fillStyle="rgba(255,120,110,0.85)";ctx.font="bold 11px sans-serif";ctx.fillText("撤退中 "+Math.ceil(p.downT),p.x-20,p.y-24);return;}
+  if((p.airT||0)>0){const _el=G.t-(p.airStartT||0);if(_el<0.22){const _k=_el/0.22;drawFighter(p.x,p.y-Math.round(200*_k*_k),{name:p.name,color:FACTION_COLOR[p.faction],weapon:p.role,kanji:p.kanji,phase:p.phase,flash:0,size:46,face:p.face||1});}return;} // #52 空中：跳躍の上昇中だけ上へ描き、それ以外は描かない（画面外へ消えた扱い）
   drawFighter(p.x,p.y,{name:p.name,color:FACTION_COLOR[p.faction],weapon:p.role,kanji:p.kanji,phase:p.phase,flash:0,size:46,swing:p.swing||0,moving:p.moving||0,face:p.face||1,hurtFlash:p.hurtFlash||0,recoilT:p.recoilT||0});
   { // 固有技ゲージ：CD中は水色で充填、発動可能は金で点滅、対象待ち（CD完了・範囲内に効く対象なし）は鈍い橙で満タンのまま
    const smax=p.sigMax||(SIGNATURES[p.name]?SIGNATURES[p.name].cd:14);const gw=32,gx=p.x-gw/2,gy=p.y-40;
