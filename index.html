@@ -1485,7 +1485,7 @@ function compOf(n){return G.party.find(p=>p.name===n);}
 
 // 相性→補正計算
 // ===== 第2弾：お気に入り／左右入替／戦場間の自動保存と再開 =====
-function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,visited:(G.visited||[G.stage]).slice()};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
+function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice()};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
 function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");}catch(e){}if(!sv)return;selLord=sv.lord;newGame();
  G.level=sv.level;G.xp=sv.xp;G.xpNext=9;for(let i=1;i<sv.level;i++)G.xpNext=Math.round(G.xpNext*1.20+3);
  G.kills=sv.kills;G.moveCount=sv.mc;G.stage=sv.stage;G.phase=sv.mc+1;G.visited=(sv.visited&&sv.visited.length)?sv.visited.slice():[sv.stage];G.shura=!!sv.shura;
@@ -1501,8 +1501,24 @@ function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run
  if(sv.lordHp!=null)G.lord.hp=Math.max(1,Math.min(G.lord.maxhp,sv.lordHp));
  (sv.php||[]).forEach(u=>{const p=G.party.find(p=>p.name===u.n);if(p&&u.hp!=null)p.hp=Math.max(1,Math.min(p.maxhp,u.hp));});
  G.mods=computeMods();
- G.banners.push({txt:"戦場間から再開",sub:"進軍先を選んで続きを戦おう",t:3,col:"#ffd964"});
- openMoveSelect();}
+ if(sv.mid){
+  // ステージ途中の中断セーブ：進軍選択を開かず、同じ戦場・同じ進行度のまま戦闘へ復帰する。
+  // （従来はセーブ種別を区別せず常に進軍選択を開いていたため、途中セーブでも次ステージへ進んでしまっていた）
+  G.stageTime=sv.st||0;G.stageKills=sv.sk||0;G.encounterDone=!!sv.enc;G.terrainDone=!!sv.td;G.rescueDone=!!sv.rd;
+  G.stageBossSpawned=false;G.stageBossDown=!!sv.sbd;G.pendingMove=0;G.pendingFinal=false;
+  G.weather=weatherFor(STAGES[G.stage].id,G.moveCount);
+  seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[G.stage].id]||null;G.gimmickUsed=false;
+  G.spawnCalmT=Math.max(G.spawnCalmT||0,3);G.rampT=0;
+  if(sv.en){G.endless=true;G.endlessT=sv.et||0;G.finalSpawned=true;G.stageBossSpawned=true;}
+  else if(G.moveCount>=2&&(sv.sbd||sv.fin)){if(sv.fr>0)G.finalRestT=sv.fr;else G.pendingFinal=true;}
+  G.banners.push({txt:"戦場に復帰",sub:STAGES[G.stage].name+" ― 討伐 "+G.stageKills+"/"+stageQuota(),t:3,col:"#ffd964"});
+  checkPendingMove();
+  saveRun();
+ }else{
+  G.banners.push({txt:"戦場間から再開",sub:"進軍先を選んで続きを戦おう",t:3,col:"#ffd964"});
+  openMoveSelect();
+ }
+}
 try{const fs=$("favSel");if(fs){const cur=localStorage.getItem("sgk_fav")||"";fs.innerHTML='<option value="">（なし）</option>'+COMP_DEFS.filter(c=>c[4]!=="ex"&&charUnlocked(c[0])).map(c=>`<option value="${c[0]}"${c[0]===cur?" selected":""}>${c[0]}</option>`).join("");fs.onchange=()=>{try{localStorage.setItem("sgk_fav",fs.value);}catch(e){}};}
  const rb=$("resumeBtn");if(rb){rb.style.display=localStorage.getItem("sgk_run_save")?"":"none";bindTap(rb,()=>resumeRun());}
  const sb=$("swapBtn");const applySwap=()=>{const on=localStorage.getItem("sgk_swap")==="1";document.body.classList.toggle("swap",on);if(sb)sb.textContent="⇄ ボタン左右入替："+(on?"ON":"OFF");};if(sb)bindTap(sb,()=>{try{localStorage.setItem("sgk_swap",localStorage.getItem("sgk_swap")==="1"?"0":"1");}catch(e){}applySwap();});applySwap();}catch(e){}
@@ -6538,19 +6554,19 @@ function render(){
   else if(ready){ctx.fillStyle=`rgba(255,217,100,${pulse})`;ctx.font="bold 8px sans-serif";ctx.fillText("READY",cxp+cw/2,cyp+cw-3);}
   ctx.textAlign="left";});ctx.restore();}}
  // ミニマップ（右上）＋画面外マーカー
- {const mw=124,mh=78,mx=W-mw-10,my=52;const sx2=mw/WORLD_W,sy2=mh/WORLD_H;ctx.fillStyle="rgba(10,12,8,0.72)";ctx.fillRect(mx,my,mw,mh);ctx.strokeStyle="#c9a227";ctx.lineWidth=1.4;ctx.strokeRect(mx,my,mw,mh);
+ {const mw=124,mh=78,mx=W-mw-10,my=52;const sx2=mw/WORLD_W,sy2=mh/WORLD_H;ctx.fillStyle="rgba(10,12,8,0.86)";ctx.fillRect(mx,my,mw,mh);ctx.strokeStyle="#c9a227";ctx.lineWidth=1.4;ctx.strokeRect(mx,my,mw,mh);
   if(G.world&&G.world.landmark){ctx.fillStyle="#ffe9a8";ctx.fillRect(mx+G.world.landmark.x*sx2-2,my+G.world.landmark.y*sy2-2,4,4);}
   if(G.supply){ctx.fillStyle="#7ae0a3";ctx.fillRect(mx+G.supply.x*sx2-2,my+G.supply.y*sy2-2,4,4);}
   if(G.chest){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.chest.x*sx2-2,my+G.chest.y*sy2-2,4,4);}
   if(G.cart){ctx.fillStyle="#e8a13a";ctx.fillRect(mx+G.cart.x*sx2-2,my+G.cart.y*sy2-2,4,4);}
   // #34 アイテム類：経験ジェム=水色の小点／回復=ピンク／宝箱ドロップ=金（多すぎる場合は間引いて可読性を保つ）
-  {const gst=G.gems.length>600?2:1;ctx.fillStyle="rgba(105,210,255,0.75)";for(let gi=0;gi<G.gems.length;gi+=gst){const g=G.gems[gi];if(g.got)continue;if(g.heal){ctx.fillStyle="#ff7a9a";ctx.fillRect(mx+g.x*sx2-1.5,my+g.y*sy2-1.5,3,3);ctx.fillStyle="rgba(105,210,255,0.75)";}else ctx.fillRect(mx+g.x*sx2-1,my+g.y*sy2-1,2,2);}}
-  for(const dr of G.drops){if(dr.got)continue;if(dr.kind==="chest"){ctx.fillStyle="#ffd964";ctx.fillRect(mx+dr.x*sx2-2,my+dr.y*sy2-2,4,4);ctx.fillStyle="#fff3c4";ctx.fillRect(mx+dr.x*sx2-1,my+dr.y*sy2-1,2,2);}else{ctx.fillStyle="#bfe9ff";ctx.beginPath();ctx.arc(mx+dr.x*sx2,my+dr.y*sy2,2.2,0,7);ctx.fill();}}
-  // #34 敵：通常敵=半透明の小さい赤点／精鋭=明るい橙の大きめ点
-  ctx.fillStyle="rgba(255,64,40,0.55)";for(const e of G.enemies){if(e.dead||e.boss||e.isFinal||e.elite)continue;ctx.fillRect(mx+e.x*sx2-1,my+e.y*sy2-1,2,2);}
-  for(const e of G.enemies){if(e.dead||!e.elite||e.boss||e.isFinal)continue;ctx.fillStyle="#ffab4a";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,2.4,0,7);ctx.fill();ctx.fillStyle="#ffe1b0";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,1.1,0,7);ctx.fill();}
+  {const gst=G.gems.length>600?2:1;ctx.fillStyle="rgba(105,210,255,0.92)";for(let gi=0;gi<G.gems.length;gi+=gst){const g=G.gems[gi];if(g.got)continue;if(g.heal){ctx.fillStyle="#ff7a9a";ctx.fillRect(mx+g.x*sx2-2.5,my+g.y*sy2-2.5,5,5);ctx.fillStyle="#fff";ctx.fillRect(mx+g.x*sx2-1,my+g.y*sy2-1,2,2);ctx.fillStyle="rgba(105,210,255,0.92)";}else ctx.fillRect(mx+g.x*sx2-1.5,my+g.y*sy2-1.5,3,3);}}
+  for(const dr of G.drops){if(dr.got)continue;if(dr.kind==="chest"){ctx.fillStyle="#ffd964";ctx.fillRect(mx+dr.x*sx2-2.5,my+dr.y*sy2-2.5,5,5);ctx.fillStyle="#fff3c4";ctx.fillRect(mx+dr.x*sx2-1,my+dr.y*sy2-1,2,2);}else{ctx.fillStyle="#bfe9ff";ctx.beginPath();ctx.arc(mx+dr.x*sx2,my+dr.y*sy2,3,0,7);ctx.fill();}}
+  // #34 敵：通常敵=赤点／精鋭=明るい橙の大きめ点（#40: 2px半透明では実プレイで視認できなかったため、不透明の明色＋拡大）
+  ctx.fillStyle="#ff3524";for(const e of G.enemies){if(e.dead||e.boss||e.isFinal||e.elite)continue;ctx.fillRect(mx+e.x*sx2-1.5,my+e.y*sy2-1.5,3,3);}
+  for(const e of G.enemies){if(e.dead||!e.elite||e.boss||e.isFinal)continue;ctx.fillStyle="#ffab4a";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,3.2,0,7);ctx.fill();ctx.fillStyle="#ffe1b0";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,1.6,0,7);ctx.fill();}
   for(const p of G.party){if(p.away||p.downT>0)continue;ctx.fillStyle="#fff";ctx.fillRect(mx+p.x*sx2-3,my+p.y*sy2-3,6,6);ctx.fillStyle=FACTION_COLOR[p.faction]||"#bfe3ff";ctx.fillRect(mx+p.x*sx2-2,my+p.y*sy2-2,4,4);}
-  for(const e of G.enemies){if(e.dead||!(e.boss||e.isFinal))continue;ctx.fillStyle="#ff5a3c";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,3,0,7);ctx.fill();ctx.strokeStyle="rgba(255,217,100,0.9)";ctx.lineWidth=1;ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,4.2,0,7);ctx.stroke();}
+  for(const e of G.enemies){if(e.dead||!(e.boss||e.isFinal))continue;ctx.fillStyle="#ff5a3c";ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,4,0,7);ctx.fill();ctx.strokeStyle="rgba(255,217,100,0.95)";ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(mx+e.x*sx2,my+e.y*sy2,5.6,0,7);ctx.stroke();}
   ctx.strokeStyle="#ffd964";ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(mx+L.x*sx2,my+L.y*sy2,5,0,7);ctx.stroke();ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(mx+L.x*sx2,my+L.y*sy2,3,0,7);ctx.fill();ctx.strokeStyle="rgba(255,255,255,0.6)";ctx.lineWidth=1;ctx.strokeRect(mx+G.cam.x*sx2,my+G.cam.y*sy2,W*sx2,H*sy2);
   G._mmDrawn=true;
   const marks=[];const tg=[];
