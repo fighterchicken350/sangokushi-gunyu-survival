@@ -1401,7 +1401,7 @@ function newGame(){
  if(!titleHideDefer)$("titleScreen").classList.add("hidden");
  startBGM();
  $("skillBtn").style.display="block";{const gw2=$("gaugeWrap");if(gw2)gw2.style.display="block";}
- G.lord.x=WORLD_W/2;G.lord.y=WORLD_H/2;G.cam={x:WORLD_W/2-W/2,y:WORLD_H/2-H/2};genWorld();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[G.stage].id]||null;G.gimmickUsed=false;$("pauseBtn").style.display="block";$("joy").style.display="block";refreshRangeBtn();detailOpen=false;detailSel=0;$("detailModal").classList.add("hidden");
+ G.lord.x=WORLD_W/2;G.lord.y=WORLD_H/2;G.cam={x:WORLD_W/2-W/2,y:WORLD_H/2-H/2};genWorld();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[G.stage].id]||null;G.gimmickUsed=false;setupMission();$("pauseBtn").style.display="block";$("joy").style.display="block";refreshRangeBtn();detailOpen=false;detailSel=0;$("detailModal").classList.add("hidden");
  G.chronicle.push("出陣 ― "+L.name+"、"+S.name+"に立つ");
  if(STAGE_CHRONICLE[S.id])G.banners.push({txt:"―― "+STAGE_CHRONICLE[S.id],sub:"",t:3,col:"#cbbd93"});
  pushTelop(STAGE_OPENING[S.id]||"");
@@ -1492,8 +1492,8 @@ function compOf(n){return G.party.find(p=>p.name===n);}
 
 // 相性→補正計算
 // ===== 第2弾：お気に入り／左右入替／戦場間の自動保存と再開 =====
-function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice()};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
-function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");}catch(e){}if(!sv)return;selLord=sv.lord;newGame();
+function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice(),msn:G.mission?{id:G.mission.id,st:G.mission.state,n:G.mission.n,zp:Math.round((G.mission.zoneProg||0)*100),objs:(G.mission.objs||[]).map(o=>({x:Math.round(o.x),y:Math.round(o.y),h:Math.max(0,Math.round(o.hp)),d:o.dead?1:0}))}:null};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
+function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");}catch(e){}if(!sv)return;selLord=sv.lord;newGame();G.enemies=[];G.mission=null;G.banners=[]; // newGame が第1戦場用に作ったミッション（祭壇の守り手・提示バナー）は復元先の戦場と混ざるので消す。ミッションは下の復元で付け直す
  G.level=sv.level;G.xp=sv.xp;G.xpNext=9;for(let i=1;i<sv.level;i++)G.xpNext=Math.round(G.xpNext*1.20+3);
  G.kills=sv.kills;G.moveCount=sv.mc;G.stage=sv.stage;G.phase=sv.mc+1;G.visited=(sv.visited&&sv.visited.length)?sv.visited.slice():[sv.stage];G.shura=!!sv.shura;
  (sv.party||[]).forEach(nm=>{const def=COMP_DEFS.find(c=>c[0]===nm);if(def)addCompanion(def);});
@@ -1516,7 +1516,7 @@ function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run
   G.stageTime=sv.st||0;G.stageKills=sv.sk||0;G.encounterDone=!!sv.enc;G.terrainDone=!!sv.td;G.rescueDone=!!sv.rd;
   G.stageBossSpawned=false;G.stageBossDown=!!sv.sbd;G.pendingMove=0;G.pendingFinal=false;
   G.weather=weatherFor(STAGES[G.stage].id,G.moveCount);
-  seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[G.stage].id]||null;G.gimmickUsed=false;
+  seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[G.stage].id]||null;G.gimmickUsed=false;setupMission(sv.msn);
   G.spawnCalmT=Math.max(G.spawnCalmT||0,3);G.rampT=0;
   if(sv.en){G.endless=true;G.endlessT=sv.et||0;G.finalSpawned=true;G.stageBossSpawned=true;}
   else if(G.moveCount>=2&&(sv.sbd||sv.fin)){if(sv.fr>0)G.finalRestT=sv.fr;else G.pendingFinal=true;}
@@ -1960,7 +1960,9 @@ function genWorld(){
 // ===== #35 壊せるオブジェ（壺・木箱・テント）：君主と仲間の攻撃で壊れ、ジェム・回復・便利アイテムを落とす（軍功は出さない） =====
 function nearestBreakable(u,r){if(!G.world||!G.world.breakables)return null;let best=null,bd=r;for(const b of G.world.breakables){if(b.dead)continue;const d=Math.hypot(b.x-u.x,b.y-u.y);if(d<bd){bd=d;best=b;}}return best;}
 function hitBreakables(x,y,r,dmg){if(!G.world||!G.world.breakables)return;for(const b of G.world.breakables){if(b.dead)continue;if(Math.hypot(b.x-x,b.y-y)<r+b.r)damageBreakable(b,dmg);}}
-function damageBreakable(b,dmg){if(b.dead)return;b.hp-=dmg;b.flash=0.09;if(b.hp>0)return;b.dead=true;
+function damageBreakable(b,dmg){if(b.dead)return;
+ if(b.mission){b.hp-=dmg;b.flash=0.09;if(b.hp<=0){b.dead=true;missionObjDown(b);}return;} // #61 ミッション対象：ドロップなし、専用処理へ
+ b.hp-=dmg;b.flash=0.09;if(b.hp>0)return;b.dead=true;
  const cols=b.kind==="pot"?["#b5763a","#8a5a2a","#d09a58"]:b.kind==="box"?["#a97c46","#7d5a30","#c9a86a"]:["#c9b18a","#8a7a5a","#e0cda6"];
  for(let i=0;i<12;i++)G.parts.push({x:b.x,y:b.y-8,vx:(Math.random()-0.5)*4.4,vy:-Math.random()*3.6-0.6,t:0.5,col:cols[i%3],s:2.6});
  G.rings.push({x:b.x,y:b.y,r:8,t:0.35,col:"#e8d8b0"});
@@ -1975,6 +1977,7 @@ let _goldGlow=null;function goldGlowSprite(){if(_goldGlow)return _goldGlow;try{c
 const _bkWhite={};function bkWhiteVer(im){const key=im.src.slice(-24);if(_bkWhite[key])return _bkWhite[key];try{const c=document.createElement("canvas");c.width=im.naturalWidth;c.height=im.naturalHeight;const g2=c.getContext("2d");g2.drawImage(im,0,0);g2.globalCompositeOperation="source-in";g2.fillStyle="#fff";g2.fillRect(0,0,c.width,c.height);_bkWhite[key]=c;return c;}catch(e){return null;}}
 const BK_IMG={pot:"bk_pot",box:"bk_box",tent:"bk_tent"};const BK_H={pot:48,box:42,tent:58};
 function drawBreakable(b){
+ if(b.mission){drawMissionObj(b);return;} // #61 ミッション対象は専用描画
  const x=b.x,y=b.y;ctx.fillStyle="rgba(0,0,0,0.2)";ctx.beginPath();ctx.ellipse(x,y+4,b.r*0.95,b.r*0.34,0,0,7);ctx.fill();
  if(b.flash>0)b.flash-=1/60;
  const im=ASSET_IMG[BK_IMG[b.kind]];
@@ -3341,6 +3344,7 @@ function refreshCompStats(p){
  if(p.baseCd==null)p.baseCd=p.cd;
  p.atk=Math.round(p.baseAtk*growthMul()*(1+vetTier(p)*0.02)*(G.compAtkMul||1)*(p.atkMul||1)*roleAtkMul(p)*10)/10;
  if(p.role==="archer"&&typeof STAGES!=="undefined"&&G&&STAGES[G.stage]&&STAGES[G.stage].id==="teigunzan")p.atk=Math.round(p.atk*1.25*10)/10; // 定軍山：高台の地形で弓が強い
+ if(p.role==="archer"&&G&&G.missionArcherBuff)p.atk=Math.round(p.atk*1.15*10)/10; // #61 定軍山ミッション報酬：高台制圧で弓の仲間+15%（この戦場）
  const melee=(p.role==="melee"||p.role==="cav");
  let rm=growthRangeMul(p)*((G&&G.councilActive==="shippu")?1.1:1)*(G.compRangeMul||1)*(p.rangeMul||1)*((G.mods&&G.mods.range&&G.mods.range[p.name])||1)*(1+(G.chainRangeBonus||0))*((p.role==="melee")?1+0.08*(((G.gunrei||{}).melee)||0):1)*((p.role==="archer")?1+0.08*(((G.gunrei||{}).archer)||0):1);
  rm=Math.min(rm,melee?1.72:1.6);
@@ -3455,13 +3459,13 @@ function showMoveDetail(ch){
 function doMove(idx){
  closeModal();
  fadeTo(1,300,()=>{
-  G.stage=idx;G.moveCount++;G.phase=G.moveCount+1;G.stageKills=0;G.stageBossSpawned=false;G.stageBossDown=false;G.encounterDone=false;G.fmActive=!!G.forceMarch;if(G.forceMarch){G.forceRecruit=true;G.pendingCompChestT=Math.min(G.pendingCompChestT||10,6);}G.forceMarch=false;G._storyEvPending=false;G.councilActive=null;G.mods=computeMods();refreshAllCompStats();G.enemies.forEach(x=>{if(x.encounter)x.dead=true;});genWorld();
+  G.stage=idx;G.moveCount++;G.phase=G.moveCount+1;G.stageKills=0;G.stageBossSpawned=false;G.stageBossDown=false;G.encounterDone=false;G.fmActive=!!G.forceMarch;if(G.forceMarch){G.forceRecruit=true;G.pendingCompChestT=Math.min(G.pendingCompChestT||10,6);}G.forceMarch=false;G._storyEvPending=false;G.councilActive=null;if(G.mission&&G.mission.state==="active")G.banners.push({txt:"📜 ミッション未達 ― "+G.mission.title,sub:"果たせなかったが、ペナルティはない",t:2.6,col:"#cbbd93"});G.mission=null;G.missionArcherBuff=false;G.mods=computeMods();refreshAllCompStats();G.enemies.forEach(x=>{if(x.encounter)x.dead=true;});genWorld();
   if(G.moveCount===2&&!G.stage3ChestDone){G.stage3ChestDone=true;G.pendingCompChestT=10;}
   G.enemies.forEach(e=>{if(!e.boss&&!e.elite)e.dead=true;});
   G.enemies=G.enemies.filter(e=>!e.dead);
   G.fires=[];G.supply=null;G.chest=null;G.cart=null;G.surgeT=0;G._provokeBark=true;
   G.stageTime=0;G.terrainDone=false;G.spawnCalmT=6;G.rampT=10;G._horseUsed=false;G.weather=weatherFor(STAGES[idx].id,G.moveCount);if(G.weather&&G.weather.id!=="clear")G.banners.push({txt:"天候："+G.weather.name,sub:WX_DESC[G.weather.id]||"",t:2.6,col:"#aee2ff"});
-  G.visited.push(idx);markStageVisit(idx);seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[idx].id]||null;G.gimmickUsed=false;
+  G.visited.push(idx);markStageVisit(idx);seedStageFires();placeShrine();G.gimmick=STAGE_GIMMICKS[STAGES[idx].id]||null;G.gimmickUsed=false;setupMission();
   terrainCv=null;
   const S=STAGES[idx];
   G.splashWait=true;
@@ -4664,6 +4668,7 @@ function update(dt){
  if(G.forceRecruit&&!G.encounterDone&&G.stageTime>20&&!G.stageBossSpawned){G.forceRecruit=false;G.encounterDone=true;spawnEncounter();}
  if(!G.terrainDone&&G.stageTime>=65){G.terrainDone=true;terrainEvent();}
  stagePassiveTick(dt);
+ missionTick(dt); // #61 ステージミッションの進行（占領・延焼・援護射撃・失敗判定）
  if(G.finalRestT>0){G.finalRestT-=dt;if(G.finalRestT<=0)spawnFinalBoss();}
  if(G.spawnCalmT>0)G.spawnCalmT-=dt;if(G.rampT>0)G.rampT-=dt;
  if(G.duelBuffT>0){G.duelBuffT-=dt;if(G.duelBuffT<=0&&G.duelBuff){G.duelBuff=false;G.mods=computeMods();}}
@@ -5638,6 +5643,7 @@ function sceneTick(){
  if(bossAliveNow()||G.finalSpawned||(G.finalRestT||0)>0)return;
  if(!G.sceneDone)G.sceneDone={};
  const sid=STAGES[G.stage].id;const key=sid+":"+G.moveCount;
+ if(sid==="koukin")return; // #61 潁川の名場面「祭壇崩し」はミッション「祭壇を打ち崩せ」に一本化（自動発火させない。達成時に同じ演出＋効果を出す）
  if(G.sceneDone[key])return;
  if(G.stageTime>=45&&G.stageKills>=Math.floor(stageQuota()*0.4))fireScene(sid,key);
 }
@@ -6047,7 +6053,7 @@ function terrainEvent(){
  const S=STAGES[G.stage];
  if(S.id==="koukin"){addText(G.lord.x,G.lord.y-130,"黄巾の妖術！霧に紛れて賊の増援が迫る","#e8c33a",20);G.fogT=15;for(let i=0;i<10;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];e.type="yellow";e.name="黄巾兵";}return;}
  if(S.id==="choban"){addText(W/2,110,"川が増水！橋以外は進みにくい","#bfe3ff",20);for(let i=0;i<14;i++)spawnEnemy();}
- else if(S.id==="kanto"){addText(W/2,110,"兵糧庫に火がついた！敵が弱体化","#ff9a3c",20);G.enemies.forEach(e=>{e.hp*=0.7;e.atk*=0.8;});}
+ else if(S.id==="kanto"){if(G.mission&&G.mission.id==="kanto"&&G.mission.state==="active")addText(G.lord.x,G.lord.y-110,"兵糧庫を焼けば、袁紹軍は崩れる","#ff9a3c",16);} // #61 官渡：旧・自動発火（兵糧庫が勝手に焼けて敵弱体化）はミッション「烏巣の兵糧庫を焼き払え」に格上げし廃止（二重発生防止）。ここは思い出させる表示のみ
  else if(S.id==="sekiheki"){addText(W/2,110,"東風が吹いた！火計が広がりやすくなる","#ff9a3c",20);G.mods.fireMul*=1.3;}
  else if(S.id==="korokan"){addText(G.lord.x,G.lord.y-130,"関門から矢の雨！予告円の外へ逃げろ","#ffb27a",20);for(let i=0;i<7;i++){const a=Math.random()*Math.PI*2,d=40+Math.random()*130;if(!G.hazards)G.hazards=[];G.hazards.push({x:Math.max(30,Math.min(WORLD_W-30,G.lord.x+Math.cos(a)*d)),y:Math.max(30,Math.min(WORLD_H-30,G.lord.y+Math.sin(a)*d)),r:44,t:1.1,atk:13,kind:"arrow"});}}
  else if(S.id==="kizan"){addText(W/2,110,"霧が戦場を覆った…敵の動きと矢が鈍る","#d8e2ee",20);G.fogT=22;}
@@ -6061,6 +6067,209 @@ function terrainEvent(){
  else if(S.id==="rusukou"){addText(W/2,110,"波が高くなった！足場が大きく揺れる","#aee2ff",20);if(!G.waterZones)G.waterZones=[];G.waterZones.push({x:G.lord.x,y:G.lord.y,r:230,t:10});G.zones.push({x:G.lord.x,y:G.lord.y,r:230,t:10,type:"water"});}
  else if(S.id==="enjou"){addText(W/2,110,"夜襲だ！四方から敵が迫る！","#ffb27a",20);for(let i=0;i<10;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead){const a=i/10*Math.PI*2;e.x=Math.max(30,Math.min(WORLD_W-30,G.lord.x+Math.cos(a)*330));e.y=Math.max(30,Math.min(WORLD_H-30,G.lord.y+Math.sin(a)*330));}}}
  else if(S.id==="gojougen"){addText(W/2,110,"上方谷に火が放たれた！","#ff9a3c",20);const vx2=Math.max(80,Math.min(WORLD_W-80,G.lord.x+(Math.random()<0.5?-300:300))),vy2=Math.max(80,Math.min(WORLD_H-80,G.lord.y+(Math.random()*240-120)));for(let i=0;i<5;i++)G.fires.push({x:vx2+(Math.random()*130-65),y:vy2+(Math.random()*130-65),t:99999,r:44,dps:42*(1+0.3*(G.moveCount||0))});}
+}
+// ===== ステージミッション（フェーズ1：基盤＋官渡・定軍山・夷陵・潁川）=====
+// 真衣の提案（2026-11-18）：戦場の史実・名場面に紐づく、その戦場固有のミッション。廃止済み「戦場契約」（汎用の任意サブ目標）とは別物。
+// 共通ルール：任意（未達成でもボス出現・進軍・クリアに影響なし、失敗ペナルティなし）／1戦場1ミッション／エンドレスでは発生しない。
+// 報酬は「宝箱＋経験値」（軍功は使わない：真衣の決定 2026-11-18）。戦場固有の主効果（弱体化・バフ等）は各ミッション側で付ける。
+const MISSION_XP=[60,110,170]; // 経験値報酬（第1/2/3戦場。討伐ノルマ150/240/330に対する約40〜50%相当）
+const STAGE_MISSIONS={
+ koukin:{title:"祭壇を打ち崩せ",sub:"黄巾の祭壇を破壊せよ ― ボス出現まで",strat:"祭壇を崩せば、賊の勢いは挫けましょう"},
+ kanto:{title:"烏巣の兵糧庫を焼き払え",sub:"兵糧庫3か所をすべて破壊せよ",strat:"烏巣こそ袁紹の命綱。焼けば大軍は崩れます"},
+ teigunzan:{title:"高台を奪い取れ",sub:"高台の陣地を占領せよ（味方だけで保持すると進む）",strat:"高台を取れば、弓の雨で敵を射すくめられます"},
+ iryou:{title:"連営を焼き払え",sub:"野営テント7つを焼き払え ― 火は隣へ燃え移る",strat:"連営は火に弱い。一つ焼けば連鎖が働きます"},
+};
+function missionXpFountain(x,y,total){let rem=total;while(rem>0){const v=rem>=5?5:(rem>=3?3:1);rem-=v;const ga=Math.random()*Math.PI*2;G.gems.push({x:x+(Math.random()*36-18),y:y+(Math.random()*36-18),v,vx:Math.cos(ga)*2.2,vy:Math.sin(ga)*2.2-1});}}
+function missionReward(x,y){G.drops.push({x,y,kind:"chest"});missionXpFountain(x,y,MISSION_XP[Math.min(2,G.moveCount||0)]);}
+function missionBanner(txt,sub,col){G.banners.push({txt,sub:sub||"",t:3.2,col:col||"#ffd964"});}
+function completeMission(x,y){
+ const M=G.mission;if(!M||M.state!=="active")return;M.state="done";
+ missionBanner("📜 ミッション達成 ― "+M.title,"報酬：宝箱と経験値を獲得！","#ffd964");
+ sfxFanfare();
+ if(G.chronicle)G.chronicle.push("📜 ミッション達成 ― "+M.title);
+ missionReward(x,y);
+}
+function failMission(sub){
+ const M=G.mission;if(!M||M.state!=="active")return;M.state="failed";
+ missionBanner("📜 ミッション終了 ― "+M.title,(sub?sub+"。":"")+"ペナルティはない","#cbbd93");
+}
+// 達成済みミッションの「この戦場中つづく効果」を、セーブ復元時にも付け直す
+function applyMissionDoneEffects(){
+ const M=G.mission;if(!M||M.state!=="done")return;
+ if(M.id==="koukin"){G.sceneBossDmgT=9999;if(G.world&&G.world.landmark)G.world.landmark.sub="💥";}
+ else if(M.id==="teigunzan"){G.missionArcherBuff=true;refreshAllCompStats();}
+ else if(M.id==="iryou"){G.mods.fireMul*=1.25;}
+}
+// 戦場入場時にミッションを組み立てる。restore は saveRun の msn（{id,st,n,zp,objs:[{x,y,h,d}]}）
+function setupMission(restore){
+ G.mission=null;G.missionArcherBuff=false;
+ if(!G||G.over||G.endless||!G.world)return;
+ const sid=STAGES[G.stage].id;const def=STAGE_MISSIONS[sid];if(!def)return;
+ if(restore&&restore.id!==sid)restore=null;
+ // ミッション構築中の乱数消費が、後続の抽選・計測の乱数の流れをずらさないよう、構築の間だけ専用の決定的乱数に差し替える（終わったら必ず戻す）
+ const _mr=Math.random;let _ms=((sid.charCodeAt(0)*131+sid.charCodeAt(1)*17+sid.length*7)+(G.moveCount||0)*7919+(G.kills||0)*31+11)>>>0;
+ Math.random=()=>{_ms=(_ms*1103515245+12345)&0x7fffffff;return _ms/0x80000000;};
+ const M=G.mission={id:sid,title:def.title,state:"active",n:0,total:0,objs:[],zone:null,zoneProg:0,arrowT:8};
+ const mc=G.moveCount||0;
+ const saved=restore&&restore.objs?restore.objs:null;
+ const addObj=(kind,x,y,hp,r)=>{const o={x,y,kind,mission:1,hp,maxhp:hp,r,flash:0,dead:false,igniteT:0,burning:false};G.world.breakables.push(o);M.objs.push(o);return o;};
+ if(sid==="koukin"){
+  const lm=G.world.landmark;M.total=1;
+  addObj("altar",lm.x,lm.y,320,46);
+  // 祭壇の守り手（黄巾兵＋旗持ち）
+  for(let i=0;i<7;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(!e||e.dead)continue;const a=i/7*Math.PI*2;e.x=Math.max(30,Math.min(WORLD_W-30,lm.x+Math.cos(a)*95));e.y=Math.max(30,Math.min(WORLD_H-30,lm.y+Math.sin(a)*80));if(i<2){const ft=ENEMY_TYPES.find(t=>t.k==="flag");if(ft){e.type="flag";e.name=ft.name;e.range=ft.range;}}}
+ }else if(sid==="kanto"){
+  M.total=3;
+  const hpD=Math.round(150*(1+mc*0.6));
+  const baseA=Math.random()*Math.PI*2;
+  for(let i=0;i<3;i++){
+   let px,py;
+   if(saved&&saved[i]){px=saved[i].x;py=saved[i].y;}
+   else{const a=baseA+i*(Math.PI*2/3)+(Math.random()*0.5-0.25);const d=560+Math.random()*220;px=Math.max(120,Math.min(WORLD_W-120,WORLD_W/2+Math.cos(a)*d));py=Math.max(120,Math.min(WORLD_H-120,WORLD_H/2+Math.sin(a)*d*0.75));}
+   addObj("depot",px,py,hpD,34);
+   for(let gi=0;gi<3;gi++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(!e||e.dead)continue;const a=Math.random()*Math.PI*2;e.x=Math.max(30,Math.min(WORLD_W-30,px+Math.cos(a)*70));e.y=Math.max(30,Math.min(WORLD_H-30,py+Math.sin(a)*60));}
+  }
+  // 烏巣の守将・淳于瓊（精鋭として最初の兵糧庫を守る）
+  spawnEnemy(null,"淳于瓊");const je=G.enemies[G.enemies.length-1];
+  if(je&&je.name==="淳于瓊"&&M.objs[0]){je.x=Math.max(30,Math.min(WORLD_W-30,M.objs[0].x+52));je.y=Math.max(30,Math.min(WORLD_H-30,M.objs[0].y+20));namedEnemyIntro("淳于瓊");}
+ }else if(sid==="teigunzan"){
+  const lm=G.world.landmark;M.zone={x:lm.x,y:lm.y,r:115};
+ }else if(sid==="iryou"){
+  M.total=7;
+  const lm=G.world.landmark;const hpC=Math.round(60*(1+mc*0.5));
+  const dirA=Math.random()*Math.PI*2;
+  for(let i=0;i<7;i++){
+   let px,py;
+   if(saved&&saved[i]){px=saved[i].x;py=saved[i].y;}
+   else{const off=(i-3)*92;const bend=Math.sin(i/6*Math.PI)*36;px=Math.max(90,Math.min(WORLD_W-90,lm.x+Math.cos(dirA)*off-Math.sin(dirA)*bend));py=Math.max(90,Math.min(WORLD_H-90,lm.y+Math.sin(dirA)*off*0.8+Math.cos(dirA)*bend));}
+   addObj("camp",px,py,hpC,30);
+  }
+ }
+ if(restore){
+  M.state=restore.st||"active";M.n=restore.n||0;M.zoneProg=(restore.zp||0)/100;
+  (restore.objs||[]).forEach((so,i)=>{const o=M.objs[i];if(!o)return;o.hp=so.h;o.dead=!!so.d;});
+  applyMissionDoneEffects();
+  Math.random=_mr;
+  return;
+ }
+ // 提示：ミッションバナー＋軍師の一言（献策風）
+ missionBanner("📜 ミッション ― "+def.title,def.sub,"#ffd964");
+ const st=G.party.find(p=>!p.away&&countsAsStrat(p));
+ if(st)G.banners.push({txt:st.name+"「"+def.strat+"」",sub:"軍師の献策",t:3,col:"#d8b4ff"});
+ if(sid==="kanto"&&G.lord.name==="曹操")G.banners.push({txt:"曹操「烏巣か…袁紹の腹を焼く好機よ」",sub:"",t:2.8,col:"#aee2ff"});
+ if(sid==="iryou"&&G.lord.name==="劉備")G.banners.push({txt:"劉備「連営の綻びは、逆に突くこともできるのだ」",sub:"",t:2.8,col:"#aee2ff"});
+ if(sid==="teigunzan"&&(has("黄忠")||has("法正")))G.banners.push({txt:"定軍山の計 ― 高台を制する者が勝つ",sub:"黄忠・法正がいると占領が速い",t:2.8,col:"#aee2ff"});
+ Math.random=_mr;
+}
+// ミッション対象オブジェクトが壊れた時の処理（damageBreakable から呼ばれる）
+function missionObjDown(b){
+ const M=G.mission;if(!M||M.state!=="active")return;
+ fxBurst(b.x,b.y-10,"#ffb27a",14);G.rings.push({x:b.x,y:b.y,r:12,t:0.5,col:"#ffd964"});G.shake=Math.max(G.shake,3);
+ if(b.kind==="altar"){
+  G.sceneBossDmgT=9999;if(G.world&&G.world.landmark)G.world.landmark.sub="💥";
+  cineShow("黄巾の祭壇、崩れる","賊の勢いが挫かれた",1500,"#e8c33a");
+  M.n=1;completeMission(b.x,b.y);
+  G.banners.push({txt:"祭壇崩壊 ― 対ボスダメージ+15%（この戦場）",sub:"",t:2.8,col:"#ffd964"});
+ }else if(b.kind==="depot"){
+  M.n++;
+  G.enemies.forEach(e=>{if(!e.dead){e.hp*=0.92;e.atk*=0.96;}});
+  if(M.n>=M.total){
+   G.enemies.forEach(e=>{if(!e.dead){e.hp*=0.75;e.atk*=0.85;}});
+   completeMission(b.x,b.y);
+   G.banners.push({txt:"烏巣炎上！袁紹軍が崩れ始めた",sub:"敵全体が大幅に弱体化した",t:3,col:"#ff9a3c"});
+  }else{
+   missionBanner("兵糧庫を焼いた！ "+M.n+"/3","敵が少し弱体化した","#ff9a3c");
+  }
+ }else if(b.kind==="camp"){
+  M.n++;
+  addText(b.x,b.y-52,"連営が燃えた！ "+M.n+"/7","#ff9a3c",15);
+  const delay=has("陸遜")?1.3:2.2;
+  for(const o of M.objs){if(o!==b&&!o.dead&&!o.burning&&!(o.igniteT>0)&&Math.hypot(o.x-b.x,o.y-b.y)<160)o.igniteT=delay;}
+  if(M.n>=M.total){
+   if((G.gaugeCdT||0)<=0)G.gauge=100;
+   G.mods.fireMul*=1.25;
+   completeMission(b.x,b.y);
+   G.banners.push({txt:"連営炎上！",sub:"計略ゲージ全快・火のダメージ強化（この戦場）",t:3,col:"#ff9a3c"});
+  }
+ }
+}
+function missionTick(dt){
+ if(!G||G.over)return;
+ const M=G.mission;if(!M)return;
+ if(G.endless){G.mission=null;G.missionArcherBuff=false;return;}
+ if(M.state==="done"){
+  // 定軍山：占領後の援護射撃（この戦場の間、12秒ごとに敵の密集地へ矢の雨）
+  if(M.id==="teigunzan"){
+   M.arrowT=(M.arrowT==null?8:M.arrowT)-dt;
+   if(M.arrowT<=0){M.arrowT=12;
+    let tgt=null,bs=-1;
+    for(const e of G.enemies){if(e.dead)continue;let c=0;for(const o of G.enemies){if(!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<115)c++;}if(c>bs){bs=c;tgt=e;}}
+    if(tgt&&bs>=3){pushImgFx("fx_arrow_rain",tgt.x,tgt.y-16,250,153,0.5,{});G.rings.push({x:tgt.x,y:tgt.y,r:10,t:0.4,col:"#ffd964"});G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-tgt.x,e.y-tgt.y)<120)damageEnemy(e,G.lord.atk*2.2,false,"君主");});addText(tgt.x,tgt.y-70,"高台からの援護射撃！","#ffd964",14);}
+   }
+  }
+  return;
+ }
+ if(M.state!=="active")return;
+ if(M.id==="koukin"){
+  if(G.stageBossSpawned)failMission("ボスが現れた ― 祭壇は守られた");
+ }else if(M.id==="teigunzan"&&M.zone){
+  const z=M.zone;let allies=0,enemies=0;
+  if(Math.hypot(G.lord.x-z.x,G.lord.y-z.y)<z.r)allies++;
+  for(const p of G.party)if(!p.away&&p.downT<=0&&Math.hypot(p.x-z.x,p.y-z.y)<z.r)allies++;
+  for(const e of G.enemies)if(!e.dead&&Math.hypot(e.x-z.x,e.y-z.y)<z.r)enemies++;
+  if(allies>0&&enemies===0&&M.zoneProg<1){
+   M.zoneProg=Math.min(1,M.zoneProg+dt/20*((has("黄忠")||has("法正"))?1.4:1));
+   if(M.zoneProg>=1){G.missionArcherBuff=true;refreshAllCompStats();completeMission(z.x,z.y);G.banners.push({txt:"高台を制した！",sub:"援護射撃が付いた・弓の仲間の攻撃+15%（この戦場）",t:3,col:"#ffd964"});}
+  }
+ }else if(M.id==="iryou"){
+  for(const o of M.objs){
+   if(o.dead)continue;
+   if(o.igniteT>0){o.igniteT-=dt;if(Math.random()<dt*6)G.parts.push({x:o.x+(Math.random()*30-15),y:o.y-16,vx:0,vy:-1.6,t:0.5,col:"#ff7a3c",s:2.4});if(o.igniteT<=0)o.burning=true;}
+   else if(o.burning){
+    o.hp-=42*dt;o.flash=0.05;
+    if(Math.random()<dt*8)G.parts.push({x:o.x+(Math.random()*36-18),y:o.y-20,vx:(Math.random()-0.5)*0.8,vy:-2,t:0.55,col:Math.random()<0.5?"#ffb27a":"#ff7a3c",s:2.6});
+    if(o.hp<=0){o.dead=true;missionObjDown(o);}
+   }
+  }
+ }
+}
+// ミッション対象の描画（drawBreakable から呼ばれる）。通常の壊せる物と違い、金グロー＋炎マーカー＋名札＋HPバーで「目標」と分かる見せ方にする
+function drawMissionHpBar(x,y,fr,w){
+ ctx.fillStyle="rgba(10,6,3,0.8)";ctx.fillRect(x-w/2,y,w,7);
+ ctx.fillStyle=fr>0.4?"#ffb27a":"#ff5f4a";ctx.fillRect(x-w/2+1,y+1,(w-2)*Math.max(0,fr),5);
+ ctx.strokeStyle="rgba(255,217,164,0.8)";ctx.lineWidth=1;ctx.strokeRect(x-w/2,y,w,7);
+}
+function drawMissionObj(b){
+ const x=b.x,y=b.y;const tnow=performance.now();
+ if(b.flash>0)b.flash-=1/60;
+ const pulse=0.5+0.5*Math.sin(tnow/520+b.x*0.7+b.y*0.3);
+ const gg=goldGlowSprite();
+ ctx.textAlign="center";
+ if(b.kind==="altar"){
+  // 祭壇の本体はランドマーク描画が担う。ここでは「狙うべき目標」であることを示すグロー・リング・HPバーだけを重ねる
+  if(gg){const gs=200;ctx.save();ctx.globalAlpha=0.30+0.25*pulse;ctx.drawImage(gg,x-gs/2,y-gs/2+12,gs,gs);ctx.restore();}
+  ctx.strokeStyle=`rgba(255,120,60,${0.55+0.35*pulse})`;ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(x,y+22,76,20,0,0,7);ctx.stroke();
+  ctx.font="20px serif";ctx.fillText("🔥",x,y-118+Math.sin(tnow/300)*3);
+  if(b.hp<b.maxhp)drawMissionHpBar(x,y-140,b.hp/b.maxhp,120);
+  return;
+ }
+ ctx.fillStyle="rgba(0,0,0,0.22)";ctx.beginPath();ctx.ellipse(x,y+4,(b.r+8)*0.95,(b.r+8)*0.34,0,0,7);ctx.fill();
+ if(gg){const gs=(b.r+16)*3.1;ctx.save();ctx.globalAlpha=0.35+0.30*pulse;ctx.drawImage(gg,x-gs/2,y-gs/2+8,gs,gs);ctx.restore();}
+ let im=null,hh=0;
+ if(b.kind==="depot"){im=ASSET_IMG.depot||ASSET_IMG.bk_tent;hh=104;}
+ else{im=ASSET_IMG.bk_tent;hh=78;}
+ if(im&&im.complete&&im.naturalWidth>0){
+  const ww=hh*(im.width/im.height);const dx=x-ww/2,dy=y+4-hh;
+  ctx.drawImage(im,dx,dy,ww,hh);
+  if(b.flash>0){const wv=bkWhiteVer(im);if(wv){ctx.save();ctx.globalAlpha=Math.min(0.65,b.flash*6);ctx.drawImage(wv,dx,dy,ww,hh);ctx.restore();}}
+ }else{
+  ctx.font=(b.kind==="depot"?"54px":"44px")+" serif";ctx.fillText("⛺",x,y);
+ }
+ const label=b.kind==="depot"?"兵糧庫":"連営";
+ ctx.font="bold 12px sans-serif";const tw=ctx.measureText(label).width+14;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(x-tw/2,y+10,tw,17);ctx.strokeStyle="#ff9a3c";ctx.lineWidth=1.1;ctx.strokeRect(x-tw/2,y+10,tw,17);ctx.fillStyle="#ffd9a8";ctx.fillText(label,x,y+23);
+ if(b.burning||b.igniteT>0){const fim=ASSET_IMG.flame;if(fim&&fim.complete&&fim.naturalWidth>0){ctx.drawImage(fim,x-16,y-hh-24,32,40);}else{ctx.font="20px serif";ctx.fillText("🔥",x,y-hh-6);}}
+ else{ctx.font="17px serif";ctx.fillText("🔥",x,y-hh-8+Math.sin(tnow/300+b.x)*2.5);}
+ if(b.hp<b.maxhp)drawMissionHpBar(x,y-hh-16,b.hp/b.maxhp,b.kind==="depot"?110:84);
 }
 function nextRunHint(){
  const names=partyNames();
@@ -6301,6 +6510,8 @@ function drawTerrain(){
   if(lm.sub){if(lm.sub==="🔥"){const fim=ASSET_IMG.flame;if(fim&&fim.complete&&fim.naturalWidth>0){ctx.drawImage(fim,lm.x+30,lm.y-58,40,50);ctx.drawImage(fim,lm.x-66,lm.y-50,32,42);}else{ctx.font="26px serif";ctx.fillText(lm.sub,lm.x+52,lm.y-16);ctx.fillText(lm.sub,lm.x-52,lm.y-16);}}else{ctx.font="26px serif";ctx.fillText(lm.sub,lm.x+52,lm.y-16);ctx.fillText(lm.sub,lm.x-52,lm.y-16);}}
   ctx.font="bold 13px sans-serif";const tw=ctx.measureText(lm.name).width+18;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(lm.x-tw/2,lm.y+34,tw,20);ctx.strokeStyle="#c9a227";ctx.lineWidth=1.2;ctx.strokeRect(lm.x-tw/2,lm.y+34,tw,20);ctx.fillStyle="#ffe9a8";ctx.fillText(lm.name,lm.x,lm.y+48);
  }
+ // #61 定軍山ミッション：占領ゾーンの表示（金の円＋占領率の弧＋旗）
+ if(G.mission&&G.mission.id==="teigunzan"&&G.mission.zone&&(G.mission.state==="active"||G.mission.state==="done")){const z=G.mission.zone;if(z.x>camX-160&&z.x<camX+W+160&&z.y>camY-160&&z.y<camY+H+160){const zdone=G.mission.state==="done";ctx.fillStyle=zdone?"rgba(255,217,100,0.10)":"rgba(255,217,100,0.07)";ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.strokeStyle=zdone?"rgba(255,217,100,0.85)":"rgba(255,217,100,0.55)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();if(!zdone&&G.mission.zoneProg>0){ctx.strokeStyle="#ffd964";ctx.lineWidth=5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,-Math.PI/2,-Math.PI/2+Math.PI*2*G.mission.zoneProg);ctx.stroke();}ctx.font="24px serif";ctx.textAlign="center";ctx.fillText("🚩",z.x,z.y-6);ctx.font="bold 12px sans-serif";const zt=zdone?"高台 ― 制圧済み":"高台 ― 占領 "+Math.floor(G.mission.zoneProg*100)+"%";const ztw=ctx.measureText(zt).width+14;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(z.x-ztw/2,z.y+z.r+8,ztw,17);ctx.fillStyle="#ffe9a8";ctx.fillText(zt,z.x,z.y+z.r+21);}}
  // #59 副ランドマーク（名前札なしの大きな目印）
  const slm=w.sublandmark;
  if(slm&&slm.x>camX-220&&slm.x<camX+W+220&&slm.y>camY-220&&slm.y<camY+H+220){
@@ -6678,6 +6889,8 @@ function render(){
  ctx.textAlign="center";
  if(!G.duel&&G.finalRestT>0){ctx.fillStyle="rgba(12,9,5,0.8)";ctx.fillRect(W/2-132,58,264,24);ctx.strokeStyle="#ff9a7a";ctx.lineWidth=1.4;ctx.strokeRect(W/2-132,58,264,24);ctx.fillStyle="#ffb27a";ctx.font="bold 14px sans-serif";ctx.fillText(`最終決戦まで あと${Math.ceil(G.finalRestT)}秒`,W/2,75);}
  else if(!G.duel&&!G.finalSpawned&&!G.stageBossSpawned){const q=stageQuota();ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(W/2-100,58,200,22);ctx.strokeStyle="#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-100,58,200,22);ctx.fillStyle="#ffe9a8";ctx.font="bold 12.5px sans-serif";ctx.fillText(G.stageKills>=q?"討伐 "+q+"/"+q+" ― 強敵接近…":"討伐 "+G.stageKills+"/"+q,W/2,73);}
+ // #61 ステージミッションの進捗ストリップ（ノルマ表示の下。ボス戦中はボスHPバーの下にずらす）
+ if(G.mission&&(G.mission.state==="active"||G.mission.state==="done")&&!G.duel){const M=G.mission;let prog="";if(M.id==="koukin")prog=M.state==="done"?"達成":"祭壇を破壊せよ ― ボス出現まで";else if(M.id==="kanto")prog="兵糧庫 "+M.n+"/"+M.total;else if(M.id==="iryou")prog="連営 "+M.n+"/"+M.total;else if(M.id==="teigunzan")prog=M.state==="done"?"高台を制圧":"占領 "+Math.floor((M.zoneProg||0)*100)+"%";const bossOn=!!G.enemies.find(e=>(e.boss||e.isFinal)&&!e.dead);const my2=bossOn?104:84;const mtxt=(M.state==="done"?"✅ ミッション達成 ― ":"📜 ")+M.title+" ― "+prog;ctx.font="bold 12px sans-serif";const mw2=ctx.measureText(mtxt).width+22;ctx.fillStyle="rgba(12,9,5,0.78)";ctx.fillRect(W/2-mw2/2,my2,mw2,20);ctx.strokeStyle=M.state==="done"?"#ffd964":"#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-mw2/2,my2,mw2,20);ctx.fillStyle=M.state==="done"?"#ffd964":"#ffe9a8";ctx.textAlign="center";ctx.fillText(mtxt,W/2,my2+14);ctx.textAlign="left";}
  ctx.textAlign="left";
  // パーティ体力チップ
  G.party.forEach((p,i)=>{const cx=14+i*118,cy=50;ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(cx,cy,110,37);ctx.fillStyle=FACTION_COLOR[p.faction];ctx.fillRect(cx,cy,3,37);ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";{const _rk={melee:"斬",cav:"騎",archer:"弓",strat:"軍",support:"癒"}[p.role]||"斬";ctx.fillStyle={melee:"#ffb27a",cav:"#ffd964",archer:"#aee2ff",strat:"#d8b4ff",support:"#7ae0a3"}[p.role]||"#fff";ctx.fillText(_rk,cx+7,cy+12);ctx.fillStyle="#fff";}ctx.fillText(p.away?"離脱中":p.downT>0?"撤退 "+Math.ceil(p.downT)+"s":p.name,cx+20,cy+12);ctx.fillStyle="#9fe8ff";ctx.textAlign="right";ctx.fillText("固有技Lv"+sigLv(p),cx+104,cy+12);ctx.textAlign="left";ctx.fillStyle="#ffd964";ctx.font="bold 10px sans-serif";ctx.fillText("撃破"+(p.kills||0)+(p.upgCount?" ★"+p.upgCount:""),cx+7,cy+24);ctx.fillStyle="#300";ctx.fillRect(cx+6,cy+29,98,5);ctx.fillStyle=p.hp/p.maxhp<0.3?"#ff5040":"#7be07b";ctx.fillRect(cx+6,cy+29,98*Math.max(0,p.hp/p.maxhp),5);});
@@ -6721,6 +6934,7 @@ function render(){
   if(G.supply){ctx.fillStyle="#7ae0a3";ctx.fillRect(mx+G.supply.x*sx2-2,my+G.supply.y*sy2-2,4,4);}
   if(G.chest){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.chest.x*sx2-2,my+G.chest.y*sy2-2,4,4);}
   if(G.cart){ctx.fillStyle="#e8a13a";ctx.fillRect(mx+G.cart.x*sx2-2,my+G.cart.y*sy2-2,4,4);}
+  if(G.mission){for(const o of G.mission.objs){if(o.dead)continue;ctx.fillStyle="#ff9a3c";ctx.fillRect(mx+o.x*sx2-2,my+o.y*sy2-2,4,4);}if(G.mission.zone){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.mission.zone.x*sx2-2,my+G.mission.zone.y*sy2-2,4,4);}}
   // #34 アイテム類：経験ジェム=水色の小点／回復=ピンク／宝箱ドロップ=金（多すぎる場合は間引いて可読性を保つ）
   {const gst=G.gems.length>600?2:1;ctx.fillStyle="rgba(105,210,255,0.92)";for(let gi=0;gi<G.gems.length;gi+=gst){const g=G.gems[gi];if(g.got)continue;if(g.heal){ctx.fillStyle="#ff7a9a";ctx.fillRect(mx+g.x*sx2-2.5,my+g.y*sy2-2.5,5,5);ctx.fillStyle="#fff";ctx.fillRect(mx+g.x*sx2-1,my+g.y*sy2-1,2,2);ctx.fillStyle="rgba(105,210,255,0.92)";}else ctx.fillRect(mx+g.x*sx2-1.5,my+g.y*sy2-1.5,3,3);}}
   for(const dr of G.drops){if(dr.got)continue;if(dr.kind==="chest"){ctx.fillStyle="#ffd964";ctx.fillRect(mx+dr.x*sx2-2.5,my+dr.y*sy2-2.5,5,5);ctx.fillStyle="#fff3c4";ctx.fillRect(mx+dr.x*sx2-1,my+dr.y*sy2-1,2,2);}else{ctx.fillStyle="#bfe9ff";ctx.beginPath();ctx.arc(mx+dr.x*sx2,my+dr.y*sy2,3,0,7);ctx.fill();}}
@@ -6736,6 +6950,7 @@ function render(){
   if(G.supply)tg.push({x:G.supply.x,y:G.supply.y,col:"#7ae0a3",label:"🧺"});
   if(G.chest)tg.push({x:G.chest.x,y:G.chest.y,col:"#ffd964",label:"🎁"});if(G.shrine&&!G.shrine.used)tg.push({x:G.shrine.x,y:G.shrine.y,col:"#ffd9a8",label:"⛩️"});
   if(G.cart)tg.push({x:G.cart.x,y:G.cart.y,col:"#e8a13a",label:"🛒"});
+  if(G.mission&&G.mission.state==="active"){for(const o of G.mission.objs)if(!o.dead)tg.push({x:o.x,y:o.y,col:"#ff9a3c",label:"🔥"});if(G.mission.zone)tg.push({x:G.mission.zone.x,y:G.mission.zone.y,col:"#ffd964",label:"🚩"});}
    for(const p of G.party)if(!p.away&&p.downT<=0)tg.push({x:p.x,y:p.y,col:"#7ee787",label:p.name[0]});
   for(const t of tg){if(t.x>G.cam.x-10&&t.x<G.cam.x+W+10&&t.y>G.cam.y-10&&t.y<G.cam.y+H+10)continue;const px=Math.max(24,Math.min(W-24,t.x-G.cam.x)),py0=Math.max(60,Math.min(H-24,t.y-G.cam.y));const py=(px>W-170&&py0<152)?152:py0;marks.push({x:px,y:py});const ang=Math.atan2(t.y-(G.cam.y+H/2),t.x-(G.cam.x+W/2));ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.fillStyle=t.col;ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-7,-7);ctx.lineTo(-7,7);ctx.closePath();ctx.fill();ctx.restore();ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(t.label,px,py-12);ctx.textAlign="left";}
   G._markers=marks;}
