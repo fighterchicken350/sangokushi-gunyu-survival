@@ -1492,7 +1492,7 @@ function compOf(n){return G.party.find(p=>p.name===n);}
 
 // 相性→補正計算
 // ===== 第2弾：お気に入り／左右入替／戦場間の自動保存と再開 =====
-function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice(),msn:G.mission?{id:G.mission.id,st:G.mission.state,n:G.mission.n,zp:Math.round((G.mission.zoneProg||0)*100),objs:(G.mission.objs||[]).map(o=>({x:Math.round(o.x),y:Math.round(o.y),h:Math.max(0,Math.round(o.hp)),d:o.dead?1:0}))}:null};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
+function saveRun(){if(!G||G.over)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:G.shura?1:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,favDone:G.favDone?1:0,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,chestGk:G.chestGk||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice(),msn:G.mission?{id:G.mission.id,st:G.mission.state,n:G.mission.n,zp:Math.round((G.mission.zoneProg||0)*100),objs:(G.mission.objs||[]).map(o=>({x:Math.round(o.x),y:Math.round(o.y),h:Math.max(0,Math.round(o.hp)),d:o.dead?1:0})),esc:G.mission.esc?{x:Math.round(G.mission.esc.x),y:Math.round(G.mission.esc.y),h:Math.max(0,Math.round(G.mission.esc.hp)),on:1}:((G.mission.escT||0)>0?{dl:Math.round(G.mission.escT)}:null),def:(G.mission.defMax||G.mission.gauge)?{t:Math.round((G.mission.defT||0)*10)/10,h:Math.round(G.mission.defHp||0),g:Math.round(G.mission.gauge||0)}:null,rsc:G.mission.rsc?G.mission.rsc.map(g=>({x:Math.round(g.x),y:Math.round(g.y),t:Math.round(g.t),p:Math.round(g.prog*100),r:g.rescued?1:0,l:g.lost?1:0})):null}:null};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
 function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");}catch(e){}if(!sv)return;selLord=sv.lord;newGame();G.enemies=[];G.mission=null;G.banners=[]; // newGame が第1戦場用に作ったミッション（祭壇の守り手・提示バナー）は復元先の戦場と混ざるので消す。ミッションは下の復元で付け直す
  G.level=sv.level;G.xp=sv.xp;G.xpNext=9;for(let i=1;i<sv.level;i++)G.xpNext=Math.round(G.xpNext*1.20+3);
  G.kills=sv.kills;G.moveCount=sv.mc;G.stage=sv.stage;G.phase=sv.mc+1;G.visited=(sv.visited&&sv.visited.length)?sv.visited.slice():[sv.stage];G.shura=!!sv.shura;
@@ -2075,7 +2075,7 @@ function spawnEnemy(bossName,eliteName){
  if(eliteName){G.enemies.push({name:eliteName,elite:true,x,y,hp:130*hpMul*tierH,maxhp:130*hpMul*tierH,spd:1.0,atk:9*tier*1.35*((G.cond&&G.cond.m)?1.2:1),range:38,type:"elite",flash:0,phase:Math.random()*6});return;}
  // 兵種抽選：戦場ごとの編成傾向（ウェイト）＋後半ほど騎兵・弓・爆弾が増える
  const sid=curStage().id;
- const wmap={spear:10,sword:10,bow:10,shield:7,cav:8,bomb:5,yellow:9,flag:0,medic:0,siege:0,renju:3.2,touseki:2.6,toukou:0,rikishi:0,elephant:0};if((G.moveCount||0)>=1){wmap.flag=2.2;wmap.medic=1.6;}if(G.cart)wmap.siege=2.4;
+ const wmap={spear:10,sword:10,bow:10,shield:7,cav:8,bomb:5,yellow:9,flag:0,medic:0,siege:0,renju:3.2,touseki:2.6,toukou:0,rikishi:0,elephant:0};if((G.moveCount||0)>=1){wmap.flag=2.2;wmap.medic=1.6;}if(G.cart||(G.mission&&G.mission.esc&&G.mission.esc.on))wmap.siege=2.4;
  if(sid==="choban")wmap.cav*=2.2;
  if(sid==="kanto"){wmap.bow*=1.9;wmap.bomb*=2.0;}
  if(sid==="sekiheki")wmap.bow*=1.7;
@@ -2101,7 +2101,7 @@ function spawnEnemy(bossName,eliteName){
  let r=Math.random()*tot,tp=ENEMY_TYPES[ENEMY_TYPES.length-1];
  for(const et of ENEMY_TYPES){r-=wmap[et.k];if(r<=0){tp=et;break;}}
  const spdMul=(sid==="choban"&&tp.k==="cav")?1.05:1; // 長坂坡では騎兵が速い
- G.enemies.push({name:tp.name,type:tp.k,x,y,hp:tp.hp*hpMul*tierH,maxhp:tp.hp*hpMul*tierH,spd:Math.min(2,tp.spd*(0.9+Math.random()*0.25)*spdMul*esc.spd),atk:tp.atk*tier*1.35,range:tp.range,flash:0,phase:Math.random()*6,cd:Math.random(),cartAggro:G.cart?Math.random()<0.3:false});
+ G.enemies.push({name:tp.name,type:tp.k,x,y,hp:tp.hp*hpMul*tierH,maxhp:tp.hp*hpMul*tierH,spd:Math.min(2,tp.spd*(0.9+Math.random()*0.25)*spdMul*esc.spd),atk:tp.atk*tier*1.35,range:tp.range,flash:0,phase:Math.random()*6,cd:Math.random(),cartAggro:G.cart?Math.random()<0.3:false,escAggro:(()=>{const _m=G.mission;return (_m&&_m.state==="active"&&_m.esc&&_m.esc.on)?Math.random()<0.25:false;})()});
  // 高速な敵ほど遠くから出す（接触までの猶予を均す）
  {const _ne=G.enemies[G.enemies.length-1];if(_ne&&tp.spd>=1.5){const dd=Math.hypot(_ne.x-Ld.x,_ne.y-Ld.y)||1;if(dd<680){_ne.x=Math.max(26,Math.min(WORLD_W-26,Ld.x+(_ne.x-Ld.x)/dd*680));_ne.y=Math.max(26,Math.min(WORLD_H-26,Ld.y+(_ne.y-Ld.y)/dd*680));}}}
  // 棒立ち崩しの特殊敵（確定仕様A）：予告突進の騎兵／包囲盾兵
@@ -3352,7 +3352,7 @@ function refreshCompStats(p){
  let fm=growthFreqMul()*(p.freqMul||1)*(1+(G.chainSpdBonus||0));fm=Math.min(fm,1.5);
  p.cdEff=Math.round(p.baseCd/fm*rapidMulOf(p)*100)/100;
  p.shots=Math.min(4,1+(((G.level||1)-1)>=8?1:0)+(((G.level||1)-1)>=16?1:0)+(p.shotsBonus||0));
- const nm=Math.round(p.baseMaxhp*growthHpMul()*(G.compHpMul||1)*(p.hpMul||1)*(p._hpBoosted?1.2:1)*(1+0.08*(((G.lvStacks||{})["kessoku:"+p.faction])||0))*(G.lord&&G.lord.name==="袁紹"?1+0.04*(G.hataStk||0):1)*deepHpMul(p.name));
+ const nm=Math.round(p.baseMaxhp*growthHpMul()*(G.compHpMul||1)*(p.hpMul||1)*(p._hpBoosted?1.2:1)*(1+0.08*(((G.lvStacks||{})["kessoku:"+p.faction])||0))*(G.lord&&G.lord.name==="袁紹"?1+0.04*(G.hataStk||0):1)*deepHpMul(p.name)*(G.missionHpBuff?1.15:1));
  if(nm!==p.maxhp){const r=p.maxhp>0?Math.max(0,p.hp)/p.maxhp:1;p.maxhp=nm;if(p.downT<=0)p.hp=Math.round(nm*r);}
 }
 function refreshAllCompStats(){if(!G)return;G.party.forEach(refreshCompStats);}
@@ -3459,7 +3459,7 @@ function showMoveDetail(ch){
 function doMove(idx){
  closeModal();
  fadeTo(1,300,()=>{
-  G.stage=idx;G.moveCount++;G.phase=G.moveCount+1;G.stageKills=0;G.stageBossSpawned=false;G.stageBossDown=false;G.encounterDone=false;G.fmActive=!!G.forceMarch;if(G.forceMarch){G.forceRecruit=true;G.pendingCompChestT=Math.min(G.pendingCompChestT||10,6);}G.forceMarch=false;G._storyEvPending=false;G.councilActive=null;if(G.mission&&G.mission.state==="active")G.banners.push({txt:"📜 ミッション未達 ― "+G.mission.title,sub:"果たせなかったが、ペナルティはない",t:2.6,col:"#cbbd93"});G.mission=null;G.missionArcherBuff=false;G.mods=computeMods();refreshAllCompStats();G.enemies.forEach(x=>{if(x.encounter)x.dead=true;});genWorld();
+  G.stage=idx;G.moveCount++;G.phase=G.moveCount+1;G.stageKills=0;G.stageBossSpawned=false;G.stageBossDown=false;G.encounterDone=false;G.fmActive=!!G.forceMarch;if(G.forceMarch){G.forceRecruit=true;G.pendingCompChestT=Math.min(G.pendingCompChestT||10,6);}G.forceMarch=false;G._storyEvPending=false;G.councilActive=null;if(G.mission&&G.mission.state==="active")G.banners.push({txt:"📜 ミッション未達 ― "+G.mission.title,sub:"果たせなかったが、ペナルティはない",t:2.6,col:"#cbbd93"});G.mission=null;G.missionArcherBuff=false;G.missionSpdBuff=false;G.missionHpBuff=false;G.mods=computeMods();refreshAllCompStats();G.enemies.forEach(x=>{if(x.encounter)x.dead=true;});genWorld();
   if(G.moveCount===2&&!G.stage3ChestDone){G.stage3ChestDone=true;G.pendingCompChestT=10;}
   G.enemies.forEach(e=>{if(!e.boss&&!e.elite)e.dead=true;});
   G.enemies=G.enemies.filter(e=>!e.dead);
@@ -4611,6 +4611,7 @@ function splashEProj(pr,exclude){
  if(L!==exclude&&Math.hypot(pr.x-L.x,pr.y-L.y)<46)hitAlly(L,pr.atk*0.7);
  for(const p of G.party){if(p!==exclude&&!p.away&&p.downT<=0&&(p.airT||0)<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<46)hitAlly(p,pr.atk*0.7);}
  if(G.cart&&G.cart!==exclude&&Math.hypot(pr.x-G.cart.x,pr.y-G.cart.y)<46)damageCart(pr.atk*0.7);
+ {const _me=G.mission&&G.mission.state==="active"?G.mission.esc:null;if(_me&&_me.on&&_me!==exclude&&Math.hypot(pr.x-_me.x,pr.y-_me.y)<46)damageMissionEsc(pr.atk*0.7);}
 }
 function riverSlow(x,y){
  const w=G&&G.world;if(!w||!w.river)return 1;
@@ -4700,7 +4701,7 @@ function update(dt){
  if(G.moveCount>=1&&!G.encounterDone&&!G.stageBossSpawned&&G.stageKills>=Math.floor(stageQuota()/2)){G.encounterDone=true;spawnEncounter();}
  // 君主の攻撃
  L.atkT-=dt;
- if(L.atkT<=0){const range=lordAtkRange();const e=nearestEnemy(L,range+30);const _bk=nearestBreakable(L,range+30);if(e||_bk){L.atkT=(L.evo?0.36:0.48)*(L.atkMul||1)/(1+(G.chainSpdBonus||0))*(G.fatigueT>0?1.25:1)*(G.lordFastT>0?0.75:1)*((G.windT>0&&G.mastery&&G.mastery.wind)?0.87:1)*(G.lord.name==="孫策"?1/(1+0.06*(G.hataStk||0)):1)*(G.evoBranch==="ren"?0.83:G.evoBranch==="juu"?1.11:1)*(G.councilActive==="kougeki"?0.91:1)*(G.xunyuT>G.t?0.87:1);const crit=Math.random()*100<L.crit+G.mods.crit;let dmg=L.atk*(0.9+Math.random()*0.3)*(crit?2*(G.critDmgMul||1)*(G.setCritDmgMul||1):1)*(G.atkBuffT>0?G.atkBuffMul:1)*(G.councilActive==="kougeki"?1.15:1)*(G._lordAtkMul||1)*(G.evoBranch==="juu"?1.25:G.evoBranch==="ren"?0.95:1);if(L.evo&&curStage().id==="sekiheki"&&riverSlow(L.x,L.y)<1)dmg*=1.25;if(e)damageEnemy(e,dmg,crit,"君主");hitBreakables(L.x,L.y,range+30,dmg);if(e&&G.treasures.seiryu){for(const o of G.enemies){if(o!==e&&!o.dead&&Math.hypot(o.x-L.x,o.y-L.y)<=range+30){damageEnemy(o,dmg,crit,"君主");break;}}}L.swing=0.18;L.face=(e||_bk).x>=L.x?1:-1;G.slashes.push({x:L.x,y:L.y,face:L.face,t:0.2,col:L.evo?"#ffd964":"#ffffff",big:L.evo?1:0});if(e)emitLordWave(e);}}
+ if(L.atkT<=0){const range=lordAtkRange();const e=nearestEnemy(L,range+30);const _bk=nearestBreakable(L,range+30);if(e||_bk){L.atkT=(L.evo?0.36:0.48)*(L.atkMul||1)/(1+(G.chainSpdBonus||0))*(G.fatigueT>0?1.25:1)*(G.lordFastT>0?0.75:1)*((G.windT>0&&G.mastery&&G.mastery.wind)?0.87:1)*(G.lord.name==="孫策"?1/(1+0.06*(G.hataStk||0)):1)*(G.evoBranch==="ren"?0.83:G.evoBranch==="juu"?1.11:1)*(G.councilActive==="kougeki"?0.91:1)*(G.xunyuT>G.t?0.87:1)*(G.missionSpdBuff?0.9:1);const crit=Math.random()*100<L.crit+G.mods.crit;let dmg=L.atk*(0.9+Math.random()*0.3)*(crit?2*(G.critDmgMul||1)*(G.setCritDmgMul||1):1)*(G.atkBuffT>0?G.atkBuffMul:1)*(G.councilActive==="kougeki"?1.15:1)*(G._lordAtkMul||1)*(G.evoBranch==="juu"?1.25:G.evoBranch==="ren"?0.95:1);if(L.evo&&curStage().id==="sekiheki"&&riverSlow(L.x,L.y)<1)dmg*=1.25;if(e)damageEnemy(e,dmg,crit,"君主");hitBreakables(L.x,L.y,range+30,dmg);if(e&&G.treasures.seiryu){for(const o of G.enemies){if(o!==e&&!o.dead&&Math.hypot(o.x-L.x,o.y-L.y)<=range+30){damageEnemy(o,dmg,crit,"君主");break;}}}L.swing=0.18;L.face=(e||_bk).x>=L.x?1:-1;G.slashes.push({x:L.x,y:L.y,face:L.face,t:0.2,col:L.evo?"#ffd964":"#ffffff",big:L.evo?1:0});if(e)emitLordWave(e);}}
  if(L.swing>0)L.swing-=dt;if(L.recoilT>0)L.recoilT-=dt;
  if(L.hp<L.maxhp*0.3)G.lowHpT=(G.lowHpT||0)+dt;if(G.setSpdMul>1&&L.hp<L.maxhp*0.25&&!G._horseUsed){G._horseUsed=true;G.lordSpdBuffT=Math.max(G.lordSpdBuffT||0,8);addText(L.x,L.y-64,"駿馬の加護！","#ffd964",15);}
  // 仁徳・守成オーラ
@@ -4784,7 +4785,7 @@ function update(dt){
   // 攻撃は移動しながらでも行う（帰還中は敵へ近寄らず、範囲内だけ攻撃する）
   const effRange=p.range*windRngMul();
   const e=nearestEnemy(p,effRange+24);
-  if(e&&dist(p,e)<=effRange+24){p.face=e.x>=p.x?1:-1;p.atkT-=dt;if(p.atkT<=0){p.atkT=(p.cdEff||p.cd)*(G.fatigueT>0?1.25:1)*((G.windT>0&&G.mastery&&G.mastery.wind)?0.87:1)*(G.councilActive==="kougeki"?0.91:1)*(p.frenzyT>0?frenzyCdMul(p):1)*(G.xunyuT>G.t?0.87:1);compAttack(p,e);}}
+  if(e&&dist(p,e)<=effRange+24){p.face=e.x>=p.x?1:-1;p.atkT-=dt;if(p.atkT<=0){p.atkT=(p.cdEff||p.cd)*(G.fatigueT>0?1.25:1)*((G.windT>0&&G.mastery&&G.mastery.wind)?0.87:1)*(G.councilActive==="kougeki"?0.91:1)*(p.frenzyT>0?frenzyCdMul(p):1)*(G.xunyuT>G.t?0.87:1)*(G.missionSpdBuff?0.9:1);compAttack(p,e);}}
   // 移動（目標に近づく。近接は敵の手前で止まる。帰還速度は君主の約1.22倍相当）
   let stopD=8;if(e&&(pers==="charge"||pers==="guard"||pers==="roam"||pers==="follow"))stopD=p.range*0.75;
   if(returning)stopD=6;
@@ -4854,6 +4855,11 @@ function update(dt){
   let target=L,bd2=(L.x-e.x)*(L.x-e.x)+(L.y-e.y)*(L.y-e.y);
   for(const p of G.party){if(p.away||p.downT>0||(p.airT||0)>0)continue;const _pdx=p.x-e.x,_pdy=p.y-e.y,_pd2=_pdx*_pdx+_pdy*_pdy;if(_pd2<bd2){bd2=_pd2;target=p;}}
   if(G.cart&&(e.cartAggro||e.type==="siege")){target=G.cart;const _cdx=G.cart.x-e.x,_cdy=G.cart.y-e.y;bd2=_cdx*_cdx+_cdy*_cdy;}
+  // #62 ミッションの護衛対象・防衛対象も敵の標的になる（襲撃隊 escAggro/defAggro と攻城兵。荷車がいる間は攻城兵は荷車優先）
+  {const _mm=G.mission;if(_mm&&_mm.state==="active"){
+   if(_mm.esc&&_mm.esc.on&&(e.escAggro||(e.type==="siege"&&!G.cart))){target=_mm.esc;const _edx=_mm.esc.x-e.x,_edy=_mm.esc.y-e.y;bd2=_edx*_edx+_edy*_edy;}
+   else if(_mm.defObj&&(e.defAggro||(e.type==="siege"&&!G.cart))){target=_mm.defObj;const _gdx=_mm.defObj.x-e.x,_gdy=_mm.defObj.y-e.y;bd2=_gdx*_gdx+_gdy*_gdy;}
+  }}
   const d=Math.sqrt(bd2);e.face=target.x>=e.x?1:-1;let hzMul=1;if(G.hachiZones&&G.hachiZones.length){for(const hz of G.hachiZones){const _hzx=e.x-hz.x,_hzy=e.y-hz.y;if(_hzx*_hzx+_hzy*_hzy<hz.r*hz.r){hzMul=hz.slow||0.4;break;}}}if(e._orbT>0)e._orbT-=dt;if(e.orbitSlowT>0)e.orbitSlowT-=dt;
   const slowMul=((G.slowT>0&&dist(e,L)<170)?0.5:1)*((e.orbitSlowT||0)>0?0.62:1)*hzMul*((G.fogT||0)>0?0.8:1)*((G.dullT||0)>0?0.55:1)*((G.waterZones&&G.waterZones.some(z=>{const _wzX=e.x-z.x,_wzY=e.y-z.y;return _wzX*_wzX+_wzY*_wzY<z.r*z.r;}))?0.55:1)*((G.weather&&G.weather.id==="fog")?0.9:1);if(G.mastery&&G.mastery.hachijin&&G.hachiZones&&!e.boss&&!e.isFinal){for(const hz of G.hachiZones){const hd=Math.hypot(e.x-hz.x,e.y-hz.y);if(hd<hz.r&&hd>4){e.x+=(hz.x-e.x)/hd*22*dt;e.y+=(hz.y-e.y)/hd*22*dt;}}}
   // 予告突進（騎兵）：0.9秒の予告の後に直線突進。君主より速いのは突進中だけ
@@ -4872,6 +4878,8 @@ function update(dt){
     if(e.type==="bomb"){
      G.rings.push({x:e.x,y:e.y,r:12,t:0.4,col:"#ff7a3c"});
      if(tgt&&tgt.isCart){if(dist(e,tgt)<=58)damageCart(e.atk);}
+     else if(tgt&&tgt.isEsc){if(dist(e,tgt)<=58)damageMissionEsc(e.atk);}
+     else if(tgt&&tgt.isDef){if(dist(e,tgt)<=58)damageMissionDef(e.atk);}
      else if(tgt&&(tgt===L||!tgt.away)&&dist(e,tgt)<=58)hitAlly(tgt,e.atk);
      e.hp=0;killEnemy(e);
     }else if(e.type==="bow"||e.type==="renju"||e.type==="touseki"){
@@ -4883,6 +4891,8 @@ function update(dt){
     }else{
      e.lungT=0.14;e.swing=0.18;
      if(tgt&&tgt.isCart){if(dist(e,tgt)<=e.range+11)damageCart(e.atk);}
+     else if(tgt&&tgt.isEsc){if(dist(e,tgt)<=e.range+11)damageMissionEsc(e.atk);}
+     else if(tgt&&tgt.isDef){if(dist(e,tgt)<=e.range+11)damageMissionDef(e.atk);}
      else if(tgt&&(tgt===L||(!tgt.away&&tgt.downT<=0))&&dist(e,tgt)<=e.range+11)hitAlly(tgt,e.atk);
     }
    }
@@ -4894,6 +4904,8 @@ function update(dt){
  for(const pr of G.eprojs){const fm=(G.fogT||0)>0?0.7:1;pr.x+=pr.vx*fm;pr.y+=pr.vy*fm;pr.t-=dt;
   if(pr.splash&&pr.t<=0)splashEProj(pr,null);
   if(G.cart&&Math.hypot(pr.x-G.cart.x,pr.y-G.cart.y)<18){damageCart(pr.atk);if(pr.splash)splashEProj(pr,G.cart);pr.t=0;continue;}
+  {const _me=G.mission&&G.mission.state==="active"?G.mission.esc:null;if(_me&&_me.on&&Math.hypot(pr.x-_me.x,pr.y-_me.y)<18){damageMissionEsc(pr.atk);if(pr.splash)splashEProj(pr,_me);pr.t=0;continue;}}
+  {const _md=G.mission&&G.mission.state==="active"?G.mission.defObj:null;if(_md&&Math.hypot(pr.x-_md.x,pr.y-_md.y)<22){damageMissionDef(pr.atk);pr.t=0;continue;}}
   if(Math.hypot(pr.x-L.x,pr.y-L.y)<15){(G._hitCtx={arrow:true},hitAlly(L,pr.atk));if(pr.splash)splashEProj(pr,L);pr.t=0;continue;}
   for(const p of G.party){if(!p.away&&p.downT<=0&&(p.airT||0)<=0&&Math.hypot(pr.x-p.x,pr.y-p.y)<15){hitAlly(p,pr.atk);if(pr.splash)splashEProj(pr,p);pr.t=0;break;}}
  }
@@ -6058,14 +6070,14 @@ function terrainEvent(){
  else if(S.id==="korokan"){addText(G.lord.x,G.lord.y-130,"関門から矢の雨！予告円の外へ逃げろ","#ffb27a",20);for(let i=0;i<7;i++){const a=Math.random()*Math.PI*2,d=40+Math.random()*130;if(!G.hazards)G.hazards=[];G.hazards.push({x:Math.max(30,Math.min(WORLD_W-30,G.lord.x+Math.cos(a)*d)),y:Math.max(30,Math.min(WORLD_H-30,G.lord.y+Math.sin(a)*d)),r:44,t:1.1,atk:13,kind:"arrow"});}}
  else if(S.id==="kizan"){addText(W/2,110,"霧が戦場を覆った…敵の動きと矢が鈍る","#d8e2ee",20);G.fogT=22;}
  else if(S.id==="rakuyo"){addText(W/2,110,"延焼！都の火が燃え広がる","#ff9a3c",20);for(let i=0;i<4;i++)G.fires.push({x:60+Math.random()*(W-120),y:60+Math.random()*(H-120),t:99999,r:36,dps:42*(1+0.3*(G.moveCount||0))});G.fires.forEach(f=>{if(f.t>1000)f.r=Math.min(64,f.r+8);});}
- else if(S.id==="hanjou"){addText(W/2,110,"大水が押し寄せた！足場が水に沈む","#aee2ff",20);for(let i=0;i<2;i++){const zx=100+Math.random()*(WORLD_W-200),zy=100+Math.random()*(WORLD_H-200);if(!G.waterZones)G.waterZones=[];G.waterZones.push({x:zx,y:zy,r:160,t:99999});G.zones.push({x:zx,y:zy,r:160,t:99999,type:"water"});}G._floodN=(G._floodN||0)+2;}
- else if(S.id==="gappei"){addText(W/2,110,"逍遙津の奇襲！騎兵隊が突っ込んでくる！","#ffb27a",20);for(let i=0;i<8;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead){e.type="cav";e.x=Math.max(30,Math.min(WORLD_W-30,G.lord.x+(i%2?430:-430)));e.y=Math.max(30,Math.min(WORLD_H-30,G.lord.y+(i-3.5)*46));e.spd=(e.spd||1)*1.35;}}}
+ else if(S.id==="hanjou"){addText(W/2,110,"大水が押し寄せた！足場が水に沈む","#aee2ff",20);for(let i=0;i<2;i++){const zx=100+Math.random()*(WORLD_W-200),zy=100+Math.random()*(WORLD_H-200);if(!G.waterZones)G.waterZones=[];G.waterZones.push({x:zx,y:zy,r:160,t:99999});G.zones.push({x:zx,y:zy,r:160,t:99999,type:"water"});}G._floodN=(G._floodN||0)+2;if(G.mission&&G.mission.id==="hanjou"&&G.mission.state==="pending")missionTerrainStart();}
+ else if(S.id==="gappei"){addText(W/2,110,"逍遙津の奇襲！騎兵隊が突っ込んでくる！","#ffb27a",20);for(let i=0;i<8;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead){e.type="cav";e.x=Math.max(30,Math.min(WORLD_W-30,G.lord.x+(i%2?430:-430)));e.y=Math.max(30,Math.min(WORLD_H-30,G.lord.y+(i-3.5)*46));e.spd=(e.spd||1)*1.35;}}if(G.mission&&G.mission.id==="gappei"&&G.mission.state==="pending")missionTerrainStart();}
  else if(S.id==="teigunzan"){addText(W/2,110,"高台の弓兵隊が一斉に放った！","#ffb27a",20);for(let i=0;i<8;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead)e.type="bow";}}
  else if(S.id==="iryou"){addText(W/2,110,"火が燃え広がる！風下に立つな","#ff9a3c",20);for(let i=0;i<3;i++)G.fires.push({x:60+Math.random()*(W-120),y:60+Math.random()*(H-120),t:99999,r:38,dps:42*(1+0.3*(G.moveCount||0))});}
  else if(S.id==="nanchuu"){addText(W/2,110,"毒の瘴気が立ち込めた…","#b6ff9a",20);G.fogT=16;for(let i=0;i<2;i++)G.zones.push({x:120+Math.random()*(WORLD_W-240),y:120+Math.random()*(WORLD_H-240),r:110,t:99999,type:"poison"});}
  else if(S.id==="kahoukan"){addText(W/2,110,"関所の猛将たちが名乗りを上げる！","#ffd964",20);G.duelCdGlobal=0;}
  else if(S.id==="rusukou"){addText(W/2,110,"波が高くなった！足場が大きく揺れる","#aee2ff",20);if(!G.waterZones)G.waterZones=[];G.waterZones.push({x:G.lord.x,y:G.lord.y,r:230,t:10});G.zones.push({x:G.lord.x,y:G.lord.y,r:230,t:10,type:"water"});}
- else if(S.id==="enjou"){addText(W/2,110,"夜襲だ！四方から敵が迫る！","#ffb27a",20);for(let i=0;i<10;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead){const a=i/10*Math.PI*2;e.x=Math.max(30,Math.min(WORLD_W-30,G.lord.x+Math.cos(a)*330));e.y=Math.max(30,Math.min(WORLD_H-30,G.lord.y+Math.sin(a)*330));}}}
+ else if(S.id==="enjou"){addText(W/2,110,"夜襲だ！四方から敵が迫る！","#ffb27a",20);for(let i=0;i<10;i++){spawnEnemy();const e=G.enemies[G.enemies.length-1];if(e&&!e.dead){const a=i/10*Math.PI*2;e.x=Math.max(30,Math.min(WORLD_W-30,G.lord.x+Math.cos(a)*330));e.y=Math.max(30,Math.min(WORLD_H-30,G.lord.y+Math.sin(a)*330));}}if(G.mission&&G.mission.id==="enjou"&&G.mission.state==="pending")missionTerrainStart();}
  else if(S.id==="gojougen"){addText(W/2,110,"上方谷に火が放たれた！","#ff9a3c",20);const vx2=Math.max(80,Math.min(WORLD_W-80,G.lord.x+(Math.random()<0.5?-300:300))),vy2=Math.max(80,Math.min(WORLD_H-80,G.lord.y+(Math.random()*240-120)));for(let i=0;i<5;i++)G.fires.push({x:vx2+(Math.random()*130-65),y:vy2+(Math.random()*130-65),t:99999,r:44,dps:42*(1+0.3*(G.moveCount||0))});}
 }
 // ===== ステージミッション（フェーズ1：基盤＋官渡・定軍山・夷陵・潁川）=====
@@ -6078,6 +6090,12 @@ const STAGE_MISSIONS={
  kanto:{title:"烏巣の兵糧庫を焼き払え",sub:"兵糧庫3か所をすべて破壊せよ",strat:"烏巣こそ袁紹の命綱。焼けば大軍は崩れます"},
  teigunzan:{title:"高台を奪い取れ",sub:"高台の陣地を占領せよ（味方だけで保持すると進む）",strat:"高台を取れば、弓の雨で敵を射すくめられます"},
  iryou:{title:"連営を焼き払え",sub:"野営テント7つを焼き払え ― 火は隣へ燃え移る",strat:"連営は火に弱い。一つ焼けば連鎖が働きます"},
+ // フェーズ2（護衛・防衛系）：祁山・長坂坡は入場時に提示し対象は約10秒後に出現。合肥・宛城・樊城は地形イベントと同時に提示・開始（state="pending" で待機）
+ kizan:{title:"木牛流馬を陣地へ運べ",sub:"兵糧を積んだ木牛流馬を祁山の陣地まで護衛せよ",strat:"木牛流馬が届けば兵糧は万全。襲撃隊には騎兵が多いはずです"},
+ choban:{title:"阿斗を守り抜け",sub:"糜夫人と阿斗の隊列を長坂橋まで守り切れ",strat:"阿斗様を何としても橋まで。隊列を狙う敵を退けてください"},
+ gappei:{title:"逍遙津の橋を守れ",sub:"奇襲の波が終わるまで、橋の守備を保ち切れ",strat:"橋が落ちれば退路が絶たれます。橋と自軍、両方を見てください"},
+ enjou:{title:"殿を務めよ",sub:"夜襲の間、城門のそばで踏みとどまれ",strat:"城門が要です。門の近くで戦い続けてください"},
+ hanjou:{title:"七軍の救援",sub:"水に取り残された味方の兵3組を、溺れる前に救い出せ",strat:"水際の味方を見捨ててはなりません。急いで救いに向かいましょう"},
 };
 function missionXpFountain(x,y,total){let rem=total;while(rem>0){const v=rem>=5?5:(rem>=3?3:1);rem-=v;const ga=Math.random()*Math.PI*2;G.gems.push({x:x+(Math.random()*36-18),y:y+(Math.random()*36-18),v,vx:Math.cos(ga)*2.2,vy:Math.sin(ga)*2.2-1});}}
 function missionReward(x,y){G.drops.push({x,y,kind:"chest"});missionXpFountain(x,y,MISSION_XP[Math.min(2,G.moveCount||0)]);}
@@ -6099,17 +6117,19 @@ function applyMissionDoneEffects(){
  if(M.id==="koukin"){G.sceneBossDmgT=9999;if(G.world&&G.world.landmark)G.world.landmark.sub="💥";}
  else if(M.id==="teigunzan"){G.missionArcherBuff=true;refreshAllCompStats();}
  else if(M.id==="iryou"){G.mods.fireMul*=1.25;}
+ else if(M.id==="gappei"){G.missionSpdBuff=true;} // #62 合肥：全軍の攻撃速度+10%（この戦場）。君主・仲間とも攻撃間隔の式で参照
+ else if(M.id==="enjou"){G.missionHpBuff=true;refreshAllCompStats();} // #62 宛城：仲間の最大HP+15%は refreshCompStats で付け直す。君主分は達成時に加算済みでセーブの lm に残る
 }
 // 戦場入場時にミッションを組み立てる。restore は saveRun の msn（{id,st,n,zp,objs:[{x,y,h,d}]}）
 function setupMission(restore){
- G.mission=null;G.missionArcherBuff=false;
+ G.mission=null;G.missionArcherBuff=false;G.missionSpdBuff=false;G.missionHpBuff=false;
  if(!G||G.over||G.endless||!G.world)return;
  const sid=STAGES[G.stage].id;const def=STAGE_MISSIONS[sid];if(!def)return;
  if(restore&&restore.id!==sid)restore=null;
  // ミッション構築中の乱数消費が、後続の抽選・計測の乱数の流れをずらさないよう、構築の間だけ専用の決定的乱数に差し替える（終わったら必ず戻す）
  const _mr=Math.random;let _ms=((sid.charCodeAt(0)*131+sid.charCodeAt(1)*17+sid.length*7)+(G.moveCount||0)*7919+(G.kills||0)*31+11)>>>0;
  Math.random=()=>{_ms=(_ms*1103515245+12345)&0x7fffffff;return _ms/0x80000000;};
- const M=G.mission={id:sid,title:def.title,state:"active",n:0,total:0,objs:[],zone:null,zoneProg:0,arrowT:8};
+ const M=G.mission={id:sid,title:def.title,state:"active",n:0,total:0,objs:[],zone:null,zoneProg:0,arrowT:8,esc:null,escT:0,escPlan:null,defT:0,defHp:0,defMax:0,gauge:0,defObj:null,defFlash:0,rsc:null,raidT:0};
  const mc=G.moveCount||0;
  const saved=restore&&restore.objs?restore.objs:null;
  const addObj=(kind,x,y,hp,r)=>{const o={x,y,kind,mission:1,hp,maxhp:hp,r,flash:0,dead:false,igniteT:0,burning:false};G.world.breakables.push(o);M.objs.push(o);return o;};
@@ -6144,21 +6164,44 @@ function setupMission(restore){
    else{const off=(i-3)*92;const bend=Math.sin(i/6*Math.PI)*36;px=Math.max(90,Math.min(WORLD_W-90,lm.x+Math.cos(dirA)*off-Math.sin(dirA)*bend));py=Math.max(90,Math.min(WORLD_H-90,lm.y+Math.sin(dirA)*off*0.8+Math.cos(dirA)*bend));}
    addObj("camp",px,py,hpC,30);
   }
+ }else if(sid==="choban"||sid==="kizan"){
+  // #62 護衛・輸送：対象は入場から約10秒後に戦場の反対側から現れ、ランドマーク（長坂橋／祁山の陣地）を目指す
+  const lm=G.world.landmark;M.total=1;
+  const dx=lm.x-WORLD_W/2,dy=lm.y-WORLD_H/2,dl=Math.hypot(dx,dy)||1;
+  M.escPlan={sx:Math.max(80,Math.min(WORLD_W-80,WORLD_W/2-dx/dl*900)),sy:Math.max(80,Math.min(WORLD_H-80,WORLD_H/2-dy/dl*640)),tx:lm.x,ty:lm.y};
+  M.escT=10;
+ }else if(sid==="gappei"||sid==="enjou"||sid==="hanjou"){
+  // #62 防衛・救出：提示・開始は地形イベント（65秒）と同時。それまでは pending で待機する
+  M.state="pending";
  }
  if(restore){
   M.state=restore.st||"active";M.n=restore.n||0;M.zoneProg=(restore.zp||0)/100;
   (restore.objs||[]).forEach((so,i)=>{const o=M.objs[i];if(!o)return;o.hp=so.h;o.dead=!!so.d;});
+  // #62 フェーズ2の復元：護衛対象の位置・残HP／救出対象の状態／防衛の残り
+  if(restore.esc){
+   if(restore.esc.on&&M.escPlan){const rp=M.escPlan;const isCart=sid==="kizan";const mhp=Math.round((isCart?210:180)*(1+mc*0.5));M.esc={x:restore.esc.x,y:restore.esc.y,tx:rp.tx,ty:rp.ty,hp:Math.min(mhp,restore.esc.h||mhp),maxhp:mhp,spd:isCart?34:30,kind:isCart?"cart":"folk",isEsc:1,on:true,flash:0,face:1,d0:Math.max(1,Math.hypot(rp.sx-rp.tx,rp.sy-rp.ty))};M.escT=0;}
+   else if(restore.esc.dl)M.escT=restore.esc.dl;
+  }
+  if(restore.rsc)M.rsc=restore.rsc.map(g=>({x:g.x,y:g.y,t:g.t,prog:(g.p||0)/100,rescued:!!g.r,lost:!!g.l}));
+  if(M.state==="pending"&&G.terrainDone)missionTerrainStart();
+  // 防衛中にセーブした場合は state="active" で戻るため missionTerrainStart を通らない。防衛対象・ゾーンをここで作り直す（無いと tick が進まず詰む）
+  if((M.id==="gappei"||M.id==="enjou")&&M.state==="active"&&!M.defObj){const lm2=G.world.landmark;M.defObj={x:lm2.x,y:lm2.y,isDef:1};if(M.id==="gappei"&&!M.defMax)M.defMax=Math.round(320*(1+mc*0.5));if(M.id==="enjou")M.zone={x:lm2.x,y:lm2.y,r:130};}
+  if(restore.def&&(M.state==="active"||M.state==="done")){M.defT=restore.def.t||0;if(M.id==="gappei")M.defHp=restore.def.h||0;if(M.id==="enjou")M.gauge=restore.def.g||0;}
   applyMissionDoneEffects();
   Math.random=_mr;
   return;
  }
- // 提示：ミッションバナー＋軍師の一言（献策風）
+ // 提示：ミッションバナー＋軍師の一言（献策風）。pending 型（合肥・宛城・樊城）は地形イベント時に missionTerrainStart で提示する
+ if(M.state!=="pending"){
  missionBanner("📜 ミッション ― "+def.title,def.sub,"#ffd964");
  const st=G.party.find(p=>!p.away&&countsAsStrat(p));
  if(st)G.banners.push({txt:st.name+"「"+def.strat+"」",sub:"軍師の献策",t:3,col:"#d8b4ff"});
  if(sid==="kanto"&&G.lord.name==="曹操")G.banners.push({txt:"曹操「烏巣か…袁紹の腹を焼く好機よ」",sub:"",t:2.8,col:"#aee2ff"});
  if(sid==="iryou"&&G.lord.name==="劉備")G.banners.push({txt:"劉備「連営の綻びは、逆に突くこともできるのだ」",sub:"",t:2.8,col:"#aee2ff"});
  if(sid==="teigunzan"&&(has("黄忠")||has("法正")))G.banners.push({txt:"定軍山の計 ― 高台を制する者が勝つ",sub:"黄忠・法正がいると占領が速い",t:2.8,col:"#aee2ff"});
+ if(sid==="kizan"&&has("諸葛亮"))G.banners.push({txt:"諸葛亮「木牛流馬は兵糧の要。張郃の別働隊が狙いましょう」",sub:"",t:2.8,col:"#aee2ff"});
+ if(sid==="choban"&&has("趙雲"))G.banners.push({txt:"趙雲「阿斗様は、この趙雲がお守りします！」",sub:"",t:2.8,col:"#aee2ff"});
+ }
  Math.random=_mr;
 }
 // ミッション対象オブジェクトが壊れた時の処理（damageBreakable から呼ばれる）
@@ -6193,10 +6236,121 @@ function missionObjDown(b){
   }
  }
 }
+// ===== #62 フェーズ2（護衛・防衛・救出）の部品 =====
+// 護衛対象は敵AIのターゲット対象（isEsc）。敵は escAggro（襲撃隊・自然湧きの一部）か攻城兵が狙い、被弾は damageMissionEsc に集約する（輜重隊イベントの荷車と同じ流儀）
+function spawnMissionEsc(){
+ const M=G.mission;if(!M||M.esc||!M.escPlan)return;const pl=M.escPlan;const mc=G.moveCount||0;
+ const isCart=M.id==="kizan";const mhp=Math.round((isCart?210:180)*(1+mc*0.5));
+ M.esc={x:pl.sx,y:pl.sy,tx:pl.tx,ty:pl.ty,hp:mhp,maxhp:mhp,spd:isCart?34:30,kind:isCart?"cart":"folk",isEsc:1,on:true,flash:0,face:1,d0:Math.max(1,Math.hypot(pl.sx-pl.tx,pl.sy-pl.ty))};
+ M.raidT=9;
+ addText(M.esc.x,M.esc.y-56,isCart?"木牛流馬が出発した！":"隊列が長坂橋を目指す！","#ffd964",16);
+ spawnMissionRaiders(3);
+}
+function spawnMissionRaiders(n){
+ const M=G.mission;if(!M||!M.esc||!M.esc.on)return;const e0=M.esc;
+ for(let i=0;i<n;i++){
+  if(G.enemies.length>130)break;
+  spawnEnemy();const e=G.enemies[G.enemies.length-1];if(!e||e.dead)continue;
+  const a=Math.random()*Math.PI*2;
+  e.x=Math.max(30,Math.min(WORLD_W-30,e0.x+Math.cos(a)*420));
+  e.y=Math.max(30,Math.min(WORLD_H-30,e0.y+Math.sin(a)*420));
+  e.escAggro=true;
+  if(Math.random()<(M.id==="kizan"?0.6:0.4)){const ct=ENEMY_TYPES.find(t=>t.k==="cav");if(ct){e.type="cav";e.name=ct.name;e.range=ct.range;e.spd=Math.min(2.4,Math.max(e.spd,1.7));}}
+ }
+}
+function damageMissionEsc(atk){
+ const M=G.mission;if(!M||M.state!=="active"||!M.esc||!M.esc.on)return;const e=M.esc;
+ e.hp-=atk;e.flash=0.15;
+ G.parts.push({x:e.x,y:e.y-8,vx:(Math.random()-0.5)*3,vy:-2,t:0.3,col:"#d8b878",s:2.4});
+ if(e.hp<=0){
+  e.on=false;M.esc=null;
+  fxBurst(e.x,e.y-10,"#ffb27a",16);G.shake=Math.max(G.shake,4);
+  failMission(M.id==="kizan"?"木牛流馬が破壊された":"隊列が敵の手に落ちた");
+ }
+}
+// 防衛対象（isDef の点）：合肥は橋HPを、宛城は守備ゲージを削る
+function damageMissionDef(atk){
+ const M=G.mission;if(!M||M.state!=="active"||!M.defObj)return;
+ if(M.id==="gappei"){M.defHp-=atk;M.defFlash=0.12;if(Math.random()<0.4)G.parts.push({x:M.defObj.x+(Math.random()*60-30),y:M.defObj.y-10,vx:(Math.random()-0.5)*2,vy:-1.6,t:0.3,col:"#c9a86a",s:2.2});}
+ else if(M.id==="enjou"){M.gauge=Math.max(0,M.gauge-atk*0.02);}
+}
+function spawnDefWave(n){
+ const M=G.mission;if(!M||!M.defObj)return;const z=M.defObj;
+ for(let i=0;i<n;i++){
+  if(G.enemies.length>130)break;
+  spawnEnemy();const e=G.enemies[G.enemies.length-1];if(!e||e.dead)continue;
+  const side=i%2?1:-1;
+  e.x=Math.max(30,Math.min(WORLD_W-30,z.x+side*(430+Math.random()*90)));
+  e.y=Math.max(30,Math.min(WORLD_H-30,z.y+(Math.random()*240-120)));
+  const ct=ENEMY_TYPES.find(t=>t.k==="cav");if(ct){e.type="cav";e.name=ct.name;e.range=ct.range;e.spd=Math.min(2.4,Math.max(e.spd,1.7));}
+  e.defAggro=true;
+ }
+}
+function spawnGateRaid(n){
+ const M=G.mission;if(!M||!M.zone)return;const z=M.zone;
+ for(let i=0;i<n;i++){
+  if(G.enemies.length>130)break;
+  spawnEnemy();const e=G.enemies[G.enemies.length-1];if(!e||e.dead)continue;
+  const a=Math.random()*Math.PI*2;
+  e.x=Math.max(30,Math.min(WORLD_W-30,z.x+Math.cos(a)*(z.r+170)));
+  e.y=Math.max(30,Math.min(WORLD_H-30,z.y+Math.sin(a)*(z.r+170)));
+  e.defAggro=true;
+ }
+}
+function missionHealAll(fr){
+ const L=G.lord;L.hp=Math.min(L.maxhp,L.hp+L.maxhp*fr);
+ G.party.forEach(p=>{if(!p.away)p.hp=Math.min(p.maxhp,p.hp+p.maxhp*fr);});
+}
+// 合肥・宛城・樊城：地形イベント（65秒）と同時にミッションを開始する。復元時（地形イベント済み）もここを通る
+function missionTerrainStart(){
+ const M=G.mission;if(!M||M.state!=="pending")return;
+ const def=STAGE_MISSIONS[M.id];const lm=G.world&&G.world.landmark;if(!def||!lm)return;
+ M.state="active";
+ const mc=G.moveCount||0;
+ if(M.id==="gappei"){
+  M.defMax=Math.round(320*(1+mc*0.5));M.defHp=M.defMax;M.defT=45;M.raidT=11;
+  M.defObj={x:lm.x,y:lm.y,isDef:1};
+  spawnDefWave(6);
+ }else if(M.id==="enjou"){
+  M.zone={x:lm.x,y:lm.y,r:130};M.defObj={x:lm.x,y:lm.y,isDef:1};
+  M.defT=40;M.gauge=100;M.raidT=6;
+  spawnGateRaid(5);
+ }else if(M.id==="hanjou"){
+  if(!M.rsc){
+   M.rsc=[];M.total=3;
+   for(let i=0;i<3;i++){
+    let gx=0,gy=0,tries=0;
+    do{const a=Math.random()*Math.PI*2,d=350+Math.random()*400;gx=Math.max(90,Math.min(WORLD_W-90,G.lord.x+Math.cos(a)*d));gy=Math.max(90,Math.min(WORLD_H-90,G.lord.y+Math.sin(a)*d*0.8));tries++;}
+    while(tries<12&&M.rsc.some(g=>Math.hypot(g.x-gx,g.y-gy)<260));
+    M.rsc.push({x:gx,y:gy,t:55,prog:0,rescued:false,lost:false});
+   }
+  }
+ }
+ missionBanner("📜 ミッション ― "+def.title,def.sub,"#ffd964");
+ const st=G.party.find(p=>!p.away&&countsAsStrat(p));
+ if(st)G.banners.push({txt:st.name+"「"+def.strat+"」",sub:"軍師の献策",t:3,col:"#d8b4ff"});
+ if(M.id==="gappei"&&has("張遼"))G.banners.push({txt:"張遼「逍遙津の橋は、この張遼が守り切る！」",sub:"",t:2.8,col:"#aee2ff"});
+ if(M.id==="enjou"&&has("典韋"))G.banners.push({txt:"典韋「門は俺が守る。殿はお任せを！」",sub:"典韋がいると守備ゲージが減りにくい",t:2.8,col:"#aee2ff"});
+ if(M.id==="enjou"&&G.lord.name==="曹操")G.banners.push({txt:"曹操「典韋…今度こそ死なせるものか」",sub:"",t:2.8,col:"#aee2ff"});
+ if(M.id==="hanjou"&&has("関羽"))G.banners.push({txt:"関羽「水攻めは関羽の計。だが、味方を見捨てる戦はせぬ」",sub:"",t:2.8,col:"#aee2ff"});
+}
+// 樊城：全組の決着がついた時の締め（全救出＝達成／一部＝段階報酬／全滅＝終了）
+function missionRescueConclude(){
+ const M=G.mission;if(!M||M.state!=="active")return;
+ if(M.n>=M.total){missionHealAll(0.2);completeMission(G.lord.x,G.lord.y);G.banners.push({txt:"七軍を救い切った！",sub:"全軍の体力が20%回復した",t:3,col:"#a5f2a5"});}
+ else if(M.n>=1){
+  M.state="done";
+  missionBanner("📜 ミッション達成（一部） ― "+M.title,"救出 "+M.n+"/"+M.total+" ― 経験値は救出数に応じて獲得","#ffd964");
+  sfxFanfare();
+  if(G.chronicle)G.chronicle.push("📜 ミッション達成（一部） ― "+M.title+"（"+M.n+"/"+M.total+"組救出）");
+  missionXpFountain(G.lord.x,G.lord.y,Math.ceil(MISSION_XP[Math.min(2,G.moveCount||0)]*M.n/M.total));
+  missionHealAll(0.1);
+ }else failMission("七軍は流されてしまった");
+}
 function missionTick(dt){
  if(!G||G.over)return;
  const M=G.mission;if(!M)return;
- if(G.endless){G.mission=null;G.missionArcherBuff=false;return;}
+ if(G.endless){G.mission=null;G.missionArcherBuff=false;G.missionSpdBuff=false;G.missionHpBuff=false;return;}
  if(M.state==="done"){
   // 定軍山：占領後の援護射撃（この戦場の間、12秒ごとに敵の密集地へ矢の雨）
   if(M.id==="teigunzan"){
@@ -6221,6 +6375,55 @@ function missionTick(dt){
    M.zoneProg=Math.min(1,M.zoneProg+dt/20*((has("黄忠")||has("法正"))?1.4:1));
    if(M.zoneProg>=1){G.missionArcherBuff=true;refreshAllCompStats();completeMission(z.x,z.y);G.banners.push({txt:"高台を制した！",sub:"援護射撃が付いた・弓の仲間の攻撃+15%（この戦場）",t:3,col:"#ffd964"});}
   }
+ }else if(M.id==="choban"||M.id==="kizan"){
+  // #62 護衛・輸送：対象は約10秒後に出現しランドマークへ直進。着けば達成、壊されれば終了（ペナルティなし）
+  if(M.escT>0){M.escT-=dt;if(M.escT<=0)spawnMissionEsc();}
+  else if(M.esc&&M.esc.on){
+   const e=M.esc;if(e.flash>0)e.flash-=dt;
+   const dx=e.tx-e.x,dy=e.ty-e.y,d=Math.hypot(dx,dy);
+   if(d<56){
+    e.on=false;const ax=e.x,ay=e.y;M.esc=null;
+    if(M.id==="kizan"){missionHealAll(0.3);completeMission(ax,ay);G.banners.push({txt:"兵糧が届いた！",sub:"全軍の体力が30%回復した",t:3,col:"#a5f2a5"});}
+    else{G.vacuumT=Math.max(G.vacuumT||0,2.5);G.partySpdBuffT=Math.max(G.partySpdBuffT||0,8);G.lordSpdBuffT=Math.max(G.lordSpdBuffT||0,8);completeMission(ax,ay);G.banners.push({txt:"阿斗を守り抜いた！",sub:"全ジェム吸着・全軍加速",t:3,col:"#ffd964"});}
+   }else{
+    const sp=e.spd*riverSlow(e.x,e.y);
+    e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;e.face=dx>=0?1:-1;
+    M.raidT-=dt;if(M.raidT<=0){M.raidT=16;spawnMissionRaiders(3);}
+   }
+  }
+ }else if(M.id==="gappei"&&M.defObj){
+  // #62 合肥：橋の防衛。時間を凌ぎ切れば達成、橋HPが尽きれば終了（ペナルティなし）
+  if(M.defFlash>0)M.defFlash-=dt;
+  M.defT-=dt;
+  M.raidT-=dt;if(M.raidT<=0&&M.defT>0){M.raidT=11;spawnDefWave(4);}
+  if(M.defHp<=0){M.defObj=null;addText(G.world.landmark.x,G.world.landmark.y-120,"橋が落ちた！跳べ！","#ff9a7a",18);failMission("橋が落ちた");}
+  else if(M.defT<=0){const zx=M.defObj.x,zy=M.defObj.y;M.defObj=null;G.missionSpdBuff=true;completeMission(zx,zy);G.banners.push({txt:"橋を守り切った！",sub:"全軍の攻撃速度+10%（この戦場）",t:3,col:"#ffd964"});}
+ }else if(M.id==="enjou"&&M.zone){
+  // #62 宛城：城門ゾーンの防衛。ゾーン内の敵と味方の不在が守備ゲージを削る（典韋がいると緩和）
+  M.defT-=dt;
+  const z=M.zone;let inE=0,inA=0;
+  for(const e of G.enemies)if(!e.dead&&Math.hypot(e.x-z.x,e.y-z.y)<z.r)inE++;
+  if(Math.hypot(G.lord.x-z.x,G.lord.y-z.y)<z.r)inA++;
+  for(const p of G.party)if(!p.away&&p.downT<=0&&Math.hypot(p.x-z.x,p.y-z.y)<z.r)inA++;
+  let drain=Math.min(6,inE)*0.55*(has("典韋")?0.7:1);if(inA===0)drain+=1.7;M.gauge-=drain*dt;
+  M.raidT-=dt;if(M.raidT<=0&&M.defT>0){M.raidT=10;spawnGateRaid(5);}
+  if(M.gauge<=0){M.gauge=0;M.defObj=null;failMission("城門が破られた");}
+  else if(M.defT<=0){M.defObj=null;missionHealAll(0.25);const L=G.lord;const _dl=Math.round(L.maxhp*0.15);L.maxhp+=_dl;L.hp+=_dl;G.missionHpBuff=true;refreshAllCompStats();completeMission(z.x,z.y);G.banners.push({txt:"殿を務め切った！",sub:"全軍の体力が25%回復・最大HP+15%（この戦場）",t:3,col:"#a5f2a5"});}
+ }else if(M.id==="hanjou"&&M.rsc){
+  // #62 樊城：水に残された味方の救援。近くに立って救出、制限時間で流失。決着は missionRescueConclude
+  let allDone=true;
+  for(const g of M.rsc){
+   if(g.rescued||g.lost)continue;
+   g.t-=dt;
+   let near=Math.hypot(G.lord.x-g.x,G.lord.y-g.y)<62;
+   if(!near)for(const p of G.party)if(!p.away&&p.downT<=0&&Math.hypot(p.x-g.x,p.y-g.y)<62){near=true;break;}
+   if(near&&g.t>0){g.prog+=dt/3;
+    if(g.prog>=1){g.rescued=true;M.n++;G.gems.push({x:g.x,y:g.y,v:0,heal:true});for(let gi=0;gi<3;gi++)G.gems.push({x:g.x+(Math.random()*30-15),y:g.y+(Math.random()*30-15),v:1});addText(g.x,g.y-44,"救出した！ "+M.n+"/3","#a5f2a5",15);}
+   }
+   if(!g.rescued&&g.t<=0){g.lost=true;addText(g.x,g.y-44,"流されてしまった…","#ff8a7a",14);}
+   if(!g.rescued&&!g.lost)allDone=false;
+  }
+  if(allDone)missionRescueConclude();
  }else if(M.id==="iryou"){
   for(const o of M.objs){
    if(o.dead)continue;
@@ -6238,6 +6441,50 @@ function drawMissionHpBar(x,y,fr,w){
  ctx.fillStyle="rgba(10,6,3,0.8)";ctx.fillRect(x-w/2,y,w,7);
  ctx.fillStyle=fr>0.4?"#ffb27a":"#ff5f4a";ctx.fillRect(x-w/2+1,y+1,(w-2)*Math.max(0,fr),5);
  ctx.strokeStyle="rgba(255,217,164,0.8)";ctx.lineWidth=1;ctx.strokeRect(x-w/2,y,w,7);
+}
+// #62 フェーズ2の対象描画（ワールド座標系。render の定軍山ゾーン描画の直後から呼ばれる）
+function drawMissionWorld2(){
+ const M=G.mission;if(!M)return;const camX=G.cam.x,camY=G.cam.y;const tnow=performance.now();
+ const lm=G.world&&G.world.landmark;
+ ctx.textAlign="center";
+ // 護衛対象（祁山＝木牛流馬の荷車／長坂坡＝糜夫人と阿斗の隊列）と目的地マーカー
+ if(M.esc&&M.esc.on){const e=M.esc;
+  if(e.x>camX-90&&e.x<camX+W+90&&e.y>camY-110&&e.y<camY+H+90){
+   const pulse=0.5+0.5*Math.sin(tnow/520+e.x*0.7);
+   ctx.fillStyle="rgba(0,0,0,0.25)";ctx.beginPath();ctx.ellipse(e.x,e.y+14,26,7,0,0,7);ctx.fill();
+   ctx.strokeStyle="rgba(105,210,255,"+(0.5+0.3*pulse).toFixed(2)+")";ctx.lineWidth=2.2;ctx.beginPath();ctx.ellipse(e.x,e.y+12,34,11,0,0,7);ctx.stroke();
+   if(e.kind==="cart"){const kaim=ASSET_IMG.cart;if(kaim&&kaim.complete&&kaim.naturalWidth>0)ctx.drawImage(kaim,e.x-26,e.y-28,52,39);else{ctx.fillStyle="#7a5c38";ctx.fillRect(e.x-22,e.y-12,44,20);ctx.fillStyle="#9c7a45";ctx.fillRect(e.x-22,e.y-12,44,6);ctx.fillStyle="#4d3a20";ctx.beginPath();ctx.arc(e.x-13,e.y+10,6,0,7);ctx.arc(e.x+13,e.y+10,6,0,7);ctx.fill();}
+    ctx.fillStyle="#e8dcc0";ctx.fillRect(e.x-10,e.y-26,20,12);ctx.fillStyle="#a33c2a";ctx.font="bold 10px sans-serif";ctx.fillText("兵糧",e.x,e.y-17);}
+   else{ctx.font="30px serif";ctx.fillText("👩‍👦",e.x,e.y+8);ctx.font="13px serif";ctx.fillText("🏳️",e.x+20,e.y-8+Math.sin(tnow/300)*2);}
+   if(e.flash>0){ctx.fillStyle="rgba(255,255,255,0.35)";ctx.fillRect(e.x-24,e.y-26,48,36);}
+   ctx.font="bold 11px sans-serif";const lb=e.kind==="cart"?"木牛流馬":"糜夫人と阿斗";const lw2=ctx.measureText(lb).width+12;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(e.x-lw2/2,e.y-52,lw2,15);ctx.strokeStyle="#69d2ff";ctx.lineWidth=1;ctx.strokeRect(e.x-lw2/2,e.y-52,lw2,15);ctx.fillStyle="#cfeeff";ctx.fillText(lb,e.x,e.y-41);
+   drawMissionHpBar(e.x,e.y-62,e.hp/e.maxhp,84);
+  }
+  if(lm&&lm.x>camX-90&&lm.x<camX+W+90&&lm.y>camY-110&&lm.y<camY+H+90){const pulse=0.5+0.5*Math.sin(tnow/430);ctx.strokeStyle="rgba(255,217,100,"+(0.45+0.3*pulse).toFixed(2)+")";ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(lm.x,lm.y+24,58,15,0,0,7);ctx.stroke();}
+ }
+ // 合肥：橋の守備表示（残り時間＋橋HPバー）
+ if(M.id==="gappei"&&M.state==="active"&&M.defObj&&lm){const z=M.defObj;if(z.x>camX-160&&z.x<camX+W+160&&z.y>camY-200&&z.y<camY+H+160){
+  if(M.defFlash>0){ctx.fillStyle="rgba(255,120,80,0.18)";ctx.beginPath();ctx.arc(z.x,z.y,95,0,7);ctx.fill();}
+  ctx.font="bold 12px sans-serif";const bt="🌉 橋の守備 "+Math.max(0,Math.ceil(M.defT))+"秒";const btw=ctx.measureText(bt).width+14;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(z.x-btw/2,lm.y-158,btw,17);ctx.fillStyle="#ffe9a8";ctx.fillText(bt,z.x,lm.y-145);
+  drawMissionHpBar(z.x,lm.y-136,M.defHp/M.defMax,130);
+ }}
+ // 宛城：城門の守備ゾーン（円＋ゲージ弧＋名札。定軍山の高台ゾーンと同じ文法）
+ if(M.id==="enjou"&&M.state==="active"&&M.zone){const z=M.zone;if(z.x>camX-180&&z.x<camX+W+180&&z.y>camY-180&&z.y<camY+H+180){
+  ctx.fillStyle="rgba(255,150,90,0.07)";ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(255,150,90,0.6)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();
+  ctx.strokeStyle="#ff9a5a";ctx.lineWidth=5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.max(0,M.gauge)/100);ctx.stroke();
+  ctx.font="24px serif";ctx.fillText("🏯",z.x,z.y-6);
+  ctx.font="bold 12px sans-serif";const zt="城門 ― 守備 "+Math.max(0,Math.ceil(M.gauge))+"%";const ztw=ctx.measureText(zt).width+14;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(z.x-ztw/2,z.y+z.r+8,ztw,17);ctx.fillStyle="#ffe9a8";ctx.fillText(zt,z.x,z.y+z.r+21);
+ }}
+ // 樊城：救出対象（水に取り残された味方の兵。金の輪＋残り時間バー＋救出の進み弧）
+ if(M.id==="hanjou"&&M.state==="active"&&M.rsc){for(const g of M.rsc){if(g.rescued||g.lost)continue;if(g.x<camX-80||g.x>camX+W+80||g.y<camY-100||g.y>camY+H+80)continue;
+  const pulse=0.5+0.5*Math.sin(tnow/480+g.x);
+  ctx.strokeStyle="rgba(165,242,165,"+(0.5+0.35*pulse).toFixed(2)+")";ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(g.x,g.y,30+Math.sin(tnow/300+g.x)*2,0,7);ctx.stroke();
+  ctx.font="22px serif";ctx.fillText("✚",g.x,g.y-14);
+  ctx.font="bold 11px sans-serif";const lb="味方の兵";const lw3=ctx.measureText(lb).width+12;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(g.x-lw3/2,g.y+16,lw3,15);ctx.strokeStyle="#7ae0a3";ctx.lineWidth=1;ctx.strokeRect(g.x-lw3/2,g.y+16,lw3,15);ctx.fillStyle="#d8ffd8";ctx.fillText(lb,g.x,g.y+27);
+  ctx.fillStyle="rgba(10,6,3,0.8)";ctx.fillRect(g.x-30,g.y+34,60,6);ctx.fillStyle=g.t<15?"#ff5f4a":"#69b7ff";ctx.fillRect(g.x-29,g.y+35,58*Math.max(0,g.t/55),4);
+  if(g.prog>0){ctx.strokeStyle="#ffd964";ctx.lineWidth=4;ctx.beginPath();ctx.arc(g.x,g.y,36,-Math.PI/2,-Math.PI/2+Math.PI*2*g.prog);ctx.stroke();}
+ }}
 }
 function drawMissionObj(b){
  const x=b.x,y=b.y;const tnow=performance.now();
@@ -6512,6 +6759,7 @@ function drawTerrain(){
  }
  // #61 定軍山ミッション：占領ゾーンの表示（金の円＋占領率の弧＋旗）
  if(G.mission&&G.mission.id==="teigunzan"&&G.mission.zone&&(G.mission.state==="active"||G.mission.state==="done")){const z=G.mission.zone;if(z.x>camX-160&&z.x<camX+W+160&&z.y>camY-160&&z.y<camY+H+160){const zdone=G.mission.state==="done";ctx.fillStyle=zdone?"rgba(255,217,100,0.10)":"rgba(255,217,100,0.07)";ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.strokeStyle=zdone?"rgba(255,217,100,0.85)":"rgba(255,217,100,0.55)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();if(!zdone&&G.mission.zoneProg>0){ctx.strokeStyle="#ffd964";ctx.lineWidth=5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,-Math.PI/2,-Math.PI/2+Math.PI*2*G.mission.zoneProg);ctx.stroke();}ctx.font="24px serif";ctx.textAlign="center";ctx.fillText("🚩",z.x,z.y-6);ctx.font="bold 12px sans-serif";const zt=zdone?"高台 ― 制圧済み":"高台 ― 占領 "+Math.floor(G.mission.zoneProg*100)+"%";const ztw=ctx.measureText(zt).width+14;ctx.fillStyle="rgba(14,9,3,0.85)";ctx.fillRect(z.x-ztw/2,z.y+z.r+8,ztw,17);ctx.fillStyle="#ffe9a8";ctx.fillText(zt,z.x,z.y+z.r+21);}}
+ drawMissionWorld2();
  // #59 副ランドマーク（名前札なしの大きな目印）
  const slm=w.sublandmark;
  if(slm&&slm.x>camX-220&&slm.x<camX+W+220&&slm.y>camY-220&&slm.y<camY+H+220){
@@ -6890,7 +7138,7 @@ function render(){
  if(!G.duel&&G.finalRestT>0){ctx.fillStyle="rgba(12,9,5,0.8)";ctx.fillRect(W/2-132,58,264,24);ctx.strokeStyle="#ff9a7a";ctx.lineWidth=1.4;ctx.strokeRect(W/2-132,58,264,24);ctx.fillStyle="#ffb27a";ctx.font="bold 14px sans-serif";ctx.fillText(`最終決戦まで あと${Math.ceil(G.finalRestT)}秒`,W/2,75);}
  else if(!G.duel&&!G.finalSpawned&&!G.stageBossSpawned){const q=stageQuota();ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(W/2-100,58,200,22);ctx.strokeStyle="#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-100,58,200,22);ctx.fillStyle="#ffe9a8";ctx.font="bold 12.5px sans-serif";ctx.fillText(G.stageKills>=q?"討伐 "+q+"/"+q+" ― 強敵接近…":"討伐 "+G.stageKills+"/"+q,W/2,73);}
  // #61 ステージミッションの進捗ストリップ（ノルマ表示の下。ボス戦中はボスHPバーの下にずらす）
- if(G.mission&&(G.mission.state==="active"||G.mission.state==="done")&&!G.duel){const M=G.mission;let prog="";if(M.id==="koukin")prog=M.state==="done"?"達成":"祭壇を破壊せよ ― ボス出現まで";else if(M.id==="kanto")prog="兵糧庫 "+M.n+"/"+M.total;else if(M.id==="iryou")prog="連営 "+M.n+"/"+M.total;else if(M.id==="teigunzan")prog=M.state==="done"?"高台を制圧":"占領 "+Math.floor((M.zoneProg||0)*100)+"%";const bossOn=!!G.enemies.find(e=>(e.boss||e.isFinal)&&!e.dead);const my2=bossOn?104:84;const mtxt=(M.state==="done"?"✅ ミッション達成 ― ":"📜 ")+M.title+" ― "+prog;ctx.font="bold 12px sans-serif";const mw2=ctx.measureText(mtxt).width+22;ctx.fillStyle="rgba(12,9,5,0.78)";ctx.fillRect(W/2-mw2/2,my2,mw2,20);ctx.strokeStyle=M.state==="done"?"#ffd964":"#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-mw2/2,my2,mw2,20);ctx.fillStyle=M.state==="done"?"#ffd964":"#ffe9a8";ctx.textAlign="center";ctx.fillText(mtxt,W/2,my2+14);ctx.textAlign="left";}
+ if(G.mission&&(G.mission.state==="active"||G.mission.state==="done")&&!G.duel){const M=G.mission;let prog="";if(M.id==="koukin")prog=M.state==="done"?"達成":"祭壇を破壊せよ ― ボス出現まで";else if(M.id==="kanto")prog="兵糧庫 "+M.n+"/"+M.total;else if(M.id==="iryou")prog="連営 "+M.n+"/"+M.total;else if(M.id==="teigunzan")prog=M.state==="done"?"高台を制圧":"占領 "+Math.floor((M.zoneProg||0)*100)+"%";else if(M.id==="kizan"||M.id==="choban"){if(M.state==="done")prog="護衛達成";else if(!M.esc)prog=(M.id==="kizan"?"木牛流馬":"隊列")+"が間もなく出発";else prog="護衛 "+Math.max(0,Math.min(99,Math.floor(100*(1-Math.hypot(M.esc.x-M.esc.tx,M.esc.y-M.esc.ty)/M.esc.d0))))+"%・耐久"+Math.max(0,Math.ceil(M.esc.hp/M.esc.maxhp*100))+"%";}else if(M.id==="gappei")prog=M.state==="done"?"橋を守り切った":"橋HP "+Math.max(0,Math.ceil((M.defHp||0)/(M.defMax||1)*100))+"% ― 残り"+Math.max(0,Math.ceil(M.defT||0))+"秒";else if(M.id==="enjou")prog=M.state==="done"?"殿を務め切った":"守備 "+Math.max(0,Math.ceil(M.gauge||0))+"% ― 残り"+Math.max(0,Math.ceil(M.defT||0))+"秒";else if(M.id==="hanjou")prog="救出 "+M.n+"/"+M.total;const bossOn=!!G.enemies.find(e=>(e.boss||e.isFinal)&&!e.dead);const my2=bossOn?104:84;const mtxt=(M.state==="done"?"✅ ミッション達成 ― ":"📜 ")+M.title+" ― "+prog;ctx.font="bold 12px sans-serif";const mw2=ctx.measureText(mtxt).width+22;ctx.fillStyle="rgba(12,9,5,0.78)";ctx.fillRect(W/2-mw2/2,my2,mw2,20);ctx.strokeStyle=M.state==="done"?"#ffd964":"#8a6d2f";ctx.lineWidth=1.2;ctx.strokeRect(W/2-mw2/2,my2,mw2,20);ctx.fillStyle=M.state==="done"?"#ffd964":"#ffe9a8";ctx.textAlign="center";ctx.fillText(mtxt,W/2,my2+14);ctx.textAlign="left";}
  ctx.textAlign="left";
  // パーティ体力チップ
  G.party.forEach((p,i)=>{const cx=14+i*118,cy=50;ctx.fillStyle="rgba(12,9,5,0.72)";ctx.fillRect(cx,cy,110,37);ctx.fillStyle=FACTION_COLOR[p.faction];ctx.fillRect(cx,cy,3,37);ctx.fillStyle="#fff";ctx.font="bold 10px sans-serif";{const _rk={melee:"斬",cav:"騎",archer:"弓",strat:"軍",support:"癒"}[p.role]||"斬";ctx.fillStyle={melee:"#ffb27a",cav:"#ffd964",archer:"#aee2ff",strat:"#d8b4ff",support:"#7ae0a3"}[p.role]||"#fff";ctx.fillText(_rk,cx+7,cy+12);ctx.fillStyle="#fff";}ctx.fillText(p.away?"離脱中":p.downT>0?"撤退 "+Math.ceil(p.downT)+"s":p.name,cx+20,cy+12);ctx.fillStyle="#9fe8ff";ctx.textAlign="right";ctx.fillText("固有技Lv"+sigLv(p),cx+104,cy+12);ctx.textAlign="left";ctx.fillStyle="#ffd964";ctx.font="bold 10px sans-serif";ctx.fillText("撃破"+(p.kills||0)+(p.upgCount?" ★"+p.upgCount:""),cx+7,cy+24);ctx.fillStyle="#300";ctx.fillRect(cx+6,cy+29,98,5);ctx.fillStyle=p.hp/p.maxhp<0.3?"#ff5040":"#7be07b";ctx.fillRect(cx+6,cy+29,98*Math.max(0,p.hp/p.maxhp),5);});
@@ -6934,7 +7182,7 @@ function render(){
   if(G.supply){ctx.fillStyle="#7ae0a3";ctx.fillRect(mx+G.supply.x*sx2-2,my+G.supply.y*sy2-2,4,4);}
   if(G.chest){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.chest.x*sx2-2,my+G.chest.y*sy2-2,4,4);}
   if(G.cart){ctx.fillStyle="#e8a13a";ctx.fillRect(mx+G.cart.x*sx2-2,my+G.cart.y*sy2-2,4,4);}
-  if(G.mission){for(const o of G.mission.objs){if(o.dead)continue;ctx.fillStyle="#ff9a3c";ctx.fillRect(mx+o.x*sx2-2,my+o.y*sy2-2,4,4);}if(G.mission.zone){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.mission.zone.x*sx2-2,my+G.mission.zone.y*sy2-2,4,4);}}
+  if(G.mission){for(const o of G.mission.objs){if(o.dead)continue;ctx.fillStyle="#ff9a3c";ctx.fillRect(mx+o.x*sx2-2,my+o.y*sy2-2,4,4);}if(G.mission.zone){ctx.fillStyle="#ffd964";ctx.fillRect(mx+G.mission.zone.x*sx2-2,my+G.mission.zone.y*sy2-2,4,4);}if(G.mission.esc&&G.mission.esc.on){ctx.fillStyle="#69d2ff";ctx.fillRect(mx+G.mission.esc.x*sx2-2,my+G.mission.esc.y*sy2-2,4,4);}if(G.mission.defObj){ctx.fillStyle="#ff7a5a";ctx.fillRect(mx+G.mission.defObj.x*sx2-2,my+G.mission.defObj.y*sy2-2,4,4);}if(G.mission.rsc)for(const g of G.mission.rsc){if(g.rescued||g.lost)continue;ctx.fillStyle="#a5f2a5";ctx.fillRect(mx+g.x*sx2-2,my+g.y*sy2-2,4,4);}}
   // #34 アイテム類：経験ジェム=水色の小点／回復=ピンク／宝箱ドロップ=金（多すぎる場合は間引いて可読性を保つ）
   {const gst=G.gems.length>600?2:1;ctx.fillStyle="rgba(105,210,255,0.92)";for(let gi=0;gi<G.gems.length;gi+=gst){const g=G.gems[gi];if(g.got)continue;if(g.heal){ctx.fillStyle="#ff7a9a";ctx.fillRect(mx+g.x*sx2-2.5,my+g.y*sy2-2.5,5,5);ctx.fillStyle="#fff";ctx.fillRect(mx+g.x*sx2-1,my+g.y*sy2-1,2,2);ctx.fillStyle="rgba(105,210,255,0.92)";}else ctx.fillRect(mx+g.x*sx2-1.5,my+g.y*sy2-1.5,3,3);}}
   for(const dr of G.drops){if(dr.got)continue;if(dr.kind==="chest"){ctx.fillStyle="#ffd964";ctx.fillRect(mx+dr.x*sx2-2.5,my+dr.y*sy2-2.5,5,5);ctx.fillStyle="#fff3c4";ctx.fillRect(mx+dr.x*sx2-1,my+dr.y*sy2-1,2,2);}else{ctx.fillStyle="#bfe9ff";ctx.beginPath();ctx.arc(mx+dr.x*sx2,my+dr.y*sy2,3,0,7);ctx.fill();}}
@@ -6950,7 +7198,7 @@ function render(){
   if(G.supply)tg.push({x:G.supply.x,y:G.supply.y,col:"#7ae0a3",label:"🧺"});
   if(G.chest)tg.push({x:G.chest.x,y:G.chest.y,col:"#ffd964",label:"🎁"});if(G.shrine&&!G.shrine.used)tg.push({x:G.shrine.x,y:G.shrine.y,col:"#ffd9a8",label:"⛩️"});
   if(G.cart)tg.push({x:G.cart.x,y:G.cart.y,col:"#e8a13a",label:"🛒"});
-  if(G.mission&&G.mission.state==="active"){for(const o of G.mission.objs)if(!o.dead)tg.push({x:o.x,y:o.y,col:"#ff9a3c",label:"🔥"});if(G.mission.zone)tg.push({x:G.mission.zone.x,y:G.mission.zone.y,col:"#ffd964",label:"🚩"});}
+  if(G.mission&&G.mission.state==="active"){for(const o of G.mission.objs)if(!o.dead)tg.push({x:o.x,y:o.y,col:"#ff9a3c",label:"🔥"});if(G.mission.zone)tg.push({x:G.mission.zone.x,y:G.mission.zone.y,col:"#ffd964",label:"🚩"});if(G.mission.esc&&G.mission.esc.on)tg.push({x:G.mission.esc.x,y:G.mission.esc.y,col:"#69d2ff",label:G.mission.esc.kind==="cart"?"🛒":"👥"});if(G.mission.defObj)tg.push({x:G.mission.defObj.x,y:G.mission.defObj.y,col:"#ff7a5a",label:G.mission.id==="gappei"?"🌉":"🏯"});if(G.mission.rsc)for(const g of G.mission.rsc)if(!g.rescued&&!g.lost)tg.push({x:g.x,y:g.y,col:"#a5f2a5",label:"✚"});}
    for(const p of G.party)if(!p.away&&p.downT<=0)tg.push({x:p.x,y:p.y,col:"#7ee787",label:p.name[0]});
   for(const t of tg){if(t.x>G.cam.x-10&&t.x<G.cam.x+W+10&&t.y>G.cam.y-10&&t.y<G.cam.y+H+10)continue;const px=Math.max(24,Math.min(W-24,t.x-G.cam.x)),py0=Math.max(60,Math.min(H-24,t.y-G.cam.y));const py=(px>W-170&&py0<152)?152:py0;marks.push({x:px,y:py});const ang=Math.atan2(t.y-(G.cam.y+H/2),t.x-(G.cam.x+W/2));ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.fillStyle=t.col;ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-7,-7);ctx.lineTo(-7,7);ctx.closePath();ctx.fill();ctx.restore();ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(t.label,px,py-12);ctx.textAlign="left";}
   G._markers=marks;}
