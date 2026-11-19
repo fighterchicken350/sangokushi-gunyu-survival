@@ -5837,12 +5837,21 @@ function sigReady(p){
   case "陳宮":{if(near(420))return true;for(const id in (G.tacT||{}))if((G.tacT[id]||0)>0.5)return true;return false;}
   case "張遼":case "楽進":case "文醜":case "張繍":case "馬雲騄":case "龐徳":return near(430);
   case "丁奉":return near(300);
-  case "徐庶":case "賈詡":case "馬謖":case "沮授":case "田豊":case "魯粛":case "程昱":return near(420);
+  case "徐庶":case "賈詡":case "馬謖":case "沮授":case "田豊":case "魯粛":return near(420);
+  case "程昱":{const c94=(typeof clusterNear==="function")?clusterNear(p,430,90):null;return !!c94&&Math.hypot(c94.x-p.x,c94.y-p.y)<=290;} // #94 火線は自位置から最大約255pxしか届かないため、狙う集団の中心が290px以内の時だけ発動（420ゲートでは集団に届かず空振り）
+  case "鍾会":return near(185*SR); // #94 鎖の到達185pxに合わせる（従来は軍師デフォルトanyEで射程外発動）
   case "法正":case "荀彧":return anyE();
   case "魏延":case "夏侯惇":case "黄蓋":case "周泰":return near(140);
   case "関平":case "顔良":return near(175);
   case "姜維":case "孟獲":case "程普":case "曹仁":case "于禁":case "張郃":case "高順":return near(160);
   case "夏侯淵":case "太史慈":case "孫尚香":case "祝融":return near(320);
+  case "蔡文姫":{
+   // #93 複合技（回復＋音波）なので発動条件も複合にする：回復は「意味のある欠け」（最大HPの8%以上）がある味方が300px以内にいる時だけ（かすり傷で空転させない）。音波は敵が音波範囲の間近まで迫った時に、回復不要でも発動する
+   const wr93=(sigLv(p)>=3?200:160)*SR;
+   for(const e of G.enemies)if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<wr93)return true;
+   if(Math.hypot(G.lord.x-p.x,G.lord.y-p.y)<=300&&G.lord.hp<G.lord.maxhp*0.92)return true;
+   for(const a of G.party)if(!a.away&&a.downT<=0&&a.hp<a.maxhp*0.92&&Math.hypot(a.x-p.x,a.y-p.y)<=300)return true;
+   return false;}
   default:
    if(p.role==="strat")return anyE();
    if(p.role==="support"){
@@ -6068,8 +6077,8 @@ function sigSkill(p){
   case "黄月英":{const c=clusterNear(p,420,95);if(c){aoe(c.x,c.y,95,LV>=4?1.1:0.95);const dur=LV>=3?6:4;G.zones.push({x:c.x,y:c.y,r:95,t:dur,type:"mokujin"});if(LV>=2)G.zones.push({x:c.x,y:c.y,r:55,t:dur,type:"mokujin"});G.rings.push({x:c.x,y:c.y,r:10,t:0.4,col:"#ffd98a"});sigBurst(c.x,c.y,"#ffd98a",10,2.2);
     if(LV>=5)sigDelay(()=>{let c2=clusterNear(p,420,95);const a2=c2?Math.atan2(c2.y-c.y,c2.x-c.x):(p.face>0?0:Math.PI);wave(Math.cos(a2),Math.sin(a2),1.0,{x:c.x,y:c.y,t:0.55,big:1,col:"#ffd98a"});pushImgFx("fx_mokugyu_dash",c.x+Math.cos(a2)*110,c.y+Math.sin(a2)*110,(220),(220)*0.33,0.4,{rot:a2});addText(c.x,c.y-44,"木牛、突進！","#ffd98a",13);},0.3);}G.slowT=Math.max(G.slowT,LV>=3?3:2);}break;
   case "夏侯惇":startFrenzy("fx_aura_blue","隻眼が燃える！");break;
-  case "夏侯淵":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<340).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));if(tgts.length){const shots=LV>=2?8:6;for(let s2=0;s2<shots;s2++){const last=s2===shots-1;sigDelay(()=>{const t2=tgts[s2%tgts.length];if(!t2||t2.dead)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8.6,vy:(t2.y-p.y)/dd*8.6,dmg:dmg*(last?(LV>=4?1.05:0.9):0.34),src:p.name,t:1.1,targetRef:t2,homing:true,pierce:last&&LV>=3?2:0});if(last&&LV>=4)applyArmorBreak(t2);sfxSpear();},0.07*s2);}
-   if(LV>=5)sigDelay(()=>{for(let s2=0;s2<4;s2++){const t2=tgts[s2%tgts.length];if(!t2||t2.dead)continue;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:-(t2.x-p.x)/dd*8.6,vy:-(t2.y-p.y)/dd*8.6,dmg:dmg*0.3,src:p.name,t:0.8});}addText(p.x,p.y-34,"前後への連射！","#cfe6ff",12);},0.07*shots);}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#6ac8ff"});}break;
+  case "夏侯淵":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<340).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y));if(tgts.length){const shots=LV>=2?8:6;for(let s2=0;s2<shots;s2++){const last=s2===shots-1;sigDelay(()=>{let t2=tgts[s2%tgts.length];if(!t2||t2.dead){t2=null;let bd=340;for(const e of G.enemies){if(e.dead)continue;const d2=Math.hypot(e.x-p.x,e.y-p.y);if(d2<bd){bd=d2;t2=e;}}}if(!t2)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8.6,vy:(t2.y-p.y)/dd*8.6,dmg:dmg*(last?(LV>=4?1.05:0.9):0.34),src:p.name,t:1.1,targetRef:t2,homing:true,pierce:last&&LV>=3?2:0});if(last&&LV>=4)applyArmorBreak(t2);sfxSpear();},0.07*s2);}
+   if(LV>=5)sigDelay(()=>{for(let s2=0;s2<4;s2++){let t2=tgts[s2%tgts.length];if(!t2||t2.dead){t2=null;let bd=340;for(const e of G.enemies){if(e.dead)continue;const d2=Math.hypot(e.x-p.x,e.y-p.y);if(d2<bd){bd=d2;t2=e;}}}if(!t2)continue;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:-(t2.x-p.x)/dd*8.6,vy:-(t2.y-p.y)/dd*8.6,dmg:dmg*0.3,src:p.name,t:0.8});}addText(p.x,p.y-34,"前後への連射！","#cfe6ff",12);},0.07*shots);}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#6ac8ff"});}break;
   case "張遼":{const _c=clusterNear(p,460,95);let _tx=null,_ty=null;if(_c){_tx=_c.x;_ty=_c.y;}else{const _ne=nearestEnemy(p,460);if(_ne){_tx=_ne.x;_ty=_ne.y;}}
    if(_tx!==null){const _ox=p.x,_oy=p.y;const _dx=_tx-_ox,_dy=_ty-_oy;const _dd=Math.hypot(_dx,_dy)||1;const _ux=_dx/_dd,_uy=_dy/_dd;const _dl=Math.min(_dd+70,LV>=2?460:380);const _ex=Math.max(24,Math.min(WORLD_W-24,_ox+_ux*_dl)),_ey=Math.max(24,Math.min(WORLD_H-24,_oy+_uy*_dl));
     let n=0;const _hits=[];for(const e of G.enemies){if(e.dead)continue;const _rx=e.x-_ox,_ry=e.y-_oy;const _pr=_rx*_ux+_ry*_uy;if(_pr<-10||_pr>_dl+10)continue;const _px=_rx-_pr*_ux,_py=_ry-_pr*_uy;if(_px*_px+_py*_py>46*46)continue;_hits.push({e,pr:_pr});}_hits.sort((a,b)=>a.pr-b.pr);for(const h of _hits){damageEnemy(h.e,dmg*0.75,true,p.name);n++;}
@@ -6142,8 +6151,8 @@ function sigSkill(p){
   case "太史慈":{const tgts=G.enemies.filter(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<380).sort((a,b)=>b.hp-a.hp);if(tgts.length){const shots=LV>=2?4:3;for(let s2=0;s2<shots;s2++){const strong=s2>=shots-(LV>=3?2:1);sigDelay(()=>{const t2=tgts[s2%tgts.length];if(!t2||t2.dead)return;const dd=Math.hypot(t2.x-p.x,t2.y-p.y)||1;G.projs.push({x:p.x,y:p.y-8,vx:(t2.x-p.x)/dd*8.8,vy:(t2.y-p.y)/dd*8.8,dmg:dmg*(strong?1.1:0.62),src:p.name,t:1.15,targetRef:t2,homing:true,pierce:strong&&LV>=3?1:0});if(LV>=4)applyArmorBreak(t2);
     if(strong&&LV>=5)sigDelay(()=>{aoe(t2.x,t2.y,70,0.12);G.rings.push({x:t2.x,y:t2.y,r:8,t:0.35,col:"#ffb84f"});addText(t2.x,t2.y-40,"爆裂矢！","#ffd98a",11);},0.3);},0.13*s2);}}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#ffb84f"});}break;
   case "黄蓋":startFrenzy("fx_aura_fire","苦肉の炎、纏う！");break;
-  case "程普":{const dirs=LV>=5?8:(LV>=3?6:4);for(let w2=0;w2<dirs;w2++){const a=w2/dirs*Math.PI*2+0.4;wave(Math.cos(a),Math.sin(a),0.5,{t:0.45,col:"#e0a060"});}pushImgFx("fx_ground_wave",p.x,p.y+8,260,147,0.6,{grow:0.3,under:1});kbAll(p.x,p.y,150*SR,LV>=4?6:4);G.shake=Math.max(G.shake,3);
-   if(LV>=2)sigDelay(()=>{for(let w2=0;w2<dirs;w2++){const a=w2/dirs*Math.PI*2+0.4;wave(Math.cos(a),Math.sin(a),0.4,{t:0.45,col:"#e0a060"});}},0.25);addText(p.x,p.y-34,"老将の地波","#ffd2b8",12);}break;
+  case "程普":{const dirs=LV>=5?8:(LV>=3?6:4);for(let w2=0;w2<dirs;w2++){const a=w2/dirs*Math.PI*2+0.4;wave(Math.cos(a),Math.sin(a),0.5,{t:0.45,col:"#e0a060",big:1});}pushImgFx("fx_ground_wave",p.x,p.y+8,260,147,0.6,{grow:0.3,under:1});kbAll(p.x,p.y,150*SR,LV>=4?6:4);G.shake=Math.max(G.shake,3);
+   if(LV>=2)sigDelay(()=>{for(let w2=0;w2<dirs;w2++){const a=w2/dirs*Math.PI*2+0.4;wave(Math.cos(a),Math.sin(a),0.4,{t:0.45,col:"#e0a060",big:1});}},0.25);addText(p.x,p.y-34,"老将の地波","#ffd2b8",12);}break;
   case "孫尚香":{const ne=nearestEnemy(p,340);const a0=ne?Math.atan2(ne.y-p.y,ne.x-p.x):faceAng(300);if(LV>=5){for(let s2=0;s2<12;s2++){const a=s2/12*Math.PI*2;G.projs.push({x:p.x,y:p.y-8,vx:Math.cos(a)*8,vy:Math.sin(a)*8,dmg:dmg*0.5,src:p.name,t:0.7,pierce:LV>=4?1:0});}addText(p.x,p.y-34,"全方位・リング射撃！","#ffb7d5",12);}
    else{const shots=LV>=2?7:5;const fan=LV>=3?0.75:0.5;for(let s2=0;s2<shots;s2++){const a=a0-fan+2*fan*s2/(shots-1);G.projs.push({x:p.x,y:p.y-8,vx:Math.cos(a)*8.4,vy:Math.sin(a)*8.4,dmg:dmg*0.55,src:p.name,t:0.75,pierce:LV>=4?1:0});}}G.rings.push({x:p.x,y:p.y,r:8,t:0.35,col:"#ff8ac2"});}break;
   case "大喬":{const _sh=1+0.15*(((G.gunrei||{}).support)||0);const healMul=LV>=2?1.15:1;[L,...aliveParty()].forEach(a2=>{if(Math.hypot(a2.x-p.x,a2.y-p.y)<=300){healText(a2,healUnit(a2,a2.maxhp*(a2===L?0.10:0.14)*_sh*healMul*(p.sigMul||1)),p.name);G.rings.push({x:a2.x,y:a2.y,r:5,t:0.4,col:"#ffc9d8"});pushImgFx("fx_heal_burst",a2.x,a2.y-6,64,64,0.5,{under:1});}});
@@ -6182,7 +6191,7 @@ function sigSkill(p){
     if(LV>=5)sigDelay(()=>{const a=faceAng(300);wave(Math.cos(a),Math.sin(a),0.7,{t:0.5,col:"#ff9ad5"});pushImgFx("fx_spear_wave",p.x+Math.cos(a)*90,p.y+Math.sin(a)*90-4,220,132,0.4,{rot:a});},0.38);}
    else aoe(p.x,p.y,95,0.9);}break;
   case "蔡文姫":{const _sh=1+0.15*(((G.gunrei||{}).support)||0);const hr=LV>=2?0.15:0.12;[L,...aliveParty()].forEach(a2=>{if(Math.hypot(a2.x-p.x,a2.y-p.y)<=300){healText(a2,healUnit(a2,a2.maxhp*hr*_sh*(p.sigMul||1)),p.name);G.rings.push({x:a2.x,y:a2.y,r:5,t:0.4,col:"#d8c9ff"});}});
-   const wr=LV>=3?200:160;G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<wr){e.orbitSlowT=Math.max(e.orbitSlowT||0,2);if(LV>=4){const dd=Math.hypot(e.x-p.x,e.y-p.y)||1;e.kx=(e.kx||0)+(e.x-p.x)/dd*4;e.ky=(e.ky||0)+(e.y-p.y)/dd*4;}}});
+   const wr=(LV>=3?200:160)*SR; /* #93 他の固有技と同様に範囲倍率（SR）を適用（従来は無視していた） */ G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<wr){e.orbitSlowT=Math.max(e.orbitSlowT||0,2);if(LV>=4){const dd=Math.hypot(e.x-p.x,e.y-p.y)||1;e.kx=(e.kx||0)+(e.x-p.x)/dd*4;e.ky=(e.ky||0)+(e.y-p.y)/dd*4;}}});
    pushImgFx("fx_ring_hujia",p.x,p.y,wr*1.7,wr*1.13,0.5,{grow:0.25});
    if(LV>=5){aoe(p.x,p.y,wr,0.5);G.enemies.forEach(e=>{if(!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<wr&&!e.boss&&!e.isFinal)e.stun=Math.max(e.stun||0,0.6);});addText(p.x,p.y-34,"胡笳の調べ ― 音波が敵を打つ","#e8dfff",12);}
    pushImgFx("fx_heal_burst",p.x,p.y-8,120,150,0.55,{under:1});}break;
