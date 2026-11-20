@@ -1,0 +1,26 @@
+name: Deploy index.html
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset and replace index.html
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download v20261120_2124 --pattern 'index.html' --dir /tmp/asset
+          cp /tmp/asset/index.html ./index.html
+          echo "6699680672be42b912f6701a693ff556  index.html" | md5sum -c -
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/deploy-index.yml
+          git add index.html
+          git status --short
+          git commit -m "v20261120_2124: splash landscape, unification map fit fix, faction territories owned at start, home base markers"
+          git push
