@@ -1,0 +1,33 @@
+name: Deploy index.html
+
+on:
+  push:
+    paths:
+      - .github/workflows/deploy-index.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset
+        run: |
+          curl -L -o /tmp/index.html "https://github.com/fighterchicken350/sangokushi-gunyu-survival/releases/download/deploy-v20261121_1747/index.html"
+          ls -l /tmp/index.html
+      - name: Verify MD5
+        run: |
+          echo "130bc8a6f1cbe4381c4b788d84ef853c  /tmp/index.html" | md5sum -c -
+      - name: Replace index.html, remove workflow and commit
+        run: |
+          cp /tmp/index.html ./index.html
+          rm .github/workflows/deploy-index.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/deploy-index.yml
+          git status --short
+          git commit -m "v20261121_1747"
+          git push
