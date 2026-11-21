@@ -1,0 +1,33 @@
+name: Deploy index.html v20261121_0236
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/deploy
+          gh release download deploy-v20261121_0236 --pattern index.html --dir /tmp/deploy --repo ${{ github.repository }}
+          ls -lh /tmp/deploy/index.html
+      - name: Verify md5
+        run: |
+          echo "910209ea125634e9312f1a761e075916  /tmp/deploy/index.html" | md5sum -c -
+      - name: Replace index.html and remove workflow
+        run: |
+          cp /tmp/deploy/index.html ./index.html
+          rm .github/workflows/deploy-index.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/deploy-index.yml
+          git status
+          git commit -m "v20261121_0236"
+          git push
