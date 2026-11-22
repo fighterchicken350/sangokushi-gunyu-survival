@@ -1,0 +1,30 @@
+name: Deploy index.html from release asset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download release asset and replace index.html
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/deploy
+          gh release download deploy-v20261122_1522 --pattern 'index.html' --dir /tmp/deploy --clobber
+          echo 'cd156d110032a09f7133e161a88b0bc5  /tmp/deploy/index.html' | md5sum -c -
+          cp /tmp/deploy/index.html ./index.html
+          rm -f .github/workflows/deploy-index.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git status --short
+          git commit -m 'v20261122_1522'
+          git push
