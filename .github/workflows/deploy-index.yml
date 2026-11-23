@@ -1,0 +1,38 @@
+name: Deploy index
+
+on:
+  push:
+    paths:
+      - '.github/workflows/deploy-index.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+      - name: Download release asset and verify md5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dl
+          gh release download deploy-v20261124_0242 --dir /tmp/dl --pattern 'publish_index_v20261124_0242.html'
+          ls -l /tmp/dl
+          echo "b01340f67cd8e5364210f72e16fb0b80  /tmp/dl/publish_index_v20261124_0242.html" | md5sum -c -
+          cp /tmp/dl/publish_index_v20261124_0242.html index.html
+      - name: Commit index.html and delete this workflow
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          rm .github/workflows/deploy-index.yml
+          git add -A .github/workflows/deploy-index.yml
+          git status --short
+          git commit -m "v20261124_0242"
+          git push
