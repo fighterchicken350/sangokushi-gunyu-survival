@@ -1,0 +1,31 @@
+name: Deploy index
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset and verify checksum
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/deploy
+          gh release download deploy-v20261123_2138 --pattern 'publish_index_v20261123_2138.html' --dir /tmp/deploy
+          echo 'cecddd0116650c3c13f5477ccdbdc117  /tmp/deploy/publish_index_v20261123_2138.html' | md5sum -c -
+          mv /tmp/deploy/publish_index_v20261123_2138.html index.html
+      - name: Commit new index and remove this workflow
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm .github/workflows/deploy-index.yml
+          git add index.html .github/workflows/deploy-index.yml
+          git commit -m 'v20261123_2138'
+          git push
