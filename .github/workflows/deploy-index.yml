@@ -1,0 +1,42 @@
+name: Deploy index.html from release asset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download release asset and verify md5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_MD5: 850b5949b4b4f88bcc1d1cc058fe8692
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/deploy
+          gh release download deploy-v20261124_1759 --pattern index.html --dir /tmp/deploy --clobber
+          ACTUAL_MD5="$(md5sum /tmp/deploy/index.html | cut -d ' ' -f1)"
+          echo "expected: $EXPECTED_MD5"
+          echo "actual:   $ACTUAL_MD5"
+          if [ "$ACTUAL_MD5" != "$EXPECTED_MD5" ]; then
+            echo "md5 mismatch: expected $EXPECTED_MD5 but got $ACTUAL_MD5" >&2
+            exit 1
+          fi
+          cp /tmp/deploy/index.html ./index.html
+          ls -l index.html
+          md5sum index.html
+      - name: Commit new index.html and remove this workflow
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/deploy-index.yml
+          git add index.html .github/workflows/deploy-index.yml
+          git status --short
+          git commit -m "v20261124_1759: sprite size corrections (#191-192)"
+          git push
