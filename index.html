@@ -270,24 +270,29 @@ canvas.pausedFx{filter:blur(2.5px) brightness(.7) saturate(.85)}
 .dtab{display:flex;flex-direction:column;align-items:center;gap:2px;background:linear-gradient(180deg,#2e2416,#1d160d);border:2px solid #6d5626;border-radius:10px;padding:6px 10px;cursor:pointer;color:#e6d9b8;font-size:12px;min-width:78px;font-family:inherit}
 .dtab.sel{border-color:#ffd964;box-shadow:0 0 12px rgba(255,217,100,.4);color:#ffe9a8}
 .dtab img{height:44px}
-#detailBody{margin-top:12px;width:min(94%,720px);overflow-y:auto;max-height:60%;background:rgba(24,18,10,.94);border:1px solid #6d5626;border-radius:10px;padding:14px 16px;text-align:left}
+#detailBody{margin-top:12px;width:min(96%,800px);overflow-y:auto;max-height:64%;background:rgba(24,18,10,.94);border:1px solid #6d5626;border-radius:10px;padding:14px 18px;text-align:left}
 #detailBody h3{color:#ffe9a8;font-size:22px}
 .dhead{display:flex;gap:16px;align-items:flex-start}
 .dhead img{height:150px}
 .dsec{margin-top:10px}
-.dsec h4{color:#ffd964;font-size:13px;letter-spacing:.12em;border-bottom:1px solid #4a3a1c;padding-bottom:3px;margin-bottom:5px;position:sticky;top:-14px;background:#18120a;z-index:1;padding-top:2px}
-.dstats{display:flex;flex-direction:column}
-.drow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:4px 0;border-bottom:1px dashed rgba(109,86,38,.45)}
-.dlab{color:#cbbd97;font-weight:700;font-size:12.5px;white-space:nowrap}
-.dval{color:#fff3d6;font-size:13px;text-align:right}
-.dval .dsub{color:#bfae86;font-size:11.5px}
-.dsubhead{color:#ffd964;font-size:12px;font-weight:700;letter-spacing:.08em;padding:8px 0 2px}
-.dsec p{font-size:12.5px;line-height:1.65;color:#e6d9b8}
-.dbar{height:8px;background:#0f0c07;border-radius:4px;margin:3px 0 6px}
-.dbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#7be07b,#d8a723)}
+.dsec h4{color:#ffd964;font-size:15px;letter-spacing:.12em;border-bottom:1px solid #6d5626;padding-bottom:4px;margin-bottom:7px;position:sticky;top:-14px;background:#18120a;z-index:1;padding-top:2px}
+.dstats{display:grid;grid-template-columns:1fr 1fr;column-gap:34px;align-items:start}
+.dstats>.drow:first-child{grid-column:1/-1}
+.dstats>.dbar{grid-column:1/-1}
+.dstats>.dsubhead{grid-column:1/-1;text-align:center}
+.dstats>.drow:nth-child(4n+3),.dstats>.drow:nth-child(4n+4){background:rgba(255,238,196,.06)}
+.drow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 8px;border-bottom:1px solid rgba(150,118,58,.4);border-radius:3px;min-width:0}
+.dstats>.dfull{grid-column:1/-1}
+.dlab{color:#f2e4ba;font-weight:700;font-size:14.5px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.65)}
+.dval{color:#ffffff;font-size:16.5px;font-weight:700;text-align:right;min-width:0;line-height:1.35}
+.dval .dsub{color:#cdbb8d;font-size:12px;font-weight:400}
+.dsubhead{color:#ffd964;font-size:13.5px;font-weight:700;letter-spacing:.08em;padding:10px 0 4px}
+.dsec p{font-size:13.5px;line-height:1.7;color:#eee1c0}
+.dbar{height:11px;background:#0f0c07;border-radius:5px;margin:4px 0 8px}
+.dbar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#7be07b,#d8a723)}
 .dchip{display:inline-block;font-size:10.5px;padding:1px 8px;border-radius:8px;margin-right:5px;white-space:nowrap}
 .don{background:#2c5c2e;color:#c8f5c8}.doff{background:#3a3a3a;color:#bdb49a}
-.crow{padding:5px 0;border-bottom:1px dashed #4a3a1c;font-size:12.5px;line-height:1.6;color:#e6d9b8}
+.crow{padding:6px 0;border-bottom:1px dashed #4a3a1c;font-size:13.5px;line-height:1.65;color:#eee1c0}
 #resultParty{display:flex;gap:14px;justify-content:center;margin-top:10px;flex-wrap:wrap}
 #resultParty .rp{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:#e6d9b8;animation:rsLine .5s .5s ease backwards}
 #resultParty .rp img{height:64px}
@@ -5978,8 +5983,8 @@ function buildSummaryHtml(o){
  const tre=TREASURES.filter(tr=>G.treasures[tr.id]).map(tr=>tr.name).join("、")||"なし";
  return `<div class="dsubhead">― 現在のビルド ―</div>`+
  `<div class="drow"><span class="dlab">武器</span><span class="dval">${WEAPON_NAME[o.weapon]||o.weapon} Lv${o.wlv}${o.evo?"（進化済み）":`（進化まであと${5-o.wlv}段）`}</span></div>`+
- `<div class="drow"><span class="dlab">計略</span><span class="dval">${tac}</span></div>`+
- `<div class="drow"><span class="dlab">宝物</span><span class="dval">${tre}</span></div>`+
+ `<div class="drow dfull"><span class="dlab">計略</span><span class="dval">${tac}</span></div>`+
+ `<div class="drow dfull"><span class="dlab">宝物</span><span class="dval">${tre}</span></div>`+
  `<div class="drow"><span class="dlab">タグ集計</span><span class="dval">${tagSummary()}</span></div>`+
  `<div class="drow"><span class="dlab">封印（バニッシュ）残り</span><span class="dval">${G.banishLeft||0}回</span></div>`;
 }
