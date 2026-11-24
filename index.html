@@ -2437,8 +2437,8 @@ if(be&&be.name===U.boss){
 if(!be._uMul){be._uMul=1;be.hp=Math.round(be.hp*U.uHp);be.maxhp=be.hp;be.atk=Math.round(be.atk*U.uAtk*10)/10;}
 if(U.capital){be.hp=Math.round(be.hp*1.3);be.maxhp=be.hp;if(typeof FB_SKILL_NAME!=="undefined"&&FB_SKILL_NAME[be.name]){be.isFinal=true;initFinalBoss(be);}}
 G.rings.push({x:be.x,y:be.y,r:14,t:.6,col:"#ff8a7a"});G.shake=Math.max(G.shake,4);
-G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<260&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*265));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*265));}}});
-G.spawnCalmT=Math.max(G.spawnCalmT||0,3);
+G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<120&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*125));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*125));}}});
+G.spawnCalmT=Math.max(G.spawnCalmT||0,1.5);
 bossAppearFX(U.boss,false);
 }
 }
@@ -2570,8 +2570,8 @@ spawnEnemy(bn);
 const be=G.enemies[G.enemies.length-1];
 if(be&&be.name===bn){be._uMul=1;be.hp=Math.round(be.hp*D.uHp*0.8);be.maxhp=be.hp;be.atk=Math.round(be.atk*D.uAtk*10)/10;
 G.rings.push({x:be.x,y:be.y,r:14,t:.6,col:"#ff8a7a"});G.shake=Math.max(G.shake,4);
-G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<260&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*265));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*265));}}});
-G.spawnCalmT=Math.max(G.spawnCalmT||0,3);
+G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<120&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*125));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*125));}}});
+G.spawnCalmT=Math.max(G.spawnCalmT||0,1.5);
 bossAppearFX(bn,false);
 G.banners.push({txt:"侵攻大将 "+bn+" あらわる！",sub:"討ち取れば防衛成功",t:2.8,col:"#ff9a7a"});
 }
@@ -4133,7 +4133,7 @@ function killEnemy(e){
  if(e.elite&&e.word){if(e.word==="heavy")G.drops.push({x:e.x+14,y:e.y,kind:"chest"});if(e.word==="regen")gainGauge(25);if(e.word==="burst")G.chestGk=(G.chestGk||0)+80;if(e.word==="cmd"){G.atkBuffMul=1.1;G.atkBuffT=10;G.mods=computeMods();}if(e.word==="swift"){for(let i=0;i<4;i++)G.gems.push({x:e.x+(Math.random()*24-12),y:e.y+(Math.random()*24-12),v:1});}}
  const _mc2=G.moveCount||0;const xpVal=e.boss?30+10*_mc2:e.elite?6+2*_mc2:e.namedMob?3+_mc2:(e.type==="shield"?2:1);
  for(let i=0;i<xpVal;i++){const ga=fxRand()*Math.PI*2,gs=1.2+fxRand()*2.2;G.gems.push({x:e.x+(Math.random()*24-12),y:e.y+(Math.random()*24-12),v:1,vx:Math.cos(ga)*gs,vy:Math.sin(ga)*gs-1});}
- if(Math.random()<((G.treasures.hyoro?0.16:0.08)*(G.lord.name==="劉禅"?1.8*(1+0.05*(G.hataStk||0)):1)))G.gems.push({x:e.x,y:e.y,v:0,heal:true});
+ if((G.lord.hp<G.lord.maxhp*0.85||G.party.some(p=>!p.away&&p.downT<=0&&p.hp<p.maxhp*0.85))&&Math.random()<((G.treasures.hyoro?0.10:0.06)*(G.lord.name==="劉禅"?1.8*(1+0.05*(G.hataStk||0)):1)))G.gems.push({x:e.x,y:e.y,v:0,heal:true}); // #189 回復ドロップ：味方の誰かがHP85%未満の時だけ・確率6%（兵糧10%）
  // 追加指示7：精鋭・ボス撃破で宝箱を確定ドロップ／ボス撃破はスローモーション＋ジェム噴水＋稀に全ジェム吸収アイテム
  if(e.elite||e.boss||e.isFinal||(e.namedMob&&Math.random()<0.6*(1+0.15*lvStk("chosen"))))G.drops.push({x:e.x,y:e.y,kind:"chest"});
  if(e.boss||e.isFinal){G.slowmoT=Math.max(G.slowmoT||0,0.4);for(let i=0;i<6+2*(G.moveCount||0);i++){const a=Math.random()*Math.PI*2,d=16+Math.random()*34;G.gems.push({x:e.x+Math.cos(a)*d,y:e.y+Math.sin(a)*d,v:1,vx:Math.cos(a)*2.4,vy:Math.sin(a)*2.4-0.8});}for(let i=0;i<10;i++)G.parts.push({x:e.x,y:e.y-8,vx:(Math.random()-0.5)*6,vy:-Math.random()*4-1,t:0.55,col:"#69d2ff",s:2.6});if(Math.random()<0.3)G.drops.push({x:e.x+28,y:e.y+12,kind:"vacuum"});}
@@ -4247,10 +4247,10 @@ function drawBreakable(b){
  else{ctx.fillStyle=`rgba(255,240,190,${0.45+0.3*Math.sin(tnow/480+b.x*0.7+b.y*0.3)})`;ctx.fillRect(x+b.r-2,y-38,3,3);}
 }
 // ===== 難易度エスカレーション（確定仕様A）：戦場基準×滞在倍率×45秒波×修羅。敵攻撃力は据え置き =====
-const ESC_BASE=[{int:1.0,n:3,cap:70,spd:1.0,hp:1.05},{int:0.85,n:4,cap:100,spd:1.10,hp:1.40},{int:0.70,n:5,cap:140,spd:1.20,hp:1.80}];
+const ESC_BASE=[{int:1.0,n:3,cap:70,spd:1.0,hp:1.05},{int:0.85,n:4,cap:100,spd:1.10,hp:1.40},{int:0.70,n:5,cap:140,spd:1.20,hp:2.15}];
 function escTarget(){
  const mc=Math.min(2,G.moveCount||0);const B={...ESC_BASE[mc]};const escClock=G.escClock||0;
- if(G.finalBoss&&!G.finalBoss.dead){B.int=1.0;B.n=4;B.cap=70;B.spd=1.15;B.hp=1.80;}
+ if(G.finalBoss&&!G.finalBoss.dead){B.int=1.0;B.n=4;B.cap=70;B.spd=1.15;B.hp=2.15;}
  const k=Math.min(1,escClock/300);
  const freq=1+0.85*k,cnt=1+0.8*k,capM=1+0.6*k,spdT=1+0.15*k,hpT=1+0.30*k;
  const wave=(G.waveState==="fight"&&(G.waveT||0)>=24)?1.35:1; // 再調整②：猛攻は出現フェーズ終盤の強弱として残す
@@ -4313,8 +4313,8 @@ function spawnEnemy(bossName,eliteName,opts){
  const tier=stageTierMul()*(G.endless?1+G.endlessT/60*0.2:1);
  const tierH=esc.hp*(G.endless?1+G.endlessT/60*0.2:1);
  // 張角は開幕ボス（t<300）の間だけ初回中ボス相当の強さに調整する
- if(bossName){const BOSS_ADJ={"呂布":{hp:5200,atk:17},"董卓":{hp:4300,atk:15},"張角":{hp:3600,atk:14}};const adj=(bossName==="張角"&&G.moveCount===0)?{hp:2600,atk:13}:(BOSS_ADJ[bossName]||{hp:3400,atk:13});const bhp=adj.hp*(1+G.t/650)*tierH*[1,1.1,1.15][Math.min(2,G.moveCount||0)];G.enemies.push({name:bossName,boss:true,x,y,hp:bhp,maxhp:bhp,spd:1.15,atk:adj.atk*tier*1.35*((G.cond&&G.cond.m)?1.2:1),range:40,type:"boss",flash:0,phase:Math.random()*6});bossifyStun(G.enemies[G.enemies.length-1]);return;}
- if(eliteName){G.enemies.push({name:eliteName,elite:true,x,y,hp:130*hpMul*tierH,maxhp:130*hpMul*tierH,spd:1.0,atk:9*tier*1.35*((G.cond&&G.cond.m)?1.2:1),range:38,type:"elite",flash:0,phase:Math.random()*6});return;}
+ if(bossName){const BOSS_ADJ={"呂布":{hp:5200,atk:17},"董卓":{hp:4300,atk:15},"張角":{hp:3600,atk:14}};const adj=(bossName==="張角"&&G.moveCount===0)?{hp:2600,atk:13}:(BOSS_ADJ[bossName]||{hp:3400,atk:13});const bhp=adj.hp*(1+G.t/650)*tierH*[1,1.1,1.15][Math.min(2,G.moveCount||0)];G.enemies.push({name:bossName,boss:true,x,y,hp:bhp,maxhp:bhp,spd:1.75,atk:adj.atk*tier*1.35*((G.cond&&G.cond.m)?1.2:1),range:40,type:"boss",flash:0,phase:Math.random()*6});bossifyStun(G.enemies[G.enemies.length-1]);return;}
+ if(eliteName){G.enemies.push({name:eliteName,elite:true,x,y,hp:200*hpMul*tierH,maxhp:200*hpMul*tierH,spd:1.0,atk:9*tier*1.35*((G.cond&&G.cond.m)?1.2:1),range:38,type:"elite",flash:0,phase:Math.random()*6});return;}
  // 兵種抽選：戦場ごとの編成傾向（ウェイト）＋後半ほど騎兵・弓・爆弾が増える
  const sid=(typeof G!=="undefined"&&G&&G.unifField)?"":curStage().id;
  const wmap={spear:10,sword:10,bow:10,shield:7,cav:8,bomb:5,yellow:9,flag:0,medic:0,siege:0,renju:3.2,touseki:2.6,toukou:0,rikishi:0,elephant:0,nanman:0,heavycav:0};if((G.moveCount||0)>=1){wmap.flag=2.2;wmap.medic=1.6;}if(G.cart||(G.mission&&G.mission.esc&&G.mission.esc.on))wmap.siege=2.4;
@@ -4480,13 +4480,13 @@ function finalBossTick(e,dt){
  if(e.enrageTele>0){e.enrageTele-=dt;if(e.enrageTele<=0){e.enraged=true;e.spd*=1.1;addText(e.x,enemyTopY(e)-26,`${e.name} が激怒した！`,"#ff5f4a",20);}return;}
  const rate=e.enraged?1.18:1;
  if(e.enraged){if(e.cdT>0)e.cdT-=dt*0.6;if(e.windT>0)e.windT-=dt*0.3;}
- // #65 ハザード系の最終ボス技は射程内でのみタイマーを進める（召喚・鼓舞・守勢は距離無制限のまま）
+ // #65 ハザード系の最終ボス技は射程内でのみ発動する（#186 射程外でもタイマーは0.5倍速で進める。召喚・鼓舞・守勢は距離無制限のまま）
  const _hzS=(e.name==="曹操"||e.name==="司馬懿"||e.name==="劉備")?1:(e.name==="劉表"?2:0),_inR=bossInRange(e);
- if(_hzS!==1||_inR)e.fbT1-=dt*rate;
- if(_hzS!==2||_inR)e.fbT2-=dt*rate;
+ if(_hzS!==1||_inR)e.fbT1-=dt*rate;else e.fbT1=Math.max(0,e.fbT1-dt*rate*0.5); // #186 射程外は0.5倍速
+ if(_hzS!==2||_inR)e.fbT2-=dt*rate;else e.fbT2=Math.max(0,e.fbT2-dt*rate*0.5); // #186 射程外は0.5倍速
  if(e.stun>0)return; // #97 スタン中も技タイマーは進める（発動はスタン明けに行う）
- if(e.fbT1<=0){e.fbT1=(e.enraged?8.5:12)+Math.random()*2;fbSkill(e,1);}
- if(e.fbT2<=0){e.fbT2=(e.enraged?12:17)+Math.random()*3;fbSkill(e,2);}
+ if(e.fbT1<=0&&(_hzS!==1||_inR)){e.fbT1=(e.enraged?8.5:12)+Math.random()*2;fbSkill(e,1);}
+ if(e.fbT2<=0&&(_hzS!==2||_inR)){e.fbT2=(e.enraged?12:17)+Math.random()*3;fbSkill(e,2);}
 }
 function fbSkill(e,slot){
  const L=G.lord,nm=e.name,SN=FB_SKILL_NAME[nm];
@@ -4574,7 +4574,7 @@ function bossWatchdogTick(e,dt){
   e._ccLockT=0;e._wdCdT=6;e._ccImmT=2.5;e._extStun=false;e.stun=0;
   e._wdN=(e._wdN||0)+1;if(typeof G!=="undefined"&&G)G._wdCount=(G._wdCount||0)+1;
   const na=bossNearestAlly(e),tg=na.t;
-  e.chargeCav=true;e.chargeTele=1.0;e.chargeCd=999;e.chargeTx=tg.x;e.chargeTy=tg.y;e.chargeDx=null;e.chargeDy=null;e._dashHit={};e._dashMul=1.2;e._dashDur=Math.max(0.4,Math.min(250,na.d)/216);
+  e.chargeCav=true;e.chargeTele=1.0;e.chargeCd=999;e.chargeTx=tg.x;e.chargeTy=tg.y;e.chargeDx=null;e.chargeDy=null;e._dashHit={};e._dashMul=1.2;e._dashSpd=7.2;e._dashDur=Math.max(0.4,Math.min(250,na.d)/216);
   addText(e.x,enemyTopY(e)-24,"拘束を振りほどいた！","#ffb27a",14);
   G.rings.push({x:e.x,y:e.y,r:12,t:0.4,col:"#ffb27a"});
  }
@@ -4597,48 +4597,48 @@ function bossThreshold(e){
 // 公平さ：全ての強攻撃に0.85秒以上の予兆を持たせ、範囲系の威力は fbHzAtk（君主最大HPの約16%が上限の目安）に揃える。発動後は skillGapT の隙が入る
 // tier2=特級（呂布・関羽：頻度・威力・機動が一段上）／tier1=最終ボス級・猛将／tier0=通常ボス。moves は [型, 表示名, 威力倍率]
 const BOSS_KITS={
- "呂布":{tier:2,cd:[3.1,4.0],moves:[["dash","無双突進",1.1],["nova","画戟旋風",1.1],["fan","天覇戟波",1.0]]},
- "関羽":{tier:2,cd:[3.3,4.2],moves:[["dash","青龍駆け",1.1],["nova","青龍偃月斬",1.15],["sweep","偃月薙ぎ払い",1.05]]},
- "曹操":{tier:1,cd:[3.7,4.7],moves:[["rain","覇道連斬",1.05],["summon","近衛召喚",1]]},
- "劉備":{tier:1,cd:[3.7,4.7],moves:[["nova","双剣旋風",1.1],["summon","仁徳の鼓舞",1]]},
- "司馬懿":{tier:1,cd:[3.7,4.7],moves:[["rain","天雷の陣",1.1],["fan","鬼謀連矢",1]]},
- "董卓":{tier:1,cd:[3.9,4.9],moves:[["nova","暴虐の衝撃",1.1],["summon","西涼の号令",1],["rain","洛陽の矢雨",1]]},
- "袁術":{tier:1,cd:[3.9,4.9],moves:[["summon","皇帝の号令",1],["fan","玉璽の矢",1]]},
- "劉表":{tier:1,cd:[3.9,4.9],moves:[["rain","荊州の矢雨",1],["summon","水軍の守勢",1]]},
- "張飛":{tier:1,cd:[3.8,4.8],moves:[["nova","燕人の大喝",1.1],["dash","蛇矛突進",1.05],["sweep","蛇矛薙ぎ",1]]},
- "趙雲":{tier:1,cd:[3.8,4.8],moves:[["dash","単騎駆け",1.05],["sweep","龍胆槍",1],["nova","七進の槍舞",1]]},
- "張遼":{tier:1,cd:[3.8,4.8],moves:[["dash","遼来突進",1.05],["nova","逍遙津の斬撃",1],["sweep","雁門の薙ぎ",1]]},
- "馬超":{tier:1,cd:[3.8,4.8],moves:[["dash","西涼突撃",1.05],["nova","鉄騎蹂躙",1.05],["sweep","槍薙ぎ",1]]},
- "華雄":{tier:0,cd:[4.2,5.3],moves:[["dash","驍騎突進",1.05],["sweep","断頭斬",1]]},
- "夏侯惇":{tier:0,cd:[4.2,5.3],moves:[["dash","隻眼の猛進",1],["nova","抜矢の斬撃",1]]},
- "典韋":{tier:0,cd:[4.2,5.3],moves:[["nova","双戟乱舞",1.05],["sweep","怪力の一投",1],["dash","猛虎の体当たり",1]]},
- "許褚":{tier:0,cd:[4.2,5.3],moves:[["nova","地揺れ",1.05],["dash","虎痴の体当たり",1]]},
- "曹仁":{tier:0,cd:[4.2,5.3],moves:[["nova","天人の構え",1],["summon","堅守の号令",1]]},
- "張郃":{tier:0,cd:[4.2,5.3],moves:[["dash","巧変の奇襲",1],["rain","機変の矢雨",0.95]]},
- "夏侯淵":{tier:0,cd:[4.2,5.3],moves:[["fan","疾風の連射",1],["rain","狙撃の矢雨",0.95]]},
- "黄忠":{tier:0,cd:[4.2,5.3],moves:[["rain","神弓の狙撃",1],["fan","連珠の矢",0.95]]},
- "太史慈":{tier:0,cd:[4.2,5.3],moves:[["fan","神亭の連矢",1],["dash","短戟突進",0.95]]},
- "甘寧":{tier:0,cd:[4.2,5.3],moves:[["dash","鈴音の奇襲",1],["fan","投げ短刀",0.95],["nova","錦帆の荒波",0.95]]},
- "魏延":{tier:0,cd:[4.2,5.3],moves:[["dash","反骨の突進",1],["nova","血戦の旋風",1]]},
- "張繍":{tier:0,cd:[4.2,5.3],moves:[["dash","北地の槍突き",1],["fan","槍王の投槍",0.95]]},
- "孟獲":{tier:0,cd:[4.2,5.3],moves:[["nova","南蛮王の怒号",1.05],["summon","南蛮の増援",1]]},
- "張角":{tier:0,cd:[4.2,5.3],moves:[["rain","太平道の雷",1.05],["summon","黄巾の群れ",1]]},
- "張宝":{tier:0,cd:[4.2,5.3],moves:[["rain","太平道の雷",1],["summon","黄巾の群れ",1]]},
- "張梁":{tier:0,cd:[4.2,5.3],moves:[["rain","太平道の雷",1],["summon","黄巾の群れ",1]]},
- "賈詡":{tier:0,cd:[4.2,5.3],moves:[["rain","毒計の矢雨",1],["fan","暗器",0.95]]},
- "陸遜":{tier:0,cd:[4.2,5.3],moves:[["rain","火攻めの陣",1],["fan","連環の計",0.95]]}
+ "呂布":{tier:2,cd:[2.8,3.5],moves:[["dash","無双突進",1.1],["nova","画戟旋風",1.1],["fan","天覇戟波",1.0]]},
+ "関羽":{tier:2,cd:[3.0,3.7],moves:[["dash","青龍駆け",1.1],["nova","青龍偃月斬",1.15],["sweep","偃月薙ぎ払い",1.05]]},
+ "曹操":{tier:1,cd:[3.2,4.0],moves:[["rain","覇道連斬",1.05],["summon","近衛召喚",1]]},
+ "劉備":{tier:1,cd:[3.2,4.0],moves:[["nova","双剣旋風",1.1],["summon","仁徳の鼓舞",1]]},
+ "司馬懿":{tier:1,cd:[3.2,4.0],moves:[["rain","天雷の陣",1.1],["fan","鬼謀連矢",1]]},
+ "董卓":{tier:1,cd:[3.4,4.2],moves:[["nova","暴虐の衝撃",1.1],["summon","西涼の号令",1],["rain","洛陽の矢雨",1]]},
+ "袁術":{tier:1,cd:[3.4,4.2],moves:[["summon","皇帝の号令",1],["fan","玉璽の矢",1]]},
+ "劉表":{tier:1,cd:[3.4,4.2],moves:[["rain","荊州の矢雨",1],["summon","水軍の守勢",1]]},
+ "張飛":{tier:1,cd:[3.3,4.1],moves:[["nova","燕人の大喝",1.1],["dash","蛇矛突進",1.05],["sweep","蛇矛薙ぎ",1]]},
+ "趙雲":{tier:1,cd:[3.3,4.1],moves:[["dash","単騎駆け",1.05],["sweep","龍胆槍",1],["nova","七進の槍舞",1]]},
+ "張遼":{tier:1,cd:[3.3,4.1],moves:[["dash","遼来突進",1.05],["nova","逍遙津の斬撃",1],["sweep","雁門の薙ぎ",1]]},
+ "馬超":{tier:1,cd:[3.3,4.1],moves:[["dash","西涼突撃",1.05],["nova","鉄騎蹂躙",1.05],["sweep","槍薙ぎ",1]]},
+ "華雄":{tier:0,cd:[3.6,4.6],moves:[["dash","驍騎突進",1.05],["sweep","断頭斬",1]]},
+ "夏侯惇":{tier:0,cd:[3.6,4.6],moves:[["dash","隻眼の猛進",1],["nova","抜矢の斬撃",1]]},
+ "典韋":{tier:0,cd:[3.6,4.6],moves:[["nova","双戟乱舞",1.05],["sweep","怪力の一投",1],["dash","猛虎の体当たり",1]]},
+ "許褚":{tier:0,cd:[3.6,4.6],moves:[["nova","地揺れ",1.05],["dash","虎痴の体当たり",1]]},
+ "曹仁":{tier:0,cd:[3.6,4.6],moves:[["nova","天人の構え",1],["summon","堅守の号令",1]]},
+ "張郃":{tier:0,cd:[3.6,4.6],moves:[["dash","巧変の奇襲",1],["rain","機変の矢雨",0.95]]},
+ "夏侯淵":{tier:0,cd:[3.6,4.6],moves:[["fan","疾風の連射",1],["rain","狙撃の矢雨",0.95]]},
+ "黄忠":{tier:0,cd:[3.6,4.6],moves:[["rain","神弓の狙撃",1],["fan","連珠の矢",0.95]]},
+ "太史慈":{tier:0,cd:[3.6,4.6],moves:[["fan","神亭の連矢",1],["dash","短戟突進",0.95]]},
+ "甘寧":{tier:0,cd:[3.6,4.6],moves:[["dash","鈴音の奇襲",1],["fan","投げ短刀",0.95],["nova","錦帆の荒波",0.95]]},
+ "魏延":{tier:0,cd:[3.6,4.6],moves:[["dash","反骨の突進",1],["nova","血戦の旋風",1]]},
+ "張繍":{tier:0,cd:[3.6,4.6],moves:[["dash","北地の槍突き",1],["fan","槍王の投槍",0.95]]},
+ "孟獲":{tier:0,cd:[3.6,4.6],moves:[["nova","南蛮王の怒号",1.05],["summon","南蛮の増援",1]]},
+ "張角":{tier:0,cd:[3.6,4.6],moves:[["rain","太平道の雷",1.05],["summon","黄巾の群れ",1]]},
+ "張宝":{tier:0,cd:[3.6,4.6],moves:[["rain","太平道の雷",1],["summon","黄巾の群れ",1]]},
+ "張梁":{tier:0,cd:[3.6,4.6],moves:[["rain","太平道の雷",1],["summon","黄巾の群れ",1]]},
+ "賈詡":{tier:0,cd:[3.6,4.6],moves:[["rain","毒計の矢雨",1],["fan","暗器",0.95]]},
+ "陸遜":{tier:0,cd:[3.6,4.6],moves:[["rain","火攻めの陣",1],["fan","連環の計",0.95]]}
 };
 const BOSS_ARCHETYPE={
- melee:{tier:0,cd:[4.2,5.3],moves:[["dash","猛進",1],["nova","一喝",1]]},
- cav:{tier:0,cd:[4.2,5.3],moves:[["dash","突進",1],["sweep","薙ぎ払い",1]]},
- archer:{tier:0,cd:[4.2,5.3],moves:[["fan","連射",1],["rain","矢雨",0.95]]},
- strat:{tier:0,cd:[4.2,5.3],moves:[["rain","計略の罠",1],["summon","号令",1]]},
- support:{tier:0,cd:[4.2,5.3],moves:[["rain","号令の矢雨",0.95],["summon","号令",1]]}
+ melee:{tier:0,cd:[3.6,4.6],moves:[["dash","猛進",1],["nova","一喝",1]]},
+ cav:{tier:0,cd:[3.6,4.6],moves:[["dash","突進",1],["sweep","薙ぎ払い",1]]},
+ archer:{tier:0,cd:[3.6,4.6],moves:[["fan","連射",1],["rain","矢雨",0.95]]},
+ strat:{tier:0,cd:[3.6,4.6],moves:[["rain","計略の罠",1],["summon","号令",1]]},
+ support:{tier:0,cd:[3.6,4.6],moves:[["rain","号令の矢雨",0.95],["summon","号令",1]]}
 };
 function bossKitFor(e){const k=BOSS_KITS[e.name];if(k)return k;const def=COMP_DEFS.find(c=>c[0]===e.name);return BOSS_ARCHETYPE[def?def[3]:"melee"]||BOSS_ARCHETYPE.melee;}
 function bossNearestAlly(e){let best=G.lord,bd=(G.lord.x-e.x)*(G.lord.x-e.x)+(G.lord.y-e.y)*(G.lord.y-e.y);for(const p of G.party){if(p.away||p.downT>0||(p.airT||0)>0)continue;const d2=(p.x-e.x)*(p.x-e.x)+(p.y-e.y)*(p.y-e.y);if(d2<bd){bd=d2;best=p;}}return{t:best,d:Math.sqrt(bd)};}
 function bossMoveUsable(e,type,na){
- if(type==="dash")return na.d>60&&na.d<580;
+ if(type==="dash")return na.d>60&&na.d<850;
  if(type==="nova")return na.d<200;
  if(type==="sweep")return na.d<250;
  if(type==="fan"||type==="rain")return bossInRange(e);
@@ -4659,7 +4659,7 @@ function bossPickTarget(e){
 function bossCastMove(e,mv,kit,na){
  const type=mv[0],label=mv[1],mul=mv[2]||1,L=G.lord,atk=fbHzAtk(e,mul);
  addText(e.x,enemyTopY(e)-24,label+"！",kit.tier>=2?"#ff8a7a":"#ffb27a",kit.tier>=2?16:14);
- if(type==="dash"){const tg=na.t;e.chargeCav=true;e.chargeTele=grkTele(kit.tier>=2?1.0:1.1);e.chargeCd=999;e.chargeTx=tg.x;e.chargeTy=tg.y;e.chargeDx=null;e.chargeDy=null;e._dashHit={};e._dashMul=kit.tier>=2?1.35:1.2;e._dashDur=Math.max(0.45,Math.min(0.95,na.d/430));}
+ if(type==="dash"){const tg=na.t;e.chargeCav=true;e.chargeTele=grkTele(kit.tier>=2?1.0:1.1);e.chargeCd=999;e.chargeTx=tg.x;e.chargeTy=tg.y;e.chargeDx=null;e.chargeDy=null;e._dashHit={};e._dashMul=kit.tier>=2?1.35:1.2;e._dashSpd=9.0;e._dashDur=Math.max(0.45,Math.min(0.8,na.d/540));}
  else if(type==="nova"){fbPushHazard(e.x,e.y,kit.tier>=2?118:108,1.45,atk);G.rings.push({x:e.x,y:e.y,r:12,t:0.4,col:"#ff8a7a"});e.swing=0.24;}
  else if(type==="sweep"){const tg=na.t,dx=tg.x-e.x,dy=tg.y-e.y,dd=Math.hypot(dx,dy)||1,hx=e.x+dx/dd*64,hy=e.y+dy/dd*64;fbPushHazard(hx,hy,78,1.05,atk);if(!G.delayed)G.delayed=[];const fx=hx,fy=hy,fc=e.face||1;G.delayed.push({t:1.05,done:false,fn:()=>{if(!G||G.over)return;G.slashes.push({x:fx,y:fy,face:fc,t:0.22,col:"#ffe9a8",big:1});}});}
  else if(type==="fan"){e._selfStunSet=true;e.stun=Math.max(e.stun||0,grkTele(0.9));e._selfStunSet=false;e.swing=0.2;const n=kit.tier>=2?7:5;const tg=bossPickTarget(e);e._tgt92=tg===L?"君主":tg.name;if(!G.delayed)G.delayed=[];G.delayed.push({t:grkTele(0.9),done:false,fn:()=>{if(e.dead||!G||G.over)return;const tp=(tg!==L&&(tg.away||tg.downT>0||(tg.airT||0)>0))?L:tg;const a0=Math.atan2(tp.y-e.y,tp.x-e.x);for(let i=0;i<n;i++){const a=a0+(i-(n-1)/2)*0.16;G.eprojs.push({x:e.x,y:e.y-8,vx:Math.cos(a)*5.8,vy:Math.sin(a)*5.8,atk:e.atk*0.8,t:1.5});}e.swing=0.18;}});}
@@ -4670,9 +4670,9 @@ function bossSkillTick(e,dt){
  if(e.skillGapT>0){e.skillGapT-=dt;e.cdT=Math.max(e.cdT||0,0.25);}
  if((G.moveCount||0)>=2&&!e.isFinal&&!e._threshUsed&&e.hp<=e.maxhp*0.5){e._threshUsed=true;e.skillGapT=2;bossThreshold(e);return;}
  const kit=bossKitFor(e),na=bossNearestAlly(e);
- // #65 射程条件：画面内／君主から550px以内、または突進が届く距離に味方がいる場合のみタイマーを進める（画面外からの不可視攻撃をしない）
- if(!bossInRange(e)&&!(na.d<580&&kit.moves.some(m=>m[0]==="dash")))return;
- e.bossT=(e.bossT==null?(kit.tier>=2?3:4):e.bossT)-dt;
+ // #65 射程条件：発動は画面内／君主から550px以内、または突進が届く距離に味方がいる場合のみ（画面外からの不可視攻撃をしない）。#186 射程外でもタイマーは0.5倍速で進める（完全停止をやめる）
+ if(!bossInRange(e)&&!(na.d<850&&kit.moves.some(m=>m[0]==="dash"))){e.bossT=(e.bossT==null?2.5:e.bossT)-dt*0.5;if(e.bossT<0)e.bossT=0;return;}
+ e.bossT=(e.bossT==null?2.5:e.bossT)-dt;
  if(e.bossT>0||e.stun>0)return;
  const usable=kit.moves.filter(m=>bossMoveUsable(e,m[0],na));
  if(!usable.length){e.bossT=0.6;return;}
@@ -4717,7 +4717,7 @@ function trySpawnStageBoss(){
  G.lastBossName=bn;
  spawnEnemy(bn);const be=G.enemies[G.enemies.length-1];if(be){G.rings.push({x:be.x,y:be.y,r:14,t:0.6,col:"#ff8a7a"});G.shake=Math.max(G.shake,4);
   // ボス登場：周辺の雑魚を押し戻して2.5秒の整理時間を作る
-  G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<260&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*265));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*265));}}});G.spawnCalmT=Math.max(G.spawnCalmT||0,3);}
+  G.enemies.forEach(x=>{if(!x.boss&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-be.x,x.y-be.y);if(dd<120&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,be.x+(x.x-be.x)/dd*125));x.y=Math.max(26,Math.min(WORLD_H-26,be.y+(x.y-be.y)/dd*125));}}});G.spawnCalmT=Math.max(G.spawnCalmT||0,1.5);}
  if(G.moveCount===0){spawnNamedMob("張宝");spawnNamedMob("張梁");}
  bossTalkOrGeneric(bn,false);
  if(G.moveCount===0)rescueJoin();
@@ -4731,7 +4731,7 @@ function spawnFinalBoss(){
  if(!fbFree(fb)){const alts=[];LORDS.forEach(L=>{if(L.finalBoss!==fb&&!alts.includes(L.finalBoss))alts.push(L.finalBoss);});CINE_SPECIAL.forEach(n=>{if(n!=="張角"&&!alts.includes(n))alts.push(n);});const alt=alts.find(s=>fbFree(s));if(alt)fb=alt;}
  if(fb==="袁術・劉表"){["袁術","劉表"].forEach(nm=>{spawnEnemy(nm);const bb=G.enemies[G.enemies.length-1];bb.isFinal=true;bb.hp=bb.maxhp=Math.round(7500*(1+G.t/1100))*sm;initFinalBoss(bb);if(!G.finalBoss)G.finalBoss=bb;maybeDuelOffer(bb);});bossTalkOrGeneric("袁術",true,"劉表");}
  else{spawnEnemy(fb);const b=G.enemies[G.enemies.length-1];b.isFinal=true;b.hp=b.maxhp=Math.round(15000*(1+G.t/1100))*sm;initFinalBoss(b);G.finalBoss=b;bossTalkOrGeneric(fb,true);maybeDuelOffer(b);}
- {const fb2=G.finalBoss;if(fb2){G.enemies.forEach(x=>{if(!x.boss&&!x.isFinal&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-fb2.x,x.y-fb2.y);if(dd<260&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,fb2.x+(x.x-fb2.x)/dd*265));x.y=Math.max(26,Math.min(WORLD_H-26,fb2.y+(x.y-fb2.y)/dd*265));}}});G.spawnCalmT=Math.max(G.spawnCalmT||0,3);}}
+ {const fb2=G.finalBoss;if(fb2){G.enemies.forEach(x=>{if(!x.boss&&!x.isFinal&&!x.elite&&!x.namedMob&&!x.dead){const dd=Math.hypot(x.x-fb2.x,x.y-fb2.y);if(dd<120&&dd>0){x.x=Math.max(26,Math.min(WORLD_W-26,fb2.x+(x.x-fb2.x)/dd*125));x.y=Math.max(26,Math.min(WORLD_H-26,fb2.y+(x.y-fb2.y)/dd*125));}}});G.spawnCalmT=Math.max(G.spawnCalmT||0,1.5);}}
  {const fb3=G.finalBoss;if(fb3){G.rings.push({x:fb3.x,y:fb3.y,r:16,t:0.7,col:"#ff5f4a"});G.rings.push({x:fb3.x,y:fb3.y,r:30,t:0.95,col:"#ff8a7a"});fxBurst(fb3.x,fb3.y,"#cbb489",16);fxBurst(fb3.x,fb3.y,"#ff8a7a",10);G.shake=Math.max(G.shake,6);}}
  bossAppearFX(fb,true);
 }
@@ -7154,11 +7154,11 @@ function update(dt){
  const esc=G._esc||escTarget();
  const capN=Math.round(esc.cap);
  const interval=Math.max(0.3,esc.int/G.mods.spawnMul/((G.cond&&G.cond.z)?1.3:1)*(G.rampT>0?1.5:1)*(G.finalRestT>0?1.8:1)*((G.idleAcc||0)>=8&&G.waveState==="fight"?0.6:1)*(G.missionSpawnSlow?1.35:1));
- if(G.spawnT<=0&&G.enemies.length<capN&&G.spawnCalmT<=0&&!G.spawnOff){G.spawnT=interval*(bossAliveNow()?2:1);
+ if(G.spawnT<=0&&G.enemies.length<capN&&G.spawnCalmT<=0&&!G.spawnOff){G.spawnT=interval*(bossAliveNow()?1.4:1);
   let nB=Math.max(1,Math.round(esc.n));if(G.enemies.length+nB>capN)nB=Math.max(1,capN-G.enemies.length);
-  // #92 ボス戦中も通常の半ペースで雑魚を流し続ける（上限は戦場別 14/12/16。囲み殴りの単調さと仲間の完璧回避を崩す）
+  // #92 ボス戦中も雑魚を流し続ける（#187 間隔×1.4・上限は戦場別 22/20/26。囲み殴りの単調さと仲間の完璧回避を崩す）
   const _bossFight=bossAliveNow();
-  if(_bossFight){const _Ld=G.lord;const trash=G.enemies.filter(e=>!e.boss&&!e.elite&&!e.namedMob&&!e.isFinal&&!e.dead&&Math.hypot(e.x-_Ld.x,e.y-_Ld.y)<=1000).length;const capT=(G.unif||G.unifDef)?Math.round(14*(esc.densC||1)):[14,12,16][Math.min(2,G.moveCount||0)];if(isSummonerFinal())nB=0;else if(trash>=capT)nB=(G.siege||G.bossRush)?0:Math.min(nB,2);else nB=Math.min(nB,Math.max(0,capT-trash));} // #159 上限は君主から1000px以内の雑魚で数える＋上限超過時も最低2体は流し続ける（ボス出現直後は残存雑魚が上限を大きく超え、流入が長時間ゼロになって「湧かない」状態になるため。全体上限 capN は外側ゲートで維持）
+  if(_bossFight){const _Ld=G.lord;const trash=G.enemies.filter(e=>!e.boss&&!e.elite&&!e.namedMob&&!e.isFinal&&!e.dead&&Math.hypot(e.x-_Ld.x,e.y-_Ld.y)<=1000).length;const capT=(G.unif||G.unifDef)?Math.round(14*(esc.densC||1)):[22,20,26][Math.min(2,G.moveCount||0)];if(isSummonerFinal())nB=0;else if(trash>=capT)nB=(G.siege||G.bossRush)?0:Math.min(nB,2);else nB=Math.min(nB,Math.max(0,capT-trash));} // #159 上限は君主から1000px以内の雑魚で数える＋上限超過時も最低2体は流し続ける（ボス出現直後は残存雑魚が上限を大きく超え、流入が長時間ゼロになって「湧かない」状態になるため。全体上限 capN は外側ゲートで維持）
   for(let si=0;si<nB;si++)spawnEnemy(null,null,_bossFight?{trickle:true}:undefined);
   // 棒立ち圧力：5秒以上ほぼ静止すると直近の湧きが弓・爆弾に寄って遠間から削る（ボス戦中は爆弾への変換をしない＝#92の兵種フィルターを守る）
   if((G.idleAcc||0)>=8){const ne=G.enemies[G.enemies.length-1];if(ne&&!ne.boss&&!ne.elite&&!ne.namedMob&&Math.random()<0.5){const bt=ENEMY_TYPES.find(x=>x.k===(bossAliveNow()?"bow":(Math.random()<0.7?"bow":"bomb")));if(bt){ne.type=bt.k;ne.range=bt.range;ne.atk=bt.atk*stageTierMul()*1.35;ne.spd=Math.min(2,bt.spd);}}}}
@@ -7367,7 +7367,7 @@ function update(dt){
   // 予告突進（騎兵）：0.9秒の予告の後に直線突進。君主より速いのは突進中だけ
   if(e.chargeCav){
    if(e.chargeTele>0){e.chargeTele-=dt;e.moving=0;if(e.chargeTele<=0){e.chargeDash=e._dashDur||0.55;if(e.chargeDx==null){const dd=Math.hypot(target.x-e.x,target.y-e.y)||1;e.chargeDx=(target.x-e.x)/dd;e.chargeDy=(target.y-e.y)/dd;}}continue;}
-   if(e.chargeDash>0){e.chargeDash-=dt;e.x+=e.chargeDx*7.2*60*dt*0.5;e.y+=e.chargeDy*7.2*60*dt*0.5;e.x=Math.max(20,Math.min(WORLD_W-20,e.x));e.y=Math.max(20,Math.min(WORLD_H-20,e.y));
+   if(e.chargeDash>0){e.chargeDash-=dt;e.x+=e.chargeDx*(e._dashSpd||7.2)*60*dt*0.5;e.y+=e.chargeDy*(e._dashSpd||7.2)*60*dt*0.5;e.x=Math.max(20,Math.min(WORLD_W-20,e.x));e.y=Math.max(20,Math.min(WORLD_H-20,e.y));
     // #85 ボスの突進は経路に接触ダメージ（1回の突進で同じ相手には1度だけ）＋残像で「突っ込んでくる」動きを見せる
     if(e.boss){e._ghT=(e._ghT||0)-dt;if(e._ghT<=0){e._ghT=0.06;if(!G.ghosts)G.ghosts=[];G.ghosts.push({x:e.x,y:e.y,name:e.name,col:"#ff8a7a",face:e.face||1,t:0.3});}
      if(!e._dashHit)e._dashHit={};[L,...G.party].forEach(a=>{if(a!==L&&(a.away||a.downT>0||(a.airT||0)>0))return;const key=a===L?"L":a.name;if(e._dashHit[key])return;if(Math.hypot(a.x-e.x,a.y-e.y)<38){e._dashHit[key]=1;hitAlly(a,e.atk*(e._dashMul||1.2));G.shake=Math.max(G.shake,3);}});}
@@ -7405,7 +7405,7 @@ function update(dt){
     }
    }
   }
-  else if(d>(target&&target.isHq?e.range+30:e.range)){e.cdT=(e.cdT||0)-dt;let _cm=1;if(e.boss||e.isFinal){if(d>620)_cm=1+Math.min(2.4,(d-620)/380);e._catchMul=_cm;} // #65 接近支援：画面外に取り残されたボスは距離に応じて加速し、必ず戦場へ戻ってくる
+  else if(d>(target&&target.isHq?e.range+30:e.range)){e.cdT=(e.cdT||0)-dt;let _cm=1;if(e.boss||e.isFinal){if(d>500)_cm=1+Math.min(1.8,(d-500)/320);e._catchMul=_cm;} // #65 接近支援：画面外に取り残されたボスは距離に応じて加速し、必ず戦場へ戻ってくる
    e.x+=(target.x-e.x)/d*e.spd*slowMul*_cm*60*dt*0.5;e.y+=(target.y-e.y)/d*e.spd*slowMul*_cm*60*dt*0.5;}
   else{e.cdT=(e.cdT||0)-dt;e.moving=0;if((e.boss||e.isFinal)&&target&&d>26){const _rs=e.spd*slowMul*60*dt*0.5;e.x+=(target.x-e.x)/d*_rs;e.y+=(target.y-e.y)/d*_rs;e.moving=1;e.face=target.x>e.x?1:-1;} /* #112 ボスは攻撃の合間も詰め寄る（射程内待機の完全静止を解消） */ if(e.cdT<=0){if(ctIsContact(e)&&target&&!target.isHq&&!target.isCart&&!target.isEsc&&!target.isDef){e.cdT=0.25; /* #114 接触型は味方相手に溜め攻撃をしない（接触ダメージに一本化。#112のボス詰め寄り移動はこの分岐の手前にあり不変更） */}else{e.windDur=e.type==="bomb"?0.85:(e.boss?0.62:e.elite?0.5:0.55);e.windT=e.windDur;e.targetRef=target;}}}
   // #114 接触ダメージ：近接敵が味方に触れている間、クールタイムごとにダメージ（溜め中・突進中・魅了中は除く。対象が誰でも「触れたら痛い」を優先）
@@ -7476,7 +7476,7 @@ for(const f of G.fires){f.t-=dt;const _fd=(f.dps!=null?f.dps:42*(1+0.3*(G.moveCo
  {let hc=0;for(const g of G.gems)if(g.heal&&!g.got)hc++;if(hc>HEAL_CAP)mergeHealGems();} // #77③ 回復ジェムが上限を超えたら合体
  for(const g of G.gems){
   if(g.heal){const cp=G.party.find(p=>!p.away&&p.downT<=0&&p.hp<=p.maxhp*0.6&&Math.hypot(p.x-g.x,p.y-g.y)<20);if(cp){g.got=true;const ch=Math.max(1,Math.round(cp.maxhp*0.10*(g.hm||1)));cp.hp=Math.min(cp.maxhp,cp.hp+ch);addText(cp.x,cp.y-52,"+"+ch,"#a5f2a5",12);G.rings.push({x:cp.x,y:cp.y,r:8,t:0.4,col:"#7ae0a3"});continue;}}
-  if(g.vx){g.x+=g.vx*dt*60;g.y+=g.vy*dt*60;const gd=Math.pow(0.02,dt);g.vx*=gd;g.vy*=gd;if(Math.abs(g.vx)<0.05&&Math.abs(g.vy)<0.05){g.vx=0;g.vy=0;}} const d=dist(g,L);const magnetR=(G.waveState==="collect"?215:86)*(1+0.25*lvStk("shinkou"))*(G.lord.name==="劉禅"?1+0.2*(G.hataStk||0):1)*((G.weather&&G.weather.id==="fog")?0.8:1);if(d<magnetR||G.vacuumT>0){g.x+=(L.x-g.x)*dt*9;g.y+=(L.y-g.y)*dt*9;}if(d<20){g.got=true;if(g.heal){const lh=Math.max(1,Math.round(L.maxhp*0.10*(g.hm||1)));L.hp=Math.min(L.maxhp,L.hp+lh);addText(L.x,L.y-52,"+"+lh,"#a5f2a5",12);G.party.forEach(p=>{if(!p.away&&p.downT<=0){p.hp=Math.min(p.maxhp,p.hp+Math.max(1,Math.round(p.maxhp*0.05)));}});}else{G.gemChain=Math.min(12,(G.gemChain||0)+1);G.gemChainT=0.9;sfxGem(G.gemChain);fxPart({x:L.x+(fxRand()-0.5)*14,y:L.y-12,vx:(fxRand()-0.5)*1.2,vy:-1.6-fxRand(),t:0.3,col:"#aee9ff",s:1.9});gainXp(g.v||1);}}}
+  if(g.vx){g.x+=g.vx*dt*60;g.y+=g.vy*dt*60;const gd=Math.pow(0.02,dt);g.vx*=gd;g.vy*=gd;if(Math.abs(g.vx)<0.05&&Math.abs(g.vy)<0.05){g.vx=0;g.vy=0;}} const d=dist(g,L);const magnetR=(G.waveState==="collect"?215:86)*(1+0.25*lvStk("shinkou"))*(G.lord.name==="劉禅"?1+0.2*(G.hataStk||0):1)*((G.weather&&G.weather.id==="fog")?0.8:1);if(!(g.heal&&L.hp>=L.maxhp)&&(d<magnetR||G.vacuumT>0)){g.x+=(L.x-g.x)*dt*9;g.y+=(L.y-g.y)*dt*9;}if(!(g.heal&&L.hp>=L.maxhp)&&d<20){g.got=true;/* #189 君主満タン時は回復ジェムを吸着・消費しない */if(g.heal){const lh=Math.max(1,Math.round(L.maxhp*0.10*(g.hm||1)));L.hp=Math.min(L.maxhp,L.hp+lh);addText(L.x,L.y-52,"+"+lh,"#a5f2a5",12);G.party.forEach(p=>{if(!p.away&&p.downT<=0){p.hp=Math.min(p.maxhp,p.hp+Math.max(1,Math.round(p.maxhp*0.05)));}});}else{G.gemChain=Math.min(12,(G.gemChain||0)+1);G.gemChainT=0.9;sfxGem(G.gemChain);fxPart({x:L.x+(fxRand()-0.5)*14,y:L.y-12,vx:(fxRand()-0.5)*1.2,vy:-1.6-fxRand(),t:0.3,col:"#aee9ff",s:1.9});gainXp(g.v||1);}}}
  G.gems=G.gems.filter(g=>!g.got);
  castTactics(dt);tacShapeTick(dt);orbitTick(dt);trapTick(dt);kohyoTick(dt);troopTick(dt);runEvents(dt);
  fxTick(dt);barkTick(dt);presPump();cinePump();
