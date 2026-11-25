@@ -1,0 +1,30 @@
+name: Deploy index.html from release asset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset and verify md5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/deploy
+          gh release download v20261126_0134 --repo ${{ github.repository }} --pattern index.html --dir /tmp/deploy --clobber
+          echo "b9b9284e1e1405c64afbb03196bab3d6  /tmp/deploy/index.html" | md5sum -c -
+          cp /tmp/deploy/index.html index.html
+      - name: Commit new index.html and delete this workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/deploy-index.yml
+          git status --short
+          git commit -m "v20261126_0134 (#208-#210)"
+          git push
