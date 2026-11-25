@@ -1,0 +1,34 @@
+name: Deploy index.html from release asset
+on:
+  push:
+    paths:
+      - .github/workflows/deploy-index.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download release asset
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/deploy
+          gh release download deploy-v20261125_1524 --repo fighterchicken350/sangokushi-gunyu-survival --pattern 'index.html' --dir /tmp/deploy
+          ls -lh /tmp/deploy
+      - name: Verify md5 and replace index.html
+        run: |
+          echo "74e6d570f2f09703e0a372ba182c3030  /tmp/deploy/index.html" | md5sum -c -
+          cp /tmp/deploy/index.html index.html
+          rm .github/workflows/deploy-index.yml
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git add -u .github/workflows/deploy-index.yml
+          git status --short
+          git commit -m "v20261125_1524: boss-kill presentation, transition leak fix, demo dummy + Ganning size (#193, #195, #196, #198)"
+          git push
