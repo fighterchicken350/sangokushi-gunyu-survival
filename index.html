@@ -1612,7 +1612,7 @@ const MOB_FACTION_COLOR={"蜀":"#3f9e4d","魏":"#3a6bd8","呉":"#d84a3a","群雄
 "use strict";
 // ===== ゲーム本体 =====
 const cv=document.getElementById("game"),ctx=cv.getContext("2d");
-const W=960,H=540;
+let W=960;const H=540;
 let selLord=0,selStage=0;
 let discovered=new Set(JSON.parse(localStorage.getItem("sgk_disc")||"[]"));
 function saveDisc(){localStorage.setItem("sgk_disc",JSON.stringify([...discovered]));}
@@ -3278,7 +3278,7 @@ const joy=$("joy"),jBase=$("joyBase"),jKnob=$("joyKnob");
 // joyBase/joyKnob は #joy(ステージ全面) の子で、style.left/top は内部座標で解釈される。旧実装は画面ピクセルを
 // そのまま style に入れており、さらに旧 #joy の配置オフセット(下部60%)も加算され、スティックの見た目が
 // 指の位置から大きくずれていた（実機で「タップした所と別の所が反応する」主因）。
-function stagePt(cx,cy){const r=$("stage").getBoundingClientRect();return{x:(cx-r.left)/r.width*960,y:(cy-r.top)/r.height*540,s:r.width/960};}
+function stagePt(cx,cy){const r=$("stage").getBoundingClientRect();const sw=$("stage").offsetWidth||960,sh=$("stage").offsetHeight||540;return{x:(cx-r.left)/r.width*sw,y:(cy-r.top)/r.height*sh,s:r.width/sw};}
 let joyOrg=null;
 joy.addEventListener("touchstart",e=>{const t=e.changedTouches[0];joyId=t.identifier;joyCenter={x:t.clientX,y:t.clientY};const p=stagePt(t.clientX,t.clientY);joyOrg={sx:t.clientX,sy:t.clientY,lx:p.x,ly:p.y};jBase.style.display=jKnob.style.display="block";jBase.style.left=(p.x-55)+"px";jBase.style.top=(p.y-55)+"px";jBase.style.bottom="auto";jKnob.style.left=(p.x-26)+"px";jKnob.style.top=(p.y-26)+"px";jKnob.style.bottom="auto";e.preventDefault();},{passive:false});
 joy.addEventListener("touchmove",e=>{for(const t of e.changedTouches){if(t.identifier===joyId&&joyOrg){let dxs=t.clientX-joyOrg.sx,dys=t.clientY-joyOrg.sy;const lenS=Math.hypot(dxs,dys)||1;const clS=Math.min(lenS,44);joyVec={x:dxs/lenS*clS/44,y:dys/lenS*clS/44};const sc=stagePt(0,0).s;let dxl=dxs/sc,dyl=dys/sc;const lenL=Math.hypot(dxl,dyl)||1;const clL=Math.min(lenL,44);dxl=dxl/lenL*clL;dyl=dyl/lenL*clL;jKnob.style.left=(joyOrg.lx+dxl-26)+"px";jKnob.style.top=(joyOrg.ly+dyl-26)+"px";}}e.preventDefault();},{passive:false});
@@ -4317,12 +4317,12 @@ function escStep(dt){
    const mObjs=(G.mission&&G.mission.objs)?G.mission.objs.filter(o=>!o.dead):[];const mEsc=(G.mission&&G.mission.esc&&G.mission.esc.on)?G.mission.esc:null;
    for(const e of G.enemies){if(moved>=8)break;if(e.dead||e.boss||e.elite||e.namedMob||e.isFinal)continue;
     const dx=e.x-Ld.x,dy=e.y-Ld.y;if(dx*dx+dy*dy<950*950)continue;
-    const sx=e.x-G.cam.x,sy=e.y-G.cam.y;if(sx>-80&&sx<1040&&sy>-80&&sy<620)continue;
+    const sx=e.x-G.cam.x,sy=e.y-G.cam.y;if(sx>-80&&sx<W+80&&sy>-80&&sy<H+80)continue;
     let nearObj=false;for(const o of mObjs){if(Math.hypot(e.x-o.x,e.y-o.y)<600){nearObj=true;break;}}
     if(!nearObj&&mEsc&&Math.hypot(e.x-mEsc.x,e.y-mEsc.y)<600)nearObj=true;
     if(nearObj)continue;
     const a=Math.random()*Math.PI*2,ca2=Math.abs(Math.cos(a)),sa2=Math.abs(Math.sin(a));
-    const dd=Math.min(ca2>0.02?480/ca2:1e9,sa2>0.02?270/sa2:1e9)+55+Math.random()*40;
+    const dd=Math.min(ca2>0.02?(W/2)/ca2:1e9,sa2>0.02?(H/2)/sa2:1e9)+55+Math.random()*40;
     e.x=Math.max(26,Math.min(WORLD_W-26,Ld.x+Math.cos(a)*dd));e.y=Math.max(26,Math.min(WORLD_H-26,Ld.y+Math.sin(a)*dd));moved++;}}}
  const tg=escTarget();
  if(!G.escCur){G.escCur={...tg};return G.escCur;}
@@ -4341,7 +4341,7 @@ function spawnEnemy(bossName,eliteName,opts){
   if(G.endless&&(G.lordVx||G.lordVy)){const _mv=Math.hypot(G.lordVx||0,G.lordVy||0);if(_mv>25&&Math.random()<0.4){const _ma=Math.atan2(G.lordVy,G.lordVx);const _fr=Math.random();sang=_ma+(_fr<0.5?Math.PI:(_fr<0.75?Math.PI/2:-Math.PI/2))+(Math.random()*0.9-0.45);}}
  if(Math.min(Ld.x,WORLD_W-Ld.x)<81||Math.min(Ld.y,WORLD_H-Ld.y)<81){const inward=Math.atan2(WORLD_H/2-Ld.y,WORLD_W/2-Ld.x);const da=Math.atan2(Math.sin(sang-inward),Math.cos(sang-inward));if(Math.abs(da)>2.2&&Math.random()<0.75)sang=inward+(Math.random()*1.2-0.6);}
  const _ca=Math.abs(Math.cos(sang)),_sa=Math.abs(Math.sin(sang));
- const _sd=Math.min(_ca>0.02?480/_ca:1e9,_sa>0.02?270/_sa:1e9)+55+Math.random()*40; // #113 固定620pxリングをやめ、方向ごとに「画面の縁のすぐ外」から湧かせる（到達が早まり画面密度が上がる。総数は不変）
+ const _sd=Math.min(_ca>0.02?(W/2)/_ca:1e9,_sa>0.02?(H/2)/_sa:1e9)+55+Math.random()*40; // #113 固定620pxリングをやめ、方向ごとに「画面の縁のすぐ外」から湧かせる（到達が早まり画面密度が上がる。総数は不変）
  let x=Ld.x+Math.cos(sang)*_sd,y=Ld.y+Math.sin(sang)*_sd;
  x=Math.max(26,Math.min(WORLD_W-26,x));y=Math.max(26,Math.min(WORLD_H-26,y));
  if(Math.hypot(x-Ld.x,y-Ld.y)<300){x=Ld.x-Math.cos(sang)*_sd;y=Ld.y-Math.sin(sang)*_sd;x=Math.max(26,Math.min(WORLD_W-26,x));y=Math.max(26,Math.min(WORLD_H-26,y));if(Math.hypot(x-Ld.x,y-Ld.y)<300){x=Math.max(26,Math.min(WORLD_W-26,Ld.x+(Ld.x<WORLD_W/2?620:-620)));y=Ld.y;}}
@@ -4491,8 +4491,8 @@ function fbHzAtk(e,mul){ // #65 1発＝最大HPの約16%に緩和（着弾時に
 function bossInRange(e){ // #65 ボス技の射程条件：ボスが画面内、または君主から550px以内
  const L=G.lord;if(!L||!e)return false;
  const dx=e.x-L.x,dy=e.y-L.y;if(dx*dx+dy*dy<=550*550)return true;
- const cx=G.cam?G.cam.x:L.x-480,cy=G.cam?G.cam.y:L.y-270;
- return e.x>cx-24&&e.x<cx+984&&e.y>cy-24&&e.y<cy+564;
+ const cx=G.cam?G.cam.x:L.x-W/2,cy=G.cam?G.cam.y:L.y-H/2;
+ return e.x>cx-24&&e.x<cx+W+24&&e.y>cy-24&&e.y<cy+H+24;
 }
 function fbPushHazard(x,y,r,t,atk){t=grkTele(t);if(!G.hazards)G.hazards=[];G.hazards.push({x:Math.max(30,Math.min(WORLD_W-30,x)),y:Math.max(30,Math.min(WORLD_H-30,y)),r,t,dur:t,atk,bornT:G.t});}
 function arrowRainFx(hz){pushImgFx("fx_arrow_rain",hz.x,hz.y-16,hz.r*2.7,hz.r*2.7*0.613,0.5,{});for(let i=0;i<10;i++)G.parts.push({x:hz.x+(Math.random()*hz.r*1.6-hz.r*0.8),y:hz.y-hz.r-24-Math.random()*30,vx:0.3,vy:2.8+Math.random()*0.8,t:0.34,col:i%2?"#ffe1ae":"#ffb27a",s:2.6});}
@@ -9672,8 +9672,16 @@ const _safeProbe=document.createElement("div");
 _safeProbe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);";
 document.body.appendChild(_safeProbe);
 function safeInsets(){try{var cs=(typeof getComputedStyle==="function")?getComputedStyle(_safeProbe):null;if(!cs)return{t:0,r:0,b:0,l:0};var n=function(v){var x=parseFloat(v);return isFinite(x)?x:0;};return{t:n(cs.paddingTop),r:n(cs.paddingRight),b:n(cs.paddingBottom),l:n(cs.paddingLeft)};}catch(e){return{t:0,r:0,b:0,l:0};}}
-function visibleContentHeight(){var h=540;try{document.querySelectorAll(".screen:not(.hidden)").forEach(function(el){var sh=el.scrollHeight;if(sh>h)h=sh;});}catch(e){}return h;}
-function fit(){var s=$("stage");var vw=window.visualViewport?visualViewport.width:innerWidth;var vh=window.visualViewport?visualViewport.height:innerHeight;var si=safeInsets();var aw=Math.max(1,vw-si.l-si.r);var ah=Math.max(1,vh-si.t-si.b);s.style.height="540px";void s.offsetHeight;var ch=visibleContentHeight();var stageH=Math.max(540,ch);var scale=Math.min(aw/960,ah/stageH);var dx=(si.l-si.r)/2;var dy=(si.t-si.b)/2;s.style.transform="translate("+dx+"px,"+dy+"px) scale("+scale+")";s.style.transformOrigin="center center";s.style.width="960px";s.style.height=stageH+"px";
+// #229 (Q20): overflow-y:auto の画面（武将紹介など内部スクロールを持つ画面）は scrollHeight でなく
+// clientHeight（=ステージ高540）で測る。縦に長い一覧が stageH を数千pxに膨らませて全体を極端に
+// 縮小していたのが Q20 の原因。スクロール不可の画面は従来どおり scrollHeight で測り stageH を伸ばす。
+// #230 (Q21): レターボックス解消。高さ540固定・等倍スケーリングのまま、ビューポートが舞台より
+// 横長のときは舞台幅 stageW を広げて画面いっぱいに表示する（引き伸ばしはしない）。stageW は
+// グローバル W に反映され、戦闘 canvas の幅・カメラ可視範囲・スポーン距離も W 経由で追随する。
+// 横幅が不足する（縦長・16:9以下）場合は従来どおり stageW=960。
+// #228 (Q19): tryFullscreenLandscape() は Capacitor（アプリ版）では即 return する。
+function visibleContentHeight(){var h=540;try{document.querySelectorAll(".screen:not(.hidden)").forEach(function(el){var sh=el.scrollHeight;try{var cs=(typeof getComputedStyle==="function")?getComputedStyle(el):null;if(cs&&(cs.overflowY==="auto"||cs.overflowY==="scroll"))sh=el.clientHeight;}catch(e2){}if(sh>h)h=sh;});}catch(e){}return h;}
+function fit(){var s=$("stage");var vw=window.visualViewport?visualViewport.width:innerWidth;var vh=window.visualViewport?visualViewport.height:innerHeight;var si=safeInsets();var aw=Math.max(1,vw-si.l-si.r);var ah=Math.max(1,vh-si.t-si.b);s.style.width="960px";s.style.height="540px";void s.offsetHeight;var stageW=960;var stageH=Math.max(540,visibleContentHeight());var scale=Math.min(aw/stageW,ah/stageH);if(scale<aw/960){for(var _fi=0;_fi<3;_fi++){var _tw=Math.round(aw/scale);if(_tw<=stageW)break;stageW=_tw;s.style.width=stageW+"px";void s.offsetHeight;stageH=Math.max(540,visibleContentHeight());scale=Math.min(aw/stageW,ah/stageH);}}W=stageW;var _cv=$("game");if(_cv){if(_cv.width!==stageW||_cv.height!==540){_cv.width=stageW;_cv.height=540;}_cv.style.width=stageW+"px";_cv.style.height="540px";}var dx=(si.l-si.r)/2;var dy=(si.t-si.b)/2;s.style.transform="translate("+dx+"px,"+dy+"px) scale("+scale+")";s.style.transformOrigin="center center";s.style.width=stageW+"px";s.style.height=stageH+"px";
  var portrait=vh>vw;
  $("rotateNotice").style.display=(portrait&&!rotateDismissed)?"flex":"none";}
 if(window.MutationObserver){try{new MutationObserver(function(){fit();}).observe($("stage"),{attributes:true,subtree:true,attributeFilter:["class"]});}catch(e){}}
@@ -9681,7 +9689,7 @@ if(document.fonts&&document.fonts.ready){try{document.fonts.ready.then(function(
 addEventListener("load",function(){setTimeout(fit,50);});
 addEventListener("resize",fit);addEventListener("orientationchange",()=>setTimeout(fit,60));if(window.visualViewport)visualViewport.addEventListener("resize",fit);fit();
 bindPress($("rotateOk"),()=>{rotateDismissed=true;fit();});
-function tryFullscreenLandscape(){try{const el=document.documentElement;if(el.requestFullscreen){const p=el.requestFullscreen();if(p&&p.then)p.then(()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock("landscape").catch(()=>{});}catch(e){}}).catch(()=>{});}}catch(e){}}
+function tryFullscreenLandscape(){try{if(window.Capacitor)return;const el=document.documentElement;if(el.requestFullscreen){const p=el.requestFullscreen();if(p&&p.then)p.then(()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock("landscape").catch(()=>{});}catch(e){}}).catch(()=>{});}}catch(e){}}
 const deco=[];for(let i=0;i<130;i++)deco.push({x:Math.random()*W,y:Math.random()*H,k:Math.random()});
 
 // ===== ステージ背景（生成画像） =====
