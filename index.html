@@ -15,7 +15,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;background:#14100b;overflow:hidden;font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;color:#f3e9d2}
-#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);background:radial-gradient(ellipse at center,#241a10 0%,#0d0a06 75%)}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:0;background:radial-gradient(ellipse at center,#241a10 0%,#0d0a06 75%)}
 #stage{position:relative}
 canvas{display:block;background:#6d7c46;border-radius:6px;box-shadow:0 0 40px rgba(0,0,0,.7);touch-action:none}
 .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(16,12,7,.88);border-radius:6px;padding:10px;text-align:center;z-index:20}
@@ -1044,6 +1044,8 @@ h1.title{letter-spacing:.16em}
 
 <style>
 .rk2-sec{margin:18px 0 4px;font-weight:900;color:#ffd964;font-size:15px;text-align:left}
+.rk2-gc{margin:8px 0 2px;text-align:left}
+.gcbtn{font-size:13px;padding:6px 14px}
 #challengeCards{justify-content:center}
 #challengeCards .card{min-width:220px;max-width:280px}
 #challengeCards .csub{font-size:11.5px;color:#cbbd97;line-height:1.55;margin-top:4px}
@@ -1764,6 +1766,14 @@ const WX_DESC={rain:"火計が弱まり、水計が強まる",wind:"火が隣へ
 function stageTierMul(){const b=[1,1.3,1.6][(typeof G!=="undefined"&&G)?(G.moveCount||0):0]||1;return (typeof G!=="undefined"&&G&&G.fmActive)?b*1.15:b;}
 
 // タイトル画面
+// ===== Game Center（#225・アプリ版のみ）：ネイティブブリッジ（アプリ版パッケージ側）が
+// window.SGKGameCenter を実体に差し替える。Web版では下の no-op のまま＝送信されずボタンも出ない。
+if(typeof window!=="undefined"&&!window.SGKGameCenter){
+ window.SGKGameCenter={available:false,submitScore:function(boardId,value){},showLeaderboard:function(boardId){}};
+}
+function gcAvailable(){try{const g=window.SGKGameCenter;return !!(g&&g.available);}catch(e){return false;}}
+function gcSubmit(boardId,value){try{const g=window.SGKGameCenter;if(g&&g.available&&typeof g.submitScore==="function")g.submitScore(boardId,Math.floor(Number(value)||0));}catch(e){}}
+function gcShow(boardId){try{const g=window.SGKGameCenter;if(g&&g.available&&typeof g.showLeaderboard==="function")g.showLeaderboard(boardId);}catch(e){}}
 // ===== 戦績ランキング（#21）：ラン記録の保存とタイトルでのランキング表示 =====
 let runSeq=0;
 function loadRunRecords(){try{const r=JSON.parse(localStorage.getItem("sgk_run_records")||"[]");return Array.isArray(r)?r:[];}catch(e){return[];}}
@@ -1799,21 +1809,23 @@ function renderRank(){
  const best=$("rankBest");if(best)best.textContent=eb?("エンドレス最長記録："+fmtRunTime(eb.endlessT)+"（"+eb.lord+"）"):"";
  if(!rs.length&&!sgRecs.length&&!brRecs.length){list.innerHTML=`<div class="rk2-empty">まだ戦績がありません。出撃して記録を残そう</div>`;return;}
  const faceOf=n=>(typeof FACE_SRC!=="undefined"&&FACE_SRC[n])?FACE_SRC[n]:null;
- list.innerHTML=rs.slice(0,10).map((r,i)=>{
+ const gcBtn=(id,label)=>gcAvailable()?`<div class="rk2-gc"><button type="button" class="btn sub2 gcbtn" data-gc="${id}">🏆 Game Center ― ${label}</button></div>`:"";
+ list.innerHTML=gcBtn("sgk_kills_total","累計撃破ランキング")+rs.slice(0,10).map((r,i)=>{
   const lf=faceOf(r.lord);
   const mem=(r.party&&r.party.length)?r.party.map(n=>{const f=faceOf(n);return `<span class="rk2-mem">${f?`<img class="rk2-mface" src="${f}" alt="">`:""}${n}</span>`;}).join(""):"なし";
   const res=r.win?"🏆 勝利":"敗北";
   const en=(r.endlessT||0)>0?` ・ エンドレス ${fmtRunTime(r.endlessT)}`:"";
   return `<div class="rk2-row${i===0?" top1":""}"><div class="rk2-head"><span class="rk2-no">${i===0?"👑 ":""}${i+1}位</span>${lf?`<img class="rk2-face" src="${lf}" alt="">`:""}<span class="rk2-lord">${r.lord}</span><span class="rk2-kills">撃破 <b>${r.kills||0}</b></span></div><div class="rk2-sub">${r.date} ｜ ${res} ｜ ${r.stage}（${r.stageNum}戦場目）到達 ｜ Lv${r.level||1}${en}</div><div class="rk2-party"><span>仲間：</span>${mem}</div></div>`;
- }).join("")+(sgRecs.length?`<div class="rk2-sec">🏯 籠城戦部門</div>`+sgRecs.slice(0,5).map((r,i)=>{
+ }).join("")+(sgRecs.length?`<div class="rk2-sec">🏯 籠城戦部門</div>${gcBtn("sgk_siege_score","籠城戦スコア")}`+sgRecs.slice(0,5).map((r,i)=>{
   const lf=faceOf(r.lord);
   const mem=(r.party&&r.party.length)?r.party.map(n=>{const f=faceOf(n);return `<span class="rk2-mem">${f?`<img class="rk2-mface" src="${f}" alt="">`:""}${n}</span>`;}).join(""):"なし";
   return `<div class="rk2-row${i===0?" top1":""}"><div class="rk2-head"><span class="rk2-no">${i===0?"👑 ":""}${i+1}位</span>${lf?`<img class="rk2-face" src="${lf}" alt="">`:""}<span class="rk2-lord">${r.lord}</span><span class="rk2-kills">スコア <b>${r.score||0}</b></span></div><div class="rk2-sub">${r.date} ｜ ${r.win?"🏯 守備成功":"本陣陥落"} ｜ 生存 ${fmtRunTime(r.survived||0)} ｜ 撃破 ${r.kills||0} ｜ 本陣残HP ${r.hqPct||0}%</div><div class="rk2-party"><span>仲間：</span>${mem}</div></div>`;
- }).join(""):"")+(brRecs.length?`<div class="rk2-sec">⚔ 名将ボスラッシュ部門</div>`+brRecs.slice(0,5).map((r,i)=>{
+ }).join(""):"")+(brRecs.length?`<div class="rk2-sec">⚔ 名将ボスラッシュ部門</div>${gcBtn("sgk_bossrush_score","ボスラッシュ スコア")}`+brRecs.slice(0,5).map((r,i)=>{
   const lf=faceOf(r.lord);
   const mem=(r.party&&r.party.length)?r.party.map(n=>{const f=faceOf(n);return `<span class="rk2-mem">${f?`<img class="rk2-mface" src="${f}" alt="">`:""}${n}</span>`;}).join(""):"なし";
   return `<div class="rk2-row${i===0?" top1":""}"><div class="rk2-head"><span class="rk2-no">${i===0?"👑 ":""}${i+1}位</span>${lf?`<img class="rk2-face" src="${lf}" alt="">`:""}<span class="rk2-lord">${r.lord}</span><span class="rk2-kills">スコア <b>${r.score||0}</b></span></div><div class="rk2-sub">${r.date} ｜ 討ち取り <b>${r.bossDown||0}</b> 体 ｜ 生存 ${fmtRunTime(r.survived||0)} ｜ 撃破 ${r.kills||0}</div><div class="rk2-party"><span>仲間：</span>${mem}</div></div>`;
  }).join(""):"");
+ try{list.querySelectorAll("[data-gc]").forEach(b=>{bindTap(b,()=>gcShow(b.getAttribute("data-gc")));});}catch(e){}
 }
 function lordRecordHtml(L){const ls=loadLordStats()[L.id];const ms=loadMissions();const ifc=(()=>{try{return JSON.parse(localStorage.getItem("sgk_if")||"{}").count||0;}catch(e){return 0;}})();const mn=["史実改変：累計"+ifc+"件","桃園結義で勝利："+(ms.touen?"達成":"未達"),"一騎討ち通算10勝："+(ms.duel10?"達成":"未達"),"いずれかの君主で勝利："+(ms.shura?"達成":"未達")].join("｜");if(!ls)return `<div class="ldSub">戦績：まだ出陣していない<br>名将録：${mn}</div>`;return `<div class="ldSub">戦績：出陣 ${ls.runs}回・勝利 ${ls.wins}回・最高撃破 ${ls.best}<br>名将録：${mn}</div>`;}
 function renderLordDetail(L,locked){
@@ -2773,6 +2785,7 @@ function siegeEnd(win){
  S.score=score;S.survived=survived;S.hqPct=hqPct;
  siegeRetryCfg={lord:selLord,party:G.party.map(p=>p.name)};bossRushRetryCfg=null;
  try{const recs=loadRunRecords();recs.push({id:Date.now(),date:new Date().toISOString().slice(0,10),mode:"siege",lord:G.lord.name,party:G.party.map(p=>p.name),members:1+G.party.length,kills:G.kills,stage:"籠城戦",stageNum:0,win:!!win,level:1,score:score,survived:survived,hqPct:hqPct});saveRunRecords(recs);}catch(e){}
+ gcSubmit("sgk_siege_score",score);gcSubmit("sgk_kills_total",killsTotal());
  $("resultTitle").textContent=win?"🏯 籠城戦 ― 守り切った！":"🏯 籠城戦 ― 本陣陥落…";
  {const kv=(k,v)=>`<div class="rs-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   $("resultStats").innerHTML=`<div class="rs-sec">籠城戦 ― 戦績</div><div class="rs-grid">`
@@ -2876,6 +2889,7 @@ function bossRushEnd(reason){
  S.score=score;S.survived=survived;
  bossRushRetryCfg={lord:selLord,party:G.party.map(p=>p.name)};siegeRetryCfg=null;
  try{const recs=loadRunRecords();recs.push({id:Date.now(),date:new Date().toISOString().slice(0,10),mode:"bossrush",lord:G.lord.name,party:G.party.map(p=>p.name),members:1+G.party.length,kills:G.kills,stage:"名将ボスラッシュ",stageNum:0,win:win,level:1,score:score,survived:survived,bossDown:S.down});saveRunRecords(recs);}catch(e){}
+ gcSubmit("sgk_bossrush_score",score);gcSubmit("sgk_kills_total",killsTotal());
  $("resultTitle").textContent=win?("⚔ 名将ボスラッシュ ― "+S.down+"体討ち取り！"):"⚔ 名将ボスラッシュ ― 力尽きた…";
  {const kv=(k,v)=>`<div class="rs-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   $("resultStats").innerHTML=`<div class="rs-sec">名将ボスラッシュ ― 戦績</div><div class="rs-grid">`
@@ -3603,10 +3617,10 @@ function grkZukanSection(list){if(!list||typeof GRK_CARDS==="undefined")return;
   tx.textContent=`🔒 ${c.name}${c.rar==="r"?"（レア）":c.rar==="s"?"（特定軍師）":""}${c.need?"｜条件："+c.need+"が仲間にいる":""}：${c.d}`;
   d.appendChild(ic);d.appendChild(tx);list.appendChild(d);});}
 
-function saveRun(){if(!G||G.over||G.siege||G.bossRush||G.unif||G.unifDef||G.demo)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0,k:p.kills||0,sm:Math.round((p.sigMul||1)*10000)/10000,ba:(p.baseAtk!=null?Math.round(p.baseAtk*100)/100:null),bh:(p.baseMaxhp!=null?Math.round(p.baseMaxhp*100)/100:null),rm:Math.round((p.rangeMul||1)*10000)/10000,gj:p.guojiaUsed?1:0,dt:Math.round((p.downT||0)*10)/10,aw:p.away?1:0,awt:Math.round((p.awayT||0)*10)/10})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,lk:G.lordKills||0,sgc:G.sigCounts||{},grk:G.grk||null,grkPend:G.grkPend||0,pd:G.partyDowns||0,dc:G.duelCount||0,dw:G.duelWins||0,mx:G.maxStreak||0,tb:G.tacBonusKills||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice(),msn:G.mission?{id:G.mission.id,st:G.mission.state,n:G.mission.n,zp:Math.round((G.mission.zoneProg||0)*100),objs:(G.mission.objs||[]).map(o=>({x:Math.round(o.x),y:Math.round(o.y),h:Math.max(0,Math.round(o.hp)),d:o.dead?1:0})),esc:G.mission.esc?{x:Math.round(G.mission.esc.x),y:Math.round(G.mission.esc.y),h:Math.max(0,Math.round(G.mission.esc.hp)),on:1}:((G.mission.escT||0)>0?{dl:Math.round(G.mission.escT)}:null),def:(G.mission.defMax||G.mission.gauge)?{t:Math.round((G.mission.defT||0)*10)/10,h:Math.round(G.mission.defHp||0),g:Math.round(G.mission.gauge||0)}:null,rsc:G.mission.rsc?G.mission.rsc.map(g=>({x:Math.round(g.x),y:Math.round(g.y),t:Math.round(g.t),p:Math.round(g.prog*100),r:g.rescued?1:0,l:g.lost?1:0})):null,p3:missionSaveP3()}:null};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
+function saveRun(){if(!G||G.over||G.siege||G.bossRush||G.unif||G.unifDef||G.demo)return;try{const sv={lord:selLord,level:G.level,xp:G.xp,kills:G.kills,party:G.party.map(p=>p.name),upg:G.party.map(p=>({n:p.name,u:p.upgCount||0,a:p.awakened?1:0})),cr:G.compRangeMul,ca:G.compAtkMul,cs:G.compSigMul,csr:G.compSigRangeMul,ch:G.compHpMul,cleave:G.compCleave?1:0,mc:G.moveCount,stage:G.stage,shura:0,treasures:Object.keys(G.treasures||{}).filter(k=>G.treasures[k]),tactics:G.tactics,lordHp:Math.round(G.lord.hp),lw:G.lord.wlv||1,le:G.lord.evo?1:0,la:Math.round((G.lord.atk||0)*100)/100,lm:G.lord.maxhp||0,lam:G.lord.atkMul||1,hs:G.hataStk||0,php:G.party.map(p=>({n:p.name,hp:Math.round(p.hp),se:p.sigEvo||0,rl:p.rapidLv||0,k:p.kills||0,sm:Math.round((p.sigMul||1)*10000)/10000,ba:(p.baseAtk!=null?Math.round(p.baseAtk*100)/100:null),bh:(p.baseMaxhp!=null?Math.round(p.baseMaxhp*100)/100:null),rm:Math.round((p.rangeMul||1)*10000)/10000,gj:p.guojiaUsed?1:0,dt:Math.round((p.downT||0)*10)/10,aw:p.away?1:0,awt:Math.round((p.awayT||0)*10)/10})),mastery:G.mastery||{},fusion:G.fusion||null,fusionTaken:G.fusionTaken?1:0,lvStacks:G.lvStacks||{},banished:G.banished||{},deepened:G.deepened||{},kakugo:G.kakugo||null,evo:G.evoBranch||null,lk:G.lordKills||0,sgc:G.sigCounts||{},grk:G.grk||null,grkPend:G.grkPend||0,pd:G.partyDowns||0,dc:G.duelCount||0,dw:G.duelWins||0,mx:G.maxStreak||0,tb:G.tacBonusKills||0,st:Math.round(G.stageTime||0),sk:G.stageKills||0,enc:G.encounterDone?1:0,td:G.terrainDone?1:0,rd:G.rescueDone?1:0,sbd:G.stageBossDown?1:0,fin:G.finalSpawned?1:0,fr:Math.round(G.finalRestT||0),en:G.endless?1:0,et:Math.round(G.endlessT||0),rid:G._runId||"",kb:G._killsBanked||0,db:G._duelBanked||0,fc:G._finCounted?1:0,mid:(G.endless||!(G.pendingMove||(G.stageBossDown&&G.moveCount<2)))?1:0,visited:(G.visited||[G.stage]).slice(),msn:G.mission?{id:G.mission.id,st:G.mission.state,n:G.mission.n,zp:Math.round((G.mission.zoneProg||0)*100),objs:(G.mission.objs||[]).map(o=>({x:Math.round(o.x),y:Math.round(o.y),h:Math.max(0,Math.round(o.hp)),d:o.dead?1:0})),esc:G.mission.esc?{x:Math.round(G.mission.esc.x),y:Math.round(G.mission.esc.y),h:Math.max(0,Math.round(G.mission.esc.hp)),on:1}:((G.mission.escT||0)>0?{dl:Math.round(G.mission.escT)}:null),def:(G.mission.defMax||G.mission.gauge)?{t:Math.round((G.mission.defT||0)*10)/10,h:Math.round(G.mission.defHp||0),g:Math.round(G.mission.gauge||0)}:null,rsc:G.mission.rsc?G.mission.rsc.map(g=>({x:Math.round(g.x),y:Math.round(g.y),t:Math.round(g.t),p:Math.round(g.prog*100),r:g.rescued?1:0,l:g.lost?1:0})):null,p3:missionSaveP3()}:null};localStorage.setItem("sgk_run_save",JSON.stringify(sv));}catch(e){}}
 function resumeRun(){let sv=null;try{sv=JSON.parse(localStorage.getItem("sgk_run_save")||"null");}catch(e){}if(!sv)return;selLord=sv.lord;newGame();G.enemies=[];G.mission=null;G.banners=[];G._resumed=1; // newGame が第1戦場用に作ったミッション（祭壇の守り手・提示バナー）は復元先の戦場と混ざるので消す。ミッションは下の復元で付け直す
  G.level=sv.level;G.xp=sv.xp;G.xpNext=9;for(let i=1;i<sv.level;i++)G.xpNext=Math.round(G.xpNext*1.20+3);
- G.kills=sv.kills;G.moveCount=sv.mc;G.stage=sv.stage;G.phase=sv.mc+1;G.visited=(sv.visited&&sv.visited.length)?sv.visited.slice():[sv.stage];
+ if(sv.rid)G._runId=sv.rid;G._killsBanked=sv.kb||0;G._duelBanked=sv.db||0;if(sv.fc)G._finCounted=true;G.kills=sv.kills;G.moveCount=sv.mc;G.stage=sv.stage;G.phase=sv.mc+1;G.visited=(sv.visited&&sv.visited.length)?sv.visited.slice():[sv.stage];
  (sv.party||[]).forEach(nm=>{const def=COMP_DEFS.find(c=>c[0]===nm);if(def)addCompanion(def);});
  G.compRangeMul=sv.cr||1;G.compAtkMul=sv.ca||1;G.compSigMul=sv.cs||1;G.compSigRangeMul=sv.csr||1;G.compHpMul=sv.ch||1;G.compCleave=!!sv.cleave;
  (sv.upg||[]).forEach(u=>{const p=G.party.find(p=>p.name===u.n);if(p){p.upgCount=u.u;p.awakened=!!u.a;}});
@@ -9569,7 +9583,7 @@ function resultStoryLines(win){
  return out;
 }
 function endGame(win,survived){
- if(G.over)return;G.over=true;{const _ttE=tutLoad();if(!G.siege&&!G.bossRush&&!G.unif&&!G.unifDef&&!G.demo){_ttE.runs=(_ttE.runs||0)+1;tutStore(_ttE);}}G.pendingDuelLines=null;stopBGM();
+ if(G.over)return;G.over=true;{const _ttE=tutLoad();if(!G._finCounted&&!G.siege&&!G.bossRush&&!G.unif&&!G.unifDef&&!G.demo){_ttE.runs=(_ttE.runs||0)+1;tutStore(_ttE);}}G.pendingDuelLines=null;stopBGM();
  siegeRetryCfg=null;bossRushRetryCfg=null;{const rb2=$("retryBtn");if(rb2)rb2.textContent="同じ君主でもう一度出撃";}
  // リザルトの邪魔になる戦闘中の演出（バーク／カットイン／演出タイトル／会話／提示キュー）を畳む（backToTitle と同じ作法：コールバックは発火させない）
  try{
@@ -9591,14 +9605,14 @@ function endGame(win,survived){
  let unlockLines="",winLine="";
  if(G.duelOffer)clearDuelOffer();
  {try{localStorage.removeItem("sgk_run_save");}catch(e){}}
-  {try{const miss=JSON.parse(localStorage.getItem("sgk_recruit_miss")||"{}");const seen=G.recruitSeen||{};COMP_DEFS.forEach(c=>{if(c[4]==="ex"&&G.lord.name!=="袁紹")return;miss[c[0]]=seen[c[0]]?0:Math.min(3,(miss[c[0]]||0)+1);});localStorage.setItem("sgk_recruit_miss",JSON.stringify(miss));}catch(e){}}
+  if(!G._finCounted){try{const miss=JSON.parse(localStorage.getItem("sgk_recruit_miss")||"{}");const seen=G.recruitSeen||{};COMP_DEFS.forEach(c=>{if(c[4]==="ex"&&G.lord.name!=="袁紹")return;miss[c[0]]=seen[c[0]]?0:Math.min(3,(miss[c[0]]||0)+1);});localStorage.setItem("sgk_recruit_miss",JSON.stringify(miss));}catch(e){}}
  {const before=loadClears();  const isUn=cf=>Ld=>!Ld.hidden?true:(Ld.hidden==="any"?Object.keys(cf).length>0:(Ld.hidden.indexOf("+")>=0?Ld.hidden.split("+").every(id=>!!cf[id]):!!cf[Ld.hidden]));
   const beforeSet=new Set(LORDS.filter(isUn(before)).map(Ld=>Ld.id));
   if(win){before[LORDS[selLord].id]=1;localStorage.setItem("sgk_clears",JSON.stringify(before));}
   const after=loadClears();
   LORDS.forEach(Ld=>{if(Ld.hidden&&isUn(after)(Ld)&&!beforeSet.has(Ld.id))unlockLines+=`<span class="rs-line unlockReveal">${(typeof FACE_SRC!=="undefined"&&FACE_SRC[Ld.name])?`<img src="${FACE_SRC[Ld.name]}" alt="">`:"🏯"} ${Ld.name} が使用可能になった！</span>`;});
- {const ls=loadLordStats();const cur=ls[LORDS[selLord].id]||{wins:0,best:0,runs:0};cur.runs++;if(win)cur.wins++;cur.best=Math.max(cur.best,G.kills);ls[LORDS[selLord].id]=cur;try{localStorage.setItem("sgk_lordstats",JSON.stringify(ls));}catch(e){}
-   let dwTot=0;try{dwTot=(parseInt(localStorage.getItem("sgk_duelwins_total")||"0")||0)+(G.duelWins||0);localStorage.setItem("sgk_duelwins_total",String(dwTot));}catch(e){}
+ {const ls=loadLordStats();const cur=ls[LORDS[selLord].id]||{wins:0,best:0,runs:0};if(!G._finCounted){cur.runs++;if(win)cur.wins++;}cur.best=Math.max(cur.best,G.kills);ls[LORDS[selLord].id]=cur;try{localStorage.setItem("sgk_lordstats",JSON.stringify(ls));}catch(e){}
+   let dwTot=0;try{dwTot=(parseInt(localStorage.getItem("sgk_duelwins_total")||"0")||0)+Math.max(0,(G.duelWins||0)-(G._duelBanked||0));G._duelBanked=G.duelWins||0;localStorage.setItem("sgk_duelwins_total",String(dwTot));}catch(e){}
    const ms=loadMissions();const newMs=[];const grant=k=>{if(!ms[k]){ms[k]=1;newMs.push(k);}};
    if(win&&activeCompatList().some(c=>c.n==="桃園結義"))grant("touen");
    if(dwTot>=10)grant("duel10");
@@ -9606,13 +9620,14 @@ function endGame(win,survived){
    if(newMs.length){try{localStorage.setItem("sgk_missions",JSON.stringify(ms));}catch(e){}const SENPO_NAME={touen:"結義の旗",duel10:"単騎の心得",shura:"覇王の旗"};unlockLines+=`<span class="rs-line">📜 名将録ミッション達成！ 戦法書「${newMs.map(k=>SENPO_NAME[k]).join("」「")}」解放（レベルアップ候補に出現）</span>`;}} // #222 軍功報酬を戦法書解放そのものへ転換
   if(win){const cands=[G.lord,...G.party].filter(m=>WIN_LINES[m.name]);if(cands.length){const m=cands[Math.floor(Math.random()*cands.length)];winLine=`💬 ${m.name}：「${WIN_LINES[m.name]}」`;}}}
  { // キャラ解放：記録の更新と条件判定（リザルト表示前）
-  try{localStorage.setItem("sgk_kills_total",String(killsTotal()+(G.kills||0)));}catch(e){}
+  try{const _kAdd=Math.max(0,(G.kills||0)-(G._killsBanked||0));if(_kAdd>0)localStorage.setItem("sgk_kills_total",String(killsTotal()+_kAdd));G._killsBanked=G.kills||0;}catch(e){}
+  gcSubmit("sgk_kills_total",killsTotal());
   try{(G.visited||[]).forEach(ix=>{const S2=STAGES[ix];if(S2){const v=loadStageVisited();if(!v[S2.id]){v[S2.id]=1;localStorage.setItem("sgk_stagevisited",JSON.stringify(v));}}});const ms2=(G.moveCount||0)+1;if(ms2>maxStageReached())localStorage.setItem("sgk_maxstage",String(ms2));}catch(e){}
   if(win){try{const cp=loadClearParty();let ch=false;G.party.forEach(p=>{if(!cp[p.name]){cp[p.name]=1;ch=true;}});if(ch)localStorage.setItem("sgk_clearparty",JSON.stringify(cp));if((G.partyDowns||0)===0)localStorage.setItem("sgk_noretreat_clear","1");}catch(e){}}
   const newlyU=evalCharUnlocks();if(deferredCharUnlocks.length){const dn=deferredCharUnlocks;deferredCharUnlocks=[];newlyU.splice(0,0,...dn.filter(n=>!newlyU.includes(n)));} // #199 エンドレスで保留した解放演出をここで合流させる
   if(newlyU.length){pendingCharUnlocks=newlyU;unlockLines+=newlyU.map(n=>`<span class="rs-line unlockReveal">${(typeof FACE_SRC!=="undefined"&&FACE_SRC[n])?`<img src="${FACE_SRC[n]}" alt="">`:"🔓"} ${n} が登用可能になった！</span>`).join("");}
  }
-  recordRunResult(win);
+  G._finCounted=true;recordRunResult(win);
  {const kv=(k,v)=>`<div class="rs-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`;
   const hlBody=`${winLine?`<span class="rs-line">${winLine}</span>`:""}${unlockLines}${resultHighlightLines(win)}${(!win&&G.deathCause)?`<span class="rs-line" style="color:#ff9a7a">敗因：${G.deathCause}</span>`:""}`;
   const chrBody=resultChronicleLines(),hintBody=resultHintLine();
@@ -9644,9 +9659,26 @@ function endGame(win,survived){
 "use strict";
 // ===== 描画 =====
 let rotateDismissed=false;
-function fit(){const s=$("stage");const vw=window.visualViewport?visualViewport.width:innerWidth;const vh=window.visualViewport?visualViewport.height:innerHeight;const scale=Math.min(vw/960,vh/540);s.style.transform=`scale(${scale})`;s.style.transformOrigin="center center";s.style.width="960px";s.style.height="540px";
- const portrait=vh>vw;
+/* #227 fit(): コンテンツ実高＋セーフエリア対応 (2026-11-26, Q17のGOによる修正)。
+   scale=min(aw/960, ah/540, ah/コンテンツ高) が合意式。均一拡縮だけでは内容/ステージ比は
+   不変で 540 を超えた分はステージ内に収まらないため、表示中画面の実高が 540 を超える時は
+   ステージ自体の高さを実高まで伸ばす（stageH=max(540,ch)、scale=min(aw/960,ah/stageH)）。
+   これで内容全体がちょうどビューポート高に収まる。canvas は 960x540 のままステージ上部に
+   残り、画面（inset:0）が伸びたステージ全体を覆う。戦闘中は表示中の .screen が無く
+   stageH=540 に戻る。実高の計測は 540 に戻してから行う（伸びた状態で測ると scrollHeight が
+   clientHeight 下限で水増しされ二度と縮まなくなるため）。セーフエリアは #wrap の padding
+   ではなく fit() 側で一元管理する（#wrap は padding:0）。 */
+const _safeProbe=document.createElement("div");
+_safeProbe.style.cssText="position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);";
+document.body.appendChild(_safeProbe);
+function safeInsets(){try{var cs=(typeof getComputedStyle==="function")?getComputedStyle(_safeProbe):null;if(!cs)return{t:0,r:0,b:0,l:0};var n=function(v){var x=parseFloat(v);return isFinite(x)?x:0;};return{t:n(cs.paddingTop),r:n(cs.paddingRight),b:n(cs.paddingBottom),l:n(cs.paddingLeft)};}catch(e){return{t:0,r:0,b:0,l:0};}}
+function visibleContentHeight(){var h=540;try{document.querySelectorAll(".screen:not(.hidden)").forEach(function(el){var sh=el.scrollHeight;if(sh>h)h=sh;});}catch(e){}return h;}
+function fit(){var s=$("stage");var vw=window.visualViewport?visualViewport.width:innerWidth;var vh=window.visualViewport?visualViewport.height:innerHeight;var si=safeInsets();var aw=Math.max(1,vw-si.l-si.r);var ah=Math.max(1,vh-si.t-si.b);s.style.height="540px";void s.offsetHeight;var ch=visibleContentHeight();var stageH=Math.max(540,ch);var scale=Math.min(aw/960,ah/stageH);var dx=(si.l-si.r)/2;var dy=(si.t-si.b)/2;s.style.transform="translate("+dx+"px,"+dy+"px) scale("+scale+")";s.style.transformOrigin="center center";s.style.width="960px";s.style.height=stageH+"px";
+ var portrait=vh>vw;
  $("rotateNotice").style.display=(portrait&&!rotateDismissed)?"flex":"none";}
+if(window.MutationObserver){try{new MutationObserver(function(){fit();}).observe($("stage"),{attributes:true,subtree:true,attributeFilter:["class"]});}catch(e){}}
+if(document.fonts&&document.fonts.ready){try{document.fonts.ready.then(function(){fit();});}catch(e){}}
+addEventListener("load",function(){setTimeout(fit,50);});
 addEventListener("resize",fit);addEventListener("orientationchange",()=>setTimeout(fit,60));if(window.visualViewport)visualViewport.addEventListener("resize",fit);fit();
 bindPress($("rotateOk"),()=>{rotateDismissed=true;fit();});
 function tryFullscreenLandscape(){try{const el=document.documentElement;if(el.requestFullscreen){const p=el.requestFullscreen();if(p&&p.then)p.then(()=>{try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock("landscape").catch(()=>{});}catch(e){}}).catch(()=>{});}}catch(e){}}
